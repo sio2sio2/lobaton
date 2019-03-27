@@ -1,0 +1,33 @@
+.icon .content {
+   position: relative;
+   box-sizing: border-box;
+   height: 70%;
+   margin: 0; padding: 3px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border: solid 3px #888;
+   font-weight: bold;
+}
+
+.icon .arrow {
+   position: relative;
+   margin: 0; padding: 0;
+   width: 10%; height: 30%;
+   left: 45%;
+   background-color: #444;
+}
+
+.icon .normal {
+   background-color: #ddd;
+}
+
+.icon .compensatoria {
+   background-color: #7be;
+}
+
+.icon .dificil {
+   background-color: #ebb;
+}
+

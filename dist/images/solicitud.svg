@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90">
+   <path d="M 44 80.30127 a 25 25 0 0 0 -12.5 -21.650635 h 25 a 25 25 0 0 0 -12.5 21.650635" fill="black" stroke-width="0" fill-opacity="1"/>
+   <rect x="19" y="12" width="50" height="50" fill="black" />
+   <!-- tamaño 28 si tiene 3 o más cifras --> 
+   <text x="44" y="48" stroke="#ee6" fill="#ee6" font-size="32" text-anchor="middle" font-family="monospace">1</text>
+</svg>

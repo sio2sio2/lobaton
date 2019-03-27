@@ -1,0 +1,43 @@
+.icon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 25px;
+}
+
+.icon .content {
+  position: relative;
+  height: 15px;
+  line-height: 15px;
+  padding: 1px;
+  border-width: 1px;
+  border-top-width: 5px;
+  background-color: yellow;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #444;
+  overflow: hidden;
+}
+
+.icon .arrow {
+  position: relative;
+  width: 0px; height: 0px;
+  border-style: solid;
+  border-color: #444 transparent transparent transparent !important;
+  border-width: 10px 6px 0 6px;
+  left: 50%;
+  margin-left: -6px;
+}
+
+.icon .dificil {
+   border-top-color: #c13;
+}
+
+.icon .compensatoria {
+   border-top-color: #25d;
+}
+
+.icon .normal {
+   border-top-color: #bbb;
+}
