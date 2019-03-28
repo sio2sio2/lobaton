@@ -1,3 +1,4 @@
+// Generador de centros.
 function* genCentros() {
    const NUM = 1500; // 1500 marcas.
 
@@ -8,14 +9,19 @@ function* genCentros() {
 
    for(let i=0; i<NUM; i++) {
       yield {
-         lat: random(38.159936, 36.623794),
-         lng: random(-7.234497, -2.362061),
-         peticion: Math.floor(random(1, 300)),
-         tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
-         bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
-         ofervar: Math.floor(Math.random()*3) - 1,
-         numofer: Math.floor(Math.random()*6),
-         numvac: Math.floor(Math.random()*11)
+         type: "Feature",
+         geometry: {
+            type: "Point",
+            coordinates: [random(-7.234497, -2.362061), random(38.159936, 36.623794)]
+         }
+         properties: {
+            peticion: Math.floor(random(1, 300)),
+            tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
+            bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
+            ofervar: Math.floor(Math.random()*3) - 1,
+            numofer: Math.floor(Math.random()*6),
+            numvac: Math.floor(Math.random()*11)
+         }
       };
    }
 }
@@ -28,7 +34,9 @@ function init() {
      maxZoom: 18
    }).addTo(map);
 
-   layer = L.markerClusterGroup({showCoverageOnHover: false});
+   //const cluster = L.markerClusterGroup({showCoverageOnHover: false});
+   //const
+      layer = L.geoJSON().addTo(map);
 
    // Para el ejemplo basta con eliminar algunos atributos
    // como las coordenadas del punto.
@@ -60,7 +68,6 @@ function init() {
       // Si se usa una capa GeoJSON esto se hace automáticamente
       marker.feature = c;
    }
-   layer.addTo(map);
 
    layer.on("clusterclick", function(e) {
       console.log(e.layer.getChildCount());
