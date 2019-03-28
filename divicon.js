@@ -262,69 +262,60 @@ async function getStyle(estilo, callback) {
    callback(options);
 }
 
-const crearCentros = async function(vers, callback) {
-
-   function unPar() {
-      return new Promise(resolve =>
-         resolve([
-            {
-               lat: 37.275475,
-               lng: -5.952594,
-               peticion: 5,
-               tipo: "compensatoria",
-               bil: "inglés",
-               ofervar: 1,
-               numofer: 3,
-               numvac: 4
-            },
-            {
-               lat: 37.58434,
-               lng: -4.638891,
-               peticion: 55,
-               tipo: "dificil",
-               bil: "multi",
-               ofervar: -1,
-               numofer: 1,
-               numvac: 2
-            }
-         ])
-      );
-   }
-
-   function munchos() {
-      return new Promise(function(resolve, reject) {
-         const NUM = 1500; // 1500 marcas.
-
-         const esqii = [36.623794, -7.234497];
-         const esqsd = [38.159936, -2.362061];
-         const res = [];
-
-         function random(a, b) { return a + Math.random()*(b-a); }
-
-         for(let i=0; i<NUM; i++) {
-            res.push({
-               lat: random(38.159936, 36.623794),
-               lng: random(-7.234497, -2.362061),
-               peticion: Math.floor(random(1, 300)),
-               tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
-               bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
-               ofervar: Math.floor(Math.random()*3) - 1,
-               numofer: Math.floor(Math.random()*6),
-               numvac: Math.floor(Math.random()*11)
-            })
+// Generador de centros
+function genCentros(vers) {
+   function* unPar() {
+      const centros = [
+         {
+            lat: 37.275475,
+            lng: -5.952594,
+            peticion: 5,
+            tipo: "compensatoria",
+            bil: "inglés",
+            ofervar: 1,
+            numofer: 3,
+            numvac: 4
+         },
+         {
+            lat: 37.58434,
+            lng: -4.638891,
+            peticion: 55,
+            tipo: "dificil",
+            bil: "multi",
+            ofervar: -1,
+            numofer: 1,
+            numvac: 2
          }
+      ];
 
-         resolve(res);
-      });
+      for(let i=0; i<centros.length; i++) yield centros[i];
    }
 
-   const centros = await {
-      "dos": unPar,
-      "munchos": munchos
-   }[vers]();
+   function* muchos() {
+      const NUM = 1500; // 1500 marcas.
 
-   callback(centros);
+      const esqii = [36.623794, -7.234497];
+      const esqsd = [38.159936, -2.362061];
+
+      function random(a, b) { return a + Math.random()*(b-a); }
+
+      for(let i=0; i<NUM; i++) {
+         yield {
+            lat: random(38.159936, 36.623794),
+            lng: random(-7.234497, -2.362061),
+            peticion: Math.floor(random(1, 300)),
+            tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
+            bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
+            ofervar: Math.floor(Math.random()*3) - 1,
+            numofer: Math.floor(Math.random()*6),
+            numvac: Math.floor(Math.random()*11)
+         };
+      }
+   }
+
+   return { "dos": unPar, "muchos": muchos }[vers]();
 }
+
 
 function cambiarIcono(layer) {
    getStyle(this.value, function(opts) {
@@ -354,14 +345,13 @@ function cambiarIcono(layer) {
                break;
             }
          }
-         crearCentros(num, function(centros) {
-            for(const c of centros) {
-               const pos = new L.LatLng(c.lat, c.lng);
-               const marker = L.marker(pos, {icon: new Icon({params: converter(c)})}).addTo(layer);
-               // Si se usa una capa GeoJSON esto se hace automáticamente
-               marker.feature = c;
-            }
-         });
+         const centros = genCentros(num);
+         for(const c of centros) {
+            const pos = new L.LatLng(c.lat, c.lng);
+            const marker = L.marker(pos, {icon: new Icon({params: converter(c)})}).addTo(layer);
+            // Si se usa una capa GeoJSON esto se hace automáticamente
+            marker.feature = c;
+         }
       }
    });
 }

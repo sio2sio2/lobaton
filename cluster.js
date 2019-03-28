@@ -1,33 +1,23 @@
-async function generarCentros(callback) {
+function* genCentros() {
+   const NUM = 1500; // 1500 marcas.
 
-   function muchos() {
-      return new Promise(function(resolve, reject) {
-         const NUM = 1500; // 1500 marcas.
+   const esqii = [36.623794, -7.234497];
+   const esqsd = [38.159936, -2.362061];
 
-         const esqii = [36.623794, -7.234497];
-         const esqsd = [38.159936, -2.362061];
-         const res = [];
+   function random(a, b) { return a + Math.random()*(b-a); }
 
-         function random(a, b) { return a + Math.random()*(b-a); }
-
-         for(let i=0; i<NUM; i++) {
-            res.push({
-               lat: random(38.159936, 36.623794),
-               lng: random(-7.234497, -2.362061),
-               peticion: Math.floor(random(1, 300)),
-               tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
-               bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
-               ofervar: Math.floor(Math.random()*3) - 1,
-               numofer: Math.floor(Math.random()*6),
-               numvac: Math.floor(Math.random()*11)
-            })
-         }
-
-         resolve(res);
-      });
+   for(let i=0; i<NUM; i++) {
+      yield {
+         lat: random(38.159936, 36.623794),
+         lng: random(-7.234497, -2.362061),
+         peticion: Math.floor(random(1, 300)),
+         tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
+         bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
+         ofervar: Math.floor(Math.random()*3) - 1,
+         numofer: Math.floor(Math.random()*6),
+         numvac: Math.floor(Math.random()*11)
+      };
    }
-
-   callback(await muchos());
 }
 
 
@@ -64,15 +54,13 @@ function init() {
       }
    });
 
-   generarCentros(function(centros) {
-      for(const c of centros) {
-         const pos = new L.LatLng(c.lat, c.lng);
-         const marker = L.marker(pos, {icon: new Icon({params: converter(["numvac", "tipo"], c)})}).addTo(layer);
-         // Si se usa una capa GeoJSON esto se hace automáticamente
-         marker.feature = c;
-      }
-      layer.addTo(map);
-   });
+   for(const c of genCentros()) {
+      const pos = new L.LatLng(c.lat, c.lng);
+      const marker = L.marker(pos, {icon: new Icon({params: converter(["numvac", "tipo"], c)})}).addTo(layer);
+      // Si se usa una capa GeoJSON esto se hace automáticamente
+      marker.feature = c;
+   }
+   layer.addTo(map);
 
    layer.on("clusterclick", function(e) {
       console.log(e.layer.getChildCount());
