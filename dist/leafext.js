@@ -20,7 +20,7 @@
     * existentes.
     *
     */
-   var Options = (function() {
+   const Options = (function() {
 
       const banned = ["updated"];
 
@@ -122,7 +122,8 @@
     *       options: {
     *          updater: updater,
     *          className: "icon",
-    *          iconSize: null,
+    *          iconSize: [25, 34],
+    *          iconAnchor: [12.5, 34],
     *          html: elemento_html
     *       }
     *    });
@@ -137,9 +138,8 @@
     *     el icono según los valores de sus propiedades (numvac y tipo en el ejemplo).
     *
     * + iconSize:
-    *     Debe ser null, si definimos el tamaño exacto a través de CSS.
-    *     Si usamos un SVG para pintar el icono, es mejor definir el SVG
-    *     con viewBox y usar iconSize para definir el tamaño.
+    *     Si definimos el tamaño exacto a través de CSS (lo cual no es recomentable),
+    *     debe ser null.
     *
     * + html:
     *     El elemento HTML que se desea usar como icono. Se acepta:
@@ -218,6 +218,7 @@
          // (ejemplo de criterio: filtrar marcas cuyo centro no tenga vacantes, etc)
          // De ese modo, todas las marcas que se creen con esta clase de marca
          // compartiran el mismo objeto de filtro.
+         options.filter = new Filter();
       }
       return Marker;
    }
@@ -240,4 +241,16 @@
    L.Marker.prototype.show = function() {
       this.getElement().classList.remove("filter");
    }
+
+
+   /**
+    * Filtro
+    */
+   const Filter = (function() {
+
+      function Filter() {
+      }
+
+      return Filter;
+   })()
 })();
