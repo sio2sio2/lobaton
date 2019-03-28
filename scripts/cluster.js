@@ -25,7 +25,7 @@ function* genCentros() {
                numvac: Math.floor(Math.random()*11)
             }
          }
-      };
+      }
    }
 }
 
@@ -51,7 +51,7 @@ function init() {
       return this;
    }
 
-   const Icon  = L.DivIcon.extend({
+   const Icon = L.DivIcon.extend({
       options: {
          updater: updater,
          className: "icon",
@@ -61,23 +61,52 @@ function init() {
       }
    });
 
-   const cluster = L.markerClusterGroup({showCoverageOnHover: false}).addTo(map);
-   //const
-      layer = L.geoJSON(null, {
-         pointToLayer: (f, l) => L.marker(l, {
+   const layer = L.geoJSON(null, {
+            pointToLayer: (f, l) => L.marker(l, {
             icon: new Icon({params: converter(["numvac", "tipo"], f.properties.data)}),
             title: f.properties.name})
-      });
+         });  //Debe ser una coma, pero así podemos consultar cluster desde la consola.
+         cluster = L.markerClusterGroup({showCoverageOnHover: false}).addTo(map);
 
-   for(const c of genCentros()) {
+   const centros = genCentros();
+
+   /*
+   for(const c of centros) {
       layer.addData(c);
       cluster.addLayer(layer);
       layer.clearLayers();
    }
+   */
 
+   const progress = document.getElementById('progress'),
+         progressBar = document.getElementById('progress-bar');
+
+   progressBar.style.width = "0";
+
+   let id = 0, total = 1500,
+        x = setInterval(function() {
+               const c = centros.next()
+               if(c.done) {
+                  clearInterval(id);
+                  progress.style.display = "none";
+                  return;
+               }
+               layer.addData(c.value);
+               cluster.addLayer(layer);
+               layer.clearLayers();
+               //Cada 200 marcas y si se tarda más de 1 segundo.
+               if(id % 200 === 0 && id*20 > 1000) {
+                  progress.style.display = "block";
+                  progressBar.style.width = Math.round(id*100/total) + '%';
+               }
+               id++;
+            }, 20);
+
+   /*
    layer.on("clusterclick", function(e) {
       console.log(e.layer.getChildCount());
    });
+   */
 }
 
 window.onload = init
