@@ -38,7 +38,7 @@ function init() {
      maxZoom: 18
    }).addTo(map);
 
-   layer = L.markerClusterGroup();
+   layer = L.markerClusterGroup({showCoverageOnHover: false});
 
    // Para el ejemplo basta con eliminar algunos atributos
    // como las coordenadas del punto.

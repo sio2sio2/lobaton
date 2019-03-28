@@ -378,7 +378,7 @@ function init() {
      maxZoom: 18
    }).addTo(map);
 
-   l = L.markerClusterGroup().addTo(map);
+   l = L.markerClusterGroup({showCoverageOnHover: false}).addTo(map);
    //l = L.layerGroup().addTo(map);
 
    cambiarIcono.call(document.querySelector("select"), l);
