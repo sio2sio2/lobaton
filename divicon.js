@@ -45,17 +45,6 @@ function load(params) {
    return xhr;
 }
 
-// TODO: Comentarios
-function wait(obj) {
-   if(!obj.test) throw new Error("No se ha definido ningún criterio de espera");
-   var id = setInterval(function() {
-      if(obj.test()) {
-         clearInterval(id);
-         obj.callback.apply(obj.context, obj.params || []);
-      }
-   }, obj.interval || 100);
-}
-
 
 async function getStyle(estilo, callback) {
 
@@ -288,7 +277,24 @@ function genCentros(vers) {
          }
       ];
 
-      for(let i=0; i<centros.length; i++) yield centros[i];
+      for(let i=0; i<centros.length; i++) {
+         const lat = centros[i].lat,
+               lng = centros[i].lng;
+         delete centros[i].lat;
+         delete centros[i].lng;
+
+         yield {
+            type: "Feature",
+            geometry: {
+               type: "Point",
+               coordinates: [lng, lat]
+            },
+            properties: {
+               name: "Icono " + i,
+               data: centros[i]
+            }
+         };
+      }
    }
 
    function* muchos() {
@@ -301,15 +307,23 @@ function genCentros(vers) {
 
       for(let i=0; i<NUM; i++) {
          yield {
-            lat: random(38.159936, 36.623794),
-            lng: random(-7.234497, -2.362061),
-            peticion: Math.floor(random(1, 300)),
-            tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
-            bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
-            ofervar: Math.floor(Math.random()*3) - 1,
-            numofer: Math.floor(Math.random()*6),
-            numvac: Math.floor(Math.random()*11)
-         };
+            type: "Feature",
+            geometry: {
+               type: "Point",
+               coordinates: [random(-7.234497, -2.362061), random(38.159936, 36.623794)]
+            },
+            properties: {
+               name: "Icono " + i,
+               data: {
+                  peticion: Math.floor(random(1, 300)),
+                  tipo: ["dificil", "normal", "compensatoria"][Math.floor(Math.random()*3)],
+                  bil: ["inglés", "francés", "alemán", "multi"][Math.floor(Math.random()*4)],
+                  ofervar: Math.floor(Math.random()*3) - 1,
+                  numofer: Math.floor(Math.random()*6),
+                  numvac: Math.floor(Math.random()*11)
+               }
+            }
+         }
       }
    }
 
@@ -317,7 +331,7 @@ function genCentros(vers) {
 }
 
 
-function cambiarIcono(layer) {
+function cambiarIcono(cluster) {
    getStyle(this.value, function(opts) {
       const converter = opts.converter;
       const link = document.getElementById("iconstyle");
@@ -334,8 +348,8 @@ function cambiarIcono(layer) {
 
       const Icon = L.DivIcon.extend({ options: options });
 
-      if(layer.getLayers().length) {
-         layer.eachLayer(m => m.setIcon(new Icon({params: converter(m.feature)})));
+      if(cluster.getLayers().length) {
+         cluster.eachLayer(m => m.setIcon(new Icon({params: converter(m.feature.properties.data)})));
       }
       else {
          let num;
@@ -345,12 +359,17 @@ function cambiarIcono(layer) {
                break;
             }
          }
-         const centros = genCentros(num);
-         for(const c of centros) {
-            const pos = new L.LatLng(c.lat, c.lng);
-            const marker = L.marker(pos, {icon: new Icon({params: converter(c)})}).addTo(layer);
-            // Si se usa una capa GeoJSON esto se hace automáticamente
-            marker.feature = c;
+
+         const layer = L.geoJSON(null, {
+            pointToLayer: (f, l) => L.marker(l, {
+               icon: new Icon({params: converter(f.properties.data)}),
+               title: f.properties.name})
+         });
+
+         for(const c of genCentros(num)) {
+            layer.addData(c);
+            cluster.addLayer(layer);
+            layer.clearLayers();
          }
       }
    });
@@ -368,13 +387,17 @@ function init() {
      maxZoom: 18
    }).addTo(map);
 
-   l = L.markerClusterGroup({showCoverageOnHover: false}).addTo(map);
-   //l = L.layerGroup().addTo(map);
+   cluster = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 11 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 11,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
 
-   cambiarIcono.call(document.querySelector("select"), l);
+   cambiarIcono.call(document.querySelector("select"), cluster);
 
-   document.querySelector("select").addEventListener("change", function(e) { cambiarIcono.call(this, l); });
-   document.querySelectorAll("input[type='radio']").forEach(e => e.addEventListener("change", cambiarCantidad.bind(null, l)));
+   document.querySelector("select").addEventListener("change", function(e) { cambiarIcono.call(this, cluster); });
+   document.querySelectorAll("input[type='radio']").forEach(e => e.addEventListener("change", cambiarCantidad.bind(null, cluster)));
 }
 
 window.onload = init
