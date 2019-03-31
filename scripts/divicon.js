@@ -360,10 +360,16 @@ function cambiarIcono(cluster) {
             }
          }
 
+         // Los datos de los centros admiten correcciones.
+         const Centro = L.Marker.extend({
+            options: {mutable: true}
+         });
+
          const layer = L.geoJSON(null, {
-            pointToLayer: (f, l) => L.marker(l, {
+            pointToLayer: (f, l) => new Centro(l, {
                icon: new Icon({params: converter(f.properties.data)}),
-               title: f.properties.name})
+               title: f.properties.name
+            })
          });
 
          for(const c of genCentros(num)) {

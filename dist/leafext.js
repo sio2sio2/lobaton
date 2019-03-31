@@ -209,29 +209,47 @@
 
    const MarkerExtend = L.Marker.extend;
 
-   L.Marker.extend = function(obj) {
-      const Marker = MarkerExtend.call(this, obj);
+   L.Marker.extend = function() {
+      const Marker = MarkerExtend.apply(this, arguments);
       const options = Marker.prototype.options;
-      if(options.corr) { // Si es true.
-         // Debe crearse un objeto de filtro que forme parte del prototipo.
-         // En este objeto de filtro se registrarán los distintos criterios de filtrado
-         // (ejemplo de criterio: filtrar marcas cuyo centro no tenga vacantes, etc)
-         // De ese modo, todas las marcas que se creen con esta clase de marca
-         // compartiran el mismo objeto de filtro.
-         options.corr = new CorrSys();
+      if(options.mutable) {
+         options.corr = new L.CorrSys();
+         Object.assign(Marker.prototype, prototypeExtra);
+         Object.defineProperty(Marker, "_store", {
+            value: [],
+            configurable: false,
+            enumerable: false,
+            writable: false
+         }); 
       }
       return Marker;
    }
 
-   // Refresca la marca en caso de que haya que redibujar el icono asociado.
-   L.Marker.prototype.refresh = function() {
-      const icon = this.options.icon;
-      if(!icon.options.params || icon.options.params.updated) return false;
-      icon.options.updater.call(this.getElement(), icon.options.params.modified);
-      icon.options.params.reset();
-      return true;
+   const MarkerInitialize = L.Marker.prototype.initialize;
+
+   /**
+    * Métodos modificados o adicionales que tendrán los derivados de Marker que al
+    * crearse con extend incluyan la opción mutable=true.
+    */
+   // TODO: Faltan al menos tres métodos para prototype.
+   //    1. Uno que tome los datos asociados a la marca (en feature o donde sea)
+   //       y convierta los arrays en Correctable.
+   //    2. Otro que aplique una determinada corrección a la marca.
+   //    3. Otro que la desaplique.
+   var prototypeExtra = {
+      refresh: function() {
+         const icon = this.options.icon;
+         if(!icon.options.params || icon.options.params.updated) return false;
+         icon.options.updater.call(this.getElement(), icon.options.params.modified);
+         icon.options.params.reset();
+         return true;
+      },
+      initialize: function() {
+         MarkerInitialize.apply(this, arguments);
+         this.constructor._store.push(this);
+      }
    }
-   
+
 
    /**
     * Convierte un array en un array con esteroides. Básicamente, el array
@@ -276,7 +294,7 @@
          filters: function(idx) {
             // TODO: Es más eficiente hacer un bucle for.
             return Object.keys(this.corr).filter(c => c[idx]);
-         }
+         },
          /**
           * Devuelve el valor del elemento idx
           *
@@ -305,7 +323,7 @@
           */
          walk: function* () {
             for(let i=0; i<this.length; i++) {
-               const filters = this.filters(i));
+               const filters = this.filters(i);
                yield {
                   value: filters.length>0?null:this[i],
                   filters: filters
@@ -330,7 +348,7 @@
                   add  = func.prop.add;
             if(this.corr.hasOwnProperty(name)) return false; // Ya aplicado.
             if(add) {
-               const values = func(this):
+               const values = func(this);
                let num = values.length;
                this.push.apply(this, values);  // La función devuelve un array con los nuevo valores.
 
@@ -432,7 +450,7 @@
           */
          Object.defineProperty(arr, "corr", {
             value: {},
-            writable: false
+            writable: false,
             enumerable: false,
             configurable: false,
          });
@@ -447,7 +465,7 @@
          return arr;
       }
 
-      return Corregible;
+      return Correctable;
    })();
 
 
@@ -461,7 +479,7 @@
     * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
     * varios atributos.
     */
-   var CorrSys =(function() {
+   L.CorrSys = (function() {
 
       function CorrSys() {
       }
@@ -513,14 +531,24 @@
        *
        * @param {string} attr  Nombre de la propiedad.
        *
-       * @returns {Object}  Un Objeto en que cada atributo es el nombre
+       * @returns {?Object}  Un Objeto en que cada atributo es el nombre
        * de las corrección y cada valor la función que aplica tal corrección.
        */
       CorrSys.prototype.getCorrections = function(attr) {
-         return this[attr];
+         return this[attr] || null;
       }
 
+
+      /**
+       * Devuelve las propiedades corregibles.
+       *
+       * @returns {string[]}
+       */
+      CorrSys.prototype.list = function() {
+         return Object.keys(this);
+      } 
+
       return CorrSys;
-   });
+   })();
 
 })();
