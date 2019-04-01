@@ -2,6 +2,22 @@
    "use strict";
 
    /**
+    * Permite obtener el valor denla propiedad de una propiedad de forma
+    * que getProperty(x, "a.b") devolvería el valor de x.a.b
+    */
+   function getProperty(obj, name) {
+      let name = name.split("."),
+          res = obj;
+
+      while(name.length) {
+         res = res[name.shift()];
+         if(res === undefined) break;
+      }
+      return res;
+   }
+
+
+   /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
     * desde la última vez que se reseteó (con el método reset).
     *
@@ -207,22 +223,40 @@
       this.options.html = html.container?html.innerHTML:html.outerHTML;
    }
 
+
    const MarkerExtend = L.Marker.extend;
 
    L.Marker.extend = function() {
       const Marker = MarkerExtend.apply(this, arguments);
       const options = Marker.prototype.options;
       if(options.mutable) {
-         options.corr = new L.CorrSys();
+         options.corr = new CorrSys();
          Object.assign(Marker.prototype, prototypeExtra);
-         Object.defineProperty(Marker, "_store", {
+         Object.defineProperty(Marker, "store", {
             value: [],
             configurable: false,
             enumerable: false,
             writable: false
          }); 
+         Marker.remove = removeMarker;
       }
       return Marker;
+   }
+
+
+   /**
+    * Elimina una marca del almacén donde se guardan
+    * todos los objetos marca de una misma clase.
+    *
+    * @param {L.Marker} marker  La marca que se desea eliminar.
+    *
+    * @returns {boolean}  El éxito en la eliminación.
+    */
+   function removeMarker(marker) {
+      const idx = this.store.indexOf(marker);
+      if(idx === -1) return false;
+      this.store.splice(idx, 1);
+      return true;
    }
 
    const MarkerInitialize = L.Marker.prototype.initialize;
@@ -231,11 +265,6 @@
     * Métodos modificados o adicionales que tendrán los derivados de Marker que al
     * crearse con extend incluyan la opción mutable=true.
     */
-   // TODO: Faltan al menos tres métodos para prototype.
-   //    1. Uno que tome los datos asociados a la marca (en feature o donde sea)
-   //       y convierta los arrays en Correctable.
-   //    2. Otro que aplique una determinada corrección a la marca.
-   //    3. Otro que la desaplique.
    var prototypeExtra = {
       refresh: function() {
          const icon = this.options.icon;
@@ -246,309 +275,442 @@
       },
       initialize: function() {
          MarkerInitialize.apply(this, arguments);
-         this.constructor._store.push(this);
+         this.constructor.store.push(this);
+      },
+      //TODO: ¿Cuándo narices aplicamos este método? Debe aplicarse cuando
+      //  ya se hayan asociado los datos a la marca.
+      prepare: function() {  // Convierte Arrays en Correctables.
+         const data = getProperty(this, this.options.mutable);
+         if(data === undefined) return false;  // La marca no posee los datos.
+         this.options.corr.prepare(data);
+         return true;
+      },
+      getData: function() {  // Devuelve los datos asociados a la marca.
+         return getProperty(this, this.options.mutable);
+      },
+      apply: function(name, params) {  // Aplica una corrección.
+         const property = this.options.corr.getProp(name),
+               sc       = this.options[property],
+               arr      = getProperty(this.getData(), property);
+
+         arr.apply(sc[name].bind(this), params);
+      },
+      unapply: function(name) {  // Elimina la corrección.
+         const property = this.options.corr.getProp(name),
+               arr      = getProperty(this.getData(), property);
+
+         arr.unapply(name);
       }
    }
 
 
-   /**
-    * Convierte un array en un array con esteroides. Básicamente, el array
-    * (llamémoslo A) pasa a tener un atributo "corr", que es un objeto cuyas
-    * claves son las correcciones aplicadas sobre A y cuyos valores son arrays de
-    * longitud idéntica a A. Cada elemento de estos arrays represente el efecto
-    * que ha tenido la corrección sobre el elemento correspondiente de A:
-    *
-    * - true:  la correción filtró el elemento.
-    * - false: la corrección no filtró el elemento.
-    * - undefined: la corrección no se aplicó sobre ese elemento.
-    * - null: la corrección creó el elemento.
-    *
-    * Un ejemplo esquemático:
-    *
-    *            [ valor1, valor2, valor3]
-    *  {
-    *    corr1:  [ true  ,  true , false ]
-    *    corr2:  [ true  , false ,  null ]
-    *  }
-    *
-    * En este caso, el valor1 lo eliminan ambas correcciones. el valor2 sólo corr1, y
-    * el valor3 lo añade corr2 y no lo elimina corr1.
-    *
-    */
-   const Correctable = (function() {
+   // Sistema de correcciones
+   const CorrSys = (function() {
+
       /**
-       * Métodos y propiedas añadidas al objeto array cuyos valores
-       * son susceptibles de corrección.
+       * Convierte un array en un array con esteroides. Básicamente, el array
+       * (llamémoslo A) pasa a tener un atributo "corr", que es un objeto cuyas
+       * claves son las correcciones aplicadas sobre A y cuyos valores son arrays de
+       * longitud idéntica a A. Cada elemento de estos arrays represente el efecto
+       * que ha tenido la corrección sobre el elemento correspondiente de A:
        *
-       * @mixin
+       * - true:  la correción filtró el elemento.
+       * - false: la corrección no filtró el elemento.
+       * - undefined: la corrección no se aplicó sobre ese elemento.
+       * - null: la corrección creó el elemento.
+       *
+       * Un ejemplo esquemático:
+       *
+       *            [ valor1, valor2, valor3]
+       *  {
+       *    corr1:  [ true  ,  true , false ]
+       *    corr2:  [ true  , false ,  null ]
+       *  }
+       *
+       * En este caso, el valor1 lo eliminan ambas correcciones. el valor2 sólo corr1, y
+       * el valor3 lo añade corr2 y no lo elimina corr1.
+       *
        */
-      const Prototype = {
+      const Correctable = (function() {
          /**
-          * Devuelve las correcciones que han eliminado el elemento idx del array.
+          * Métodos y propiedas añadidas al objeto array cuyos valores
+          * son susceptibles de corrección.
           *
-          * @method filters
-          *
-          * @param {int} idx: Índice del elemento que se quiere consultar.
-          * @returns {Array} Array con los nombres
+          * @mixin
           */
-         filters: function(idx) {
-            // TODO: Es más eficiente hacer un bucle for.
-            return Object.keys(this.corr).filter(c => c[idx]);
-         },
-         /**
-          * Devuelve el valor del elemento idx
-          *
-          * @method get
-          *
-          * @param {int} idx: Índice del elemento que se quiere consultar.
-          * @returns {} El valor del elemento o null si alguna correción lo eliminó.
-          */
-         get: function(idx) {
-            return this.filters(idx).length>0?null:this[i];
-         },
-         /**
-          * @typedef {Object} CorrValue
-          * @property {} value   El valor del elemento o null, si alguna corrección lo eliminó.
-          * @property {string[]} filters  Los nombres de las correcciones que eliminan el elemento.
-          */
+         const Prototype = {
+            /**
+             * Devuelve las correcciones que han eliminado el elemento idx del array.
+             *
+             * @method filters
+             *
+             * @param {int} idx: Índice del elemento que se quiere consultar.
+             * @returns {Array} Array con los nombres
+             */
+            filters: function(idx) {
+               return Object.keys(this.corr).filter(c => c[idx]);
+            },
+            /**
+             * Devuelve el valor del elemento idx
+             *
+             * @method get
+             *
+             * @param {int} idx: Índice del elemento que se quiere consultar.
+             * @returns {} El valor del elemento o null si alguna correción lo eliminó.
+             */
+            get: function(idx) {
+               return this.filters(idx).length>0?null:this[i];
+            },
+            /**
+             * @typedef {Object} CorrValue
+             * @property {} value   El valor del elemento o null, si alguna corrección lo eliminó.
+             * @property {string[]} filters  Los nombres de las correcciones que eliminan el elemento.
+             */
 
-         /**
-          * Generador que recorre el array y devuelve información sobre el valor
-          * de los elementos y cuáles son las correcciones que los eliminan.
-          *
-          * @generator
-          * @method walk
-          *
-          * @yields {CorrValue}
-          */
-         walk: function* () {
-            for(let i=0; i<this.length; i++) {
-               const filters = this.filters(i);
-               yield {
-                  value: filters.length>0?null:this[i],
-                  filters: filters
-               }
-            }
-         },
-         /**
-          * Aplica una determinada corrección sobre el array.
-          *
-          * @method apply
-          *
-          * @param {function} func  Función que opera la corrección.
-          *    Al invocarse este método debe haberse usado .bind() para
-          *    que el contexto de esta función sea el objeto Marker
-          *    en el que se encuentra el array.
-          *
-          * @returns {boolean}  Verdadero si se aplicó la correción y
-          *    falso si no se hizo porque ya estaba aplicada.
-          */
-         apply: function(func) {
-            const name = func.prop.name,
-                  add  = func.prop.add;
-            if(this.corr.hasOwnProperty(name)) return false; // Ya aplicado.
-            if(add) {
-               const values = func(this);
-               let num = values.length;
-               this.push.apply(this, values);  // La función devuelve un array con los nuevo valores.
-
-               // Aplicamos las correcciones ya existentes a los nuevos valores.
-               for(const n in this.corr) {
-                  thhis.corr[n].length = this.length;
-                  if(this._sc[n].add) continue;  // Es una corrección que añade valores.
-                  for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func(this.length[i]);
-               }
-
-               this.corr[name] = new Array(this.length);
-               for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = null;
-               if(num>0) this._count = undefined;
-            }
-            else {
-               this.corr[name] = this.map(e => func(e));
-               //this.corr[name] = new Array(this.length);
-               //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i])
-               if(this.corr[name].some(e => e)) this._count = undefined;
-            }
-            return true;
-         },
-         /**
-          * Deshace una determinada corrección hecha previamente.
-          *
-          * @param {string} name: Nombre de la corrección.
-          *
-          * @returns {boolean}  Verdadero si se desaplicó u false si no se hizo
-          *    porque no estaba aplicada.
-          */
-         unapply: function(name) {
-            if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
-            if(this._sc[name].add) {
-               const arr = this.corr[name];
-               let a, b;
-               for(let i=0; i<arr.length; i++) {
-                  if(arr[i] === null) {
-                     if(a === undefined) a=i;
-                  }
-                  else {
-                     if(a !== undefined) b=i;
-                     break;
+            /**
+             * Generador que recorre el array y devuelve información sobre el valor
+             * de los elementos y cuáles son las correcciones que los eliminan.
+             *
+             * @generator
+             * @method walk
+             *
+             * @yields {CorrValue}
+             */
+            walk: function* () {
+               for(let i=0; i<this.length; i++) {
+                  const filters = this.filters(i);
+                  yield {
+                     value: filters.length>0?null:this[i],
+                     filters: filters
                   }
                }
-               if(a === undefined) return true;
-               if(b === undefined) b = arr.length;
-               this._count = undefined;
-               delete this.corr[name];
-               // Eliminamos los valores al array añadidos por esta corrección
-               this.splice(a, b-a);
-               for(const name in this.corr) this.corr[name].splice(a, b-a);
-            }
-            else {
-               if(this.corr[name].some(e => e)) this._count = undefined;
-               delete this.corr[name];
-            }
-            return true;
-         },
-         /**
-          * Limpia el array de todas las correcciones.
-          */
-         clear: function() {
-            // Primer elemento que tiene un null (o sea, no formaba parte del array original.
-            const idx = Math.min.apply(null, Object.keys(this.corr).map(k => this.corr[k].indexOf(null)).filter(e => e >= 0));
-            this.length = idx;
-            for(const name in this.corr) {
-               if(this.corr.hasOwnProperty(name)) delete this.corr[name];
+            },
+            /**
+             * Aplica una determinada corrección sobre el array.
+             *
+             * @method apply
+             *
+             * @param {function} func  Función que opera la corrección.
+             *    Al invocarse este método debe haberse usado .bind() para
+             *    que el contexto de esta función sea el objeto Marker
+             *    en el que se encuentra el array.
+             *
+             * @param {Object} params  Objeto que se pasa a la función
+             *    con valores que ésta usa en su funcionamiento.
+             *
+             * @returns {boolean}  Verdadero si se aplicó la correción y
+             *    falso si no se hizo porque ya estaba aplicada.
+             */
+            apply: function(func, params) {
+               const name = func.prop.name,
+                     add  = func.prop.add;
+               if(this.corr.hasOwnProperty(name)) return false; // Ya aplicado.
+               if(add) {
+                  const values = func(this, params);
+                  let num = values.length;
+                  this.push.apply(this, values);  // La función devuelve un array con los nuevo valores.
+
+                  // Aplicamos las correcciones ya existentes a los nuevos valores.
+                  for(const n in this.corr) {
+                     thhis.corr[n].length = this.length;
+                     if(this._sc[n].add) continue;  // Es una corrección que añade valores.
+                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func(this.length[i]);
+                  }
+
+                  this.corr[name] = new Array(this.length);
+                  for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = null;
+                  if(num>0) this._count = undefined;
+               }
+               else {
+                  this.corr[name] = this.map(e => func(e, params));
+                  //this.corr[name] = new Array(this.length);
+                  //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i], params);
+                  if(this.corr[name].some(e => e)) this._count = undefined;
+               }
+               return true;
+            },
+            /**
+             * Deshace una determinada corrección hecha previamente.
+             *
+             * @param {string} name: Nombre de la corrección.
+             *
+             * @returns {boolean}  Verdadero si se desaplicó u false si no se hizo
+             *    porque no estaba aplicada.
+             */
+            unapply: function(name) {
+               if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
+               if(this._sc[name].add) {
+                  const arr = this.corr[name];
+                  let a, b;
+                  for(let i=0; i<arr.length; i++) {
+                     if(arr[i] === null) {
+                        if(a === undefined) a=i;
+                     }
+                     else {
+                        if(a !== undefined) b=i;
+                        break;
+                     }
+                  }
+                  if(a === undefined) return true;
+                  if(b === undefined) b = arr.length;
+                  this._count = undefined;
+                  delete this.corr[name];
+                  // Eliminamos los valores al array añadidos por esta corrección
+                  this.splice(a, b-a);
+                  for(const name in this.corr) this.corr[name].splice(a, b-a);
+               }
+               else {
+                  if(this.corr[name].some(e => e)) this._count = undefined;
+                  delete this.corr[name];
+               }
+               return true;
+            },
+            /**
+             * Limpia el array de todas las correcciones.
+             */
+            clear: function() {
+               // Primer elemento que tiene un null (o sea, no formaba parte del array original.
+               const idx = Math.min.apply(null, Object.keys(this.corr).map(k => this.corr[k].indexOf(null)).filter(e => e >= 0));
+               this.length = idx;
+               for(const name in this.corr) {
+                  if(this.corr.hasOwnProperty(name)) delete this.corr[name];
+               }
             }
          }
-      }
-      // Total de elementos excluyendo los eliminados por correcciones.
-      Object.defineProperty(Prototype, "total", {
-         get: function() {
-            if(this._count !== undefined) return this._count;
-            this._count = 0;
-            for(let i=0; i<arr.length; i++) if(!this.filters(i)) this._count++;
-            return this._count;
-         },
-         enumerable: false,
-         configurable: false
-      });
-
-      function Correctable(arr, sc) {
-         if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
-         Object.assign(arr, Prototype);  // Evitamos hacer una subclase de array porque es menos eficiente.
-         /**
-          * Parte del sistema de correcciones que se aplica sobre el array.
-          */
-         Object.defineProperty(arr, "_sc", {
-            value: sc,
-            writable: false,
+         // Total de elementos excluyendo los eliminados por correcciones.
+         Object.defineProperty(Prototype, "total", {
+            get: function() {
+               if(this._count !== undefined) return this._count;
+               this._count = 0;
+               for(let i=0; i<arr.length; i++) if(!this.filters(i)) this._count++;
+               return this._count;
+            },
             enumerable: false,
             configurable: false
          });
-         /**
-          * Objeto que almacena las correcciones del array.
-          * Cada clave es el nombre de la corrección y cada valor
-          * un array 
-          */
-         Object.defineProperty(arr, "corr", {
-            value: {},
-            writable: false,
-            enumerable: false,
-            configurable: false,
-         });
-         // Pre-almacena el número de elementos para mejorar el rendimiento.
-         Object.defineProperty(this, "_count", {
-            value: arr.length,
-            writable: true,
-            configurable: false,
-            enumerable: false
-         });
 
-         return arr;
-      }
+         function Correctable(arr, sc) {
+            if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
+            Object.assign(arr, Prototype);  // Evitamos hacer una subclase de array porque es menos eficiente.
+            /**
+             * Parte del sistema de correcciones que se aplica sobre el array.
+             */
+            Object.defineProperty(arr, "_sc", {
+               value: sc,
+               writable: false,
+               enumerable: false,
+               configurable: false
+            });
+            /**
+             * Objeto que almacena las correcciones del array.
+             * Cada clave es el nombre de la corrección y cada valor
+             * un array 
+             */
+            Object.defineProperty(arr, "corr", {
+               value: {},
+               writable: false,
+               enumerable: false,
+               configurable: false,
+            });
+            // Pre-almacena el número de elementos para mejorar el rendimiento.
+            Object.defineProperty(this, "_count", {
+               value: arr.length,
+               writable: true,
+               configurable: false,
+               enumerable: false
+            });
 
-      return Correctable;
-   })();
-
-
-   /**
-    * Implementa un sistema para realizar correcciones sobre los atributos Array
-    * de un objeto. Las correcciones consisten bien en filtrar sus elementos, bien
-    * en añadir nuevos.
-    *
-    * El sistema de correcciones estará constituido por varias correcciones, cada
-    * una de las cuales afectará a un atributo del objeto. Varias correcciones
-    * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
-    * varios atributos.
-    */
-   L.CorrSys = (function() {
-
-      function CorrSys() {
-      }
-
-      /**
-       * Registra una corrección,
-       *
-       * @method register
-       *
-       * @param {string} name        Nombre que identifica a la corrección.
-       * @param {object} obj         Objeto que define la corrección
-       * @param {string} obj.attr    Atributo sobre el que opera la corrección.
-       *    Puede usarse la notación attrA.subattrB si es un atributo de un atributo.
-       * @param {function} obj.func  Función que determina si se hace corrección o no.
-       *    La función debe usar como contexto la Marca a la que pertenece el objeto
-       *    que contiene el array y recibirá como único parámetro o bien el atributo
-       *    array que sufrirá la corrección o bien un elemento individual del
-       *    array. Que reciba uno u otro depende del "add".
-       * @param {boolean} obj.add    true si la corrección añade elementos al array,
-       *    y cualquier otro valor asimilable a false si su intención es filtrar sus
-       *    elementos. En el primer caso, la función deberá devolver un array con
-       *    los elementos añadir, mientras que en el segundo caso deberá devolver
-       *    true (el elemento se filtra) o false (el elemnento no se filtra).
-       */
-      CorrSys.prototype.register = function(name, obj) {
-         const sc = this[obj.attr] = this[obj.attr] || {};
-         if(sc.hasOwnProperty(name)) return false; // La corrección ya se ha registrado.
-         // Apuntamos en una propiedad de la función, el nombre de la corrección y si es aditiva.
-         obj.func.prop = {
-            name: name,
-            add: obj.add
+            return arr;
          }
-         sc[name] = obj.func;
-      }
 
-      /**
-       * Informa de si la propiedad requerida es corregible.
-       *
-       * @param {string} attr  Nombre de la propiedad que se quiere investigar.
-       * @return {boolean}
-       */
-      CorrSys.prototype.isCorrectable = function(attr) {
-         return this.hasOwnProperty(attr);
-      }
+         return Correctable;
+      })();
 
 
       /**
-       * Devuelve las correcciones aplicables a una propiedad.
+       * Implementa un sistema para realizar correcciones sobre los atributos Array
+       * de un objeto. Las correcciones consisten bien en filtrar sus elementos, bien
+       * en añadir nuevos.
        *
-       * @param {string} attr  Nombre de la propiedad.
+       * El sistema de correcciones estará constituido por varias correcciones, cada
+       * una de las cuales afectará a un atributo del objeto. Varias correcciones
+       * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
+       * varios atributos.
        *
-       * @returns {?Object}  Un Objeto en que cada atributo es el nombre
-       * de las corrección y cada valor la función que aplica tal corrección.
+       * Las marcas definidas como mutables definen automáticamente una opción "corr"
+       * que es un objeto de este tipo:
+       *
+       *   const Centro = L.Marker.extend({ 
+       *      options: {mutable: "feature.properties.data"}
+       *   });
+       *
+       * La opción mutable, además de informar de que la marca contendrá datos mutables,
+       * indica cuál es el atributo dónode se guardan esos datos.
+       *
+       * En este objeto es necesario registrar las correcciones que se quieren
+       * realizar sobre los datos de las marcas. Por ejemplo:
+       *
+       *   Centro.prototype.options.corr.register("turno", {
+       *      attr: "oferta",
+       *      func: corrigeOferta,
+       *      add: false
+       *   });
+       *
+       * En este caso se registra para las marcas de tipo "Centro", la corrección "turno",
+       * que actúa sobre el array "oferta" de los datos de la marca. En consecuencia, el
+       * array será la propiedad "feature.properties.data.oferta" de la marca. Al ser "add"
+       * false, la corrección elimina valores de oferta; y se podría haber obviado su
+       * expresión, ya que sólo es obligatoria cuando es true. Por último, la corrección está
+       * definida por la función corrigeOferta cuya definición podría ser esta:
+       *
+       *   function corrigeOferta(value, opts) {
+       *      return opts.inv ^ (value.tur === opts.turno || value.tur === "ambos");
+       *   }
+       *
+       * O sea, recibe como primer argumento uno de los elementos del array y como segundo
+       * argumento unas opciones que dependen de cómo haya configurado la corrección el
+       * usuario interactuando con la interfaz.
+       *
+       * Para aplicar una corrección registrada sobre una marca:
+       *
+       *   marca.apply("turno", opts);
+       *
+       * donde el objeto opts se obtendrá a partir de algún formulario que sobre la corrección
+       * haya rellenado el usuario. Para eliminar la corrección:
+       *
+       *   marca.unapply("turno");
+       *
+       * Otro tipo de correcciones son las que añaden valores:
+       *
+       *   Centro.prototype.options.corr.register("vt", {
+       *      attr: "adjudicaciones",
+       *      func: agregaVt,
+       *      add: true
+       *   });
+       *
+       *   function agregaVt(arr) {
+       *       const res = [];
+       *       // Se obtienen las vacantes telefónicas que se han dado al centro
+       *       // y que se encontrarán entre los datos de la marca (accesible con this).
+       *       return res;
+       *   }
+       *
        */
-      CorrSys.prototype.getCorrections = function(attr) {
-         return this[attr] || null;
-      }
+      const CorrSys = (function() {
+
+         function CorrSys() {}
+
+         /**
+          * Registra una corrección,
+          *
+          * @method register
+          *
+          * @param {string} name        Nombre que identifica a la corrección.
+          * @param {object} obj         Objeto que define la corrección
+          * @param {string} obj.attr    Atributo sobre el que opera la corrección.
+          *    Puede usarse la notación attrA.subattrB si es un atributo de un atributo.
+          * @param {function} obj.func  Función que determina si se hace corrección o no.
+          *    La función debe usar como contexto la Marca a la que pertenece el objeto
+          *    que contiene el array y recibirá dos parámetros: el primero será o bien
+          *    el atributo array que sufrirá la corrección o bien un elemento
+          *    individual del array (depende de "add"); y el segundo ub objeto con valores
+          *    necesarios para que se pueda ejecutar la función.
+          * @param {boolean} obj.add    true si la corrección añade elementos al array,
+          *    y cualquier otro valor asimilable a false si su intención es filtrar sus
+          *    elementos. En el primer caso, la función deberá devolver un array con
+          *    los elementos añadir, mientras que en el segundo caso deberá devolver
+          *    true (el elemento se filtra) o false (el elemnento no se filtra).
+          */
+         CorrSys.prototype.register = function(name, obj) {
+            const sc = this[obj.attr] = this[obj.attr] || {};
+            if(sc.hasOwnProperty(name)) return false; // La corrección ya se ha registrado.
+            // Apuntamos en una propiedad de la función, el nombre de la corrección y si es aditiva.
+            obj.func.prop = {
+               name: name,
+               add: obj.add
+            }
+            sc[name] = obj.func;
+         }
+
+         /**
+          * Informa de si la propiedad requerida es corregible.
+          *
+          * @param {string} attr  Nombre de la propiedad que se quiere investigar.
+          * @return {boolean}
+          */
+         CorrSys.prototype.isCorrectable = function(attr) {
+            return this.hasOwnProperty(attr);
+         }
 
 
-      /**
-       * Devuelve las propiedades corregibles.
-       *
-       * @returns {string[]}
-       */
-      CorrSys.prototype.list = function() {
-         return Object.keys(this);
-      } 
+         /**
+          * Devuelve las correcciones aplicables a una propiedad.
+          *
+          * @param {string} attr  Nombre de la propiedad.
+          *
+          * @returns {?Object}  Un objeto en que cada atributo es el nombre
+          * de las corrección y cada valor la función que aplica tal corrección.
+          */
+         CorrSys.prototype.getCorrections = function(attr) {
+            return this[attr] || null;
+         }
+
+
+         /**
+          * Devuelve las propiedades corregibles.
+          *
+          * @returns {string[]}
+          */
+         CorrSys.prototype.list = function() {
+            return Object.keys(this);
+         } 
+
+         /**
+          * Prepara un objeto convirtiendo los arrays en Correctables.
+          *
+          * @param {Object} El objeto que sufrirá el cambio.
+          */
+         CorrSys.prototype.prepare = function(obj) {
+            for(let attr of this.list()) {
+               let o, name;
+               const idx = attr.lastIndexOf(".");
+
+               if(index === -1) {
+                  o = obj;
+                  name = attr;
+               }
+               else {
+                  o = getProperty(obj, attr.substring(0, idx));
+                  if(o === undefined) {
+                     console.error("El objeto carece de la propiedad " + attr.substring(0, idx));
+                     continue
+                  }
+                  name = attr.substring(idx+1);
+               }
+               if(!(o[name] instanceof Array)) {
+                  console.error("La propiedad no es un Array");
+                  continue
+               }
+               o[name] = Correctable(o[name], this[attr]);
+            }
+         }
+
+         /**
+          * Devuelve la propiedad que corrige la corrección.
+          *
+          * @param {string} name  Nombre de la corrección
+          *
+          * @returns {string}
+          */
+         CorrSys.prototype.getProp = function(name) {
+            for(const prop in this) {
+               if(this[prop].hasOwnProperty(name)) return prop;
+            }
+         }
+
+         return CorrSys;
+      })();
 
       return CorrSys;
-   })();
-
+   });
 })();

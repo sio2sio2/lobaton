@@ -360,9 +360,10 @@ function cambiarIcono(cluster) {
             }
          }
 
-         // Los datos de los centros admiten correcciones.
+         // Los datos de los centros, que se encontrarán en
+         // feature.properties.data, admiten correcciones.
          const Centro = L.Marker.extend({
-            options: {mutable: true}
+            options: {mutable: "feature.properties.data"}
          });
 
          const layer = L.geoJSON(null, {
