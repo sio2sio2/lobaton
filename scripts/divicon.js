@@ -46,15 +46,78 @@ function load(params) {
 }
 
 
-async function getStyle(estilo, callback) {
+async function getStyle(estilo, num, callback) {
 
    let updater, html, converter, iconstyle;
 
-   // Para el ejemplo basta con eliminar algunos atributos
-   // como las coordenadas del punto.
-   converter = function (attrs, o) {
-      return Object.keys(o).filter(e => attrs.indexOf(e) !== -1).
-         reduce((res, e) => { res[e] = o[e]; return res}, {});
+   switch(num) {
+      case "dos":
+      case "muchos":
+         // Para los centros generados con este script basta con eliminar
+         // algunos atributos como las coordenadas del punto.
+         converter = function (attrs, o) {
+            return Object.keys(o).filter(e => attrs.indexOf(e) !== -1).
+               reduce((res, e) => { res[e] = o[e]; return res}, {});
+         }
+         break;
+      default:
+         // Para los GeoJSON reales, hay que hacer bastante más.
+         converter = function(attrs, o) {
+            const res = {};
+            if(attrs.indexOf("numvac") !== -1) {
+               //TODO: Esto ya dene ser un Correctable
+               //res["numvac"] = o.hasOwnProperty("adj")?o.adj.total:0;
+               res["numvac"] = o.hasOwnProperty("adj")?o.adj.length:0;
+            }
+            if(attrs.indexOf("tipo") !== -1) {
+               if(o.mod.hasOwnProperty("dif")) res["tipo"] = o.mod.dif;
+               else res["tipo"] = "normal";
+            }
+            if(attrs.indexOf("peticion") !== -1) {
+               res["peticion"] = o.hasOwnProperty("peticion")?o.peticion:0;
+            }
+            if(attrs.indexOf("numofer") !== -1) {
+               res["numofer"] = 0;
+               if(o.hasOwnProperty("oferta")) {
+                  //TODO:: Esto ya debe ser un correctable.
+                  /*
+                  for(const ens of o.oferta.walk()) {
+                     if(!ens.value) continue
+                     res["numofer"] += ens.value.mar?3:1;
+                  }
+                  */
+                  for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
+                  res["numofer"] = Math.round(res["numofer"]/3);
+               }
+            }
+            if(attrs.indexOf("bil") !== -1) {
+               //TODO:: Se debe hacer consultando la oferta corregida, no com o.mod.bil
+               if(o.mod.hasOwnProperty("bil")) {
+                  if(o.mod.bil.length>1) res["bil"] = "multi";
+                  else {
+                     switch(o.mod.bil[0]) {
+                        case 10:
+                           res["bil"] = "francés";
+                           break;
+                        case 11:
+                           res["bil"] = "inglés";
+                           break;
+                        case 12:
+                           res["bil"] = "alemán";
+                           break;
+                        default:
+                           console.log(o.mod.bil[0] + ": Idioma desconocido");
+                     }
+                  }
+               }
+               else res["bil"] = null;
+            }
+            if(attrs.indexOf("ofervar") !== -1) {
+               res["ofervar"] = o.mod.hasOwnProperty("cam")?o.mod.cam:0;
+            }
+
+            return res;
+         }
    }
 
    updater = function(o) {
@@ -222,7 +285,7 @@ async function getStyle(estilo, callback) {
          break;
       default: 
          // ¿No hay assert?
-         throw new Error("Estilo desconocido");
+         throw new Error(estilo + ": Estilo desconocido");
    }
    
    function getHtml() {
@@ -331,9 +394,19 @@ function genCentros(vers) {
 }
 
 
-function cambiarIcono(cluster) {
-   getStyle(this.value, function(opts) {
-      const converter = opts.converter;
+function getCentros(json, callback) {
+   load({
+      url: json,
+      callback: function(xhr) {
+         const centros = JSON.parse(xhr.responseText);
+         callback(centros);
+      }
+   });
+}
+
+
+function cambiarIcono(estilo, num, cluster) {
+   getStyle(estilo, num, function(opts) {
       const link = document.getElementById("iconstyle");
       if(opts.iconstyle) {
          link.setAttribute("rel", "stylesheet");
@@ -341,7 +414,6 @@ function cambiarIcono(cluster) {
       }
       else link.setAttribute("rel", "alternate stylesheet");
       
-      delete opts.converter;
       delete opts.iconstyle;
 
       const options = Object.assign(opts, {className: "icon"});
@@ -349,43 +421,64 @@ function cambiarIcono(cluster) {
       const Icon = L.DivIcon.extend({ options: options });
 
       if(cluster.getLayers().length) {
-         cluster.eachLayer(m => m.setIcon(new Icon({params: converter(m.feature.properties.data)})));
+         cluster.eachLayer(m => m.setIcon(new Icon()));
       }
       else {
-         let num;
-         for(const f of document.querySelectorAll("input[type='radio']")) {
-            if(f.checked) { 
-               num = f.value;
-               break;
-            }
-         }
-
          // Los datos de los centros, que se encontrarán en
          // feature.properties.data, admiten correcciones.
          const Centro = L.Marker.extend({
             options: {mutable: "feature.properties.data"}
          });
 
+         cargaCorrecciones(Centro);
+
          const layer = L.geoJSON(null, {
-            pointToLayer: (f, l) => new Centro(l, {
-               icon: new Icon({params: converter(f.properties.data)}),
+            pointToLayer: (f, p) => new Centro(p, {
+               icon: new Icon(),
                title: f.properties.name
-            })
+            }),
+            onEachFeature: function(f, l) {
+               l.on("click", function(e) {
+                  console.log("DEBUG", e.target);
+               });
+            }
          });
 
-         for(const c of genCentros(num)) {
+         function addCentro(c) {
             layer.addData(c);
             cluster.addLayer(layer);
             layer.clearLayers();
+
+            // Ejemplo de corrección: Se eliminan enseñanzas que no sean bilingüe de inglés.
+            Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
+         }
+
+         switch(num) {
+            case "dos":
+            case "muchos":
+               for(const c of genCentros(num)) addCentro(c);
+               break;
+            default:
+               getCentros(num, addCentro);
          }
       }
    });
 }
 
-function cambiarCantidad(layer, e) {
-   layer.clearLayers();
-   cambiarIcono.call(document.querySelector("select"), layer);
+
+// Crea algunas correcciones
+function cargaCorrecciones(Centro) {
+   // Elimina enseñanzas que no son bilingües
+   Centro.register("bilingue", {
+      attr: "oferta",
+      // opts: { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
+      func: function(value, oferta, opts) {
+         if(!opts.bil || opts.bil.length === 0) return false;
+         return opts.bil.indexOf(value.idi) === -1
+      }
+   });
 }
+
 
 function init() {
    var map = L.map('map').setView([37.07, -6.27], 9);
@@ -396,15 +489,25 @@ function init() {
 
    cluster = L.markerClusterGroup({
       showCoverageOnHover: false,
-      // Al llegar a nivel 11 de zoom se ven todas las marcas.
-      disableClusteringAtZoom: 11,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
       spiderfyOnMaxZoom: false
    }).addTo(map);
 
-   cambiarIcono.call(document.querySelector("select"), cluster);
+   const cantidad = document.querySelector("select[name='marca']").value;
+   const estilo = document.querySelector("select[name='estilo']").value;
+   cambiarIcono(estilo, cantidad, cluster);
 
-   document.querySelector("select").addEventListener("change", function(e) { cambiarIcono.call(this, cluster); });
-   document.querySelectorAll("input[type='radio']").forEach(e => e.addEventListener("change", cambiarCantidad.bind(null, cluster)));
+   document.querySelector("select[name='estilo']").addEventListener("change", function(e) {
+      const cantidad = document.querySelector("select[name='marca']").value;
+      cambiarIcono(this.value, cantidad, cluster);
+   });
+
+   document.querySelector("select[name='marca']").addEventListener("change", function(e) {
+      cluster.clearLayers();
+      const estilo = document.querySelector("select[name='estilo']").value;
+      cambiarIcono(estilo, this.value, cluster);
+   });
 }
 
 window.onload = init

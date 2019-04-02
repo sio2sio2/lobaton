@@ -2,12 +2,12 @@
    "use strict";
 
    /**
-    * Permite obtener el valor denla propiedad de una propiedad de forma
+    * Permite obtener el valor de una propiedad de forma
     * que getProperty(x, "a.b") devolvería el valor de x.a.b
     */
    function getProperty(obj, name) {
-      let name = name.split("."),
-          res = obj;
+      let res = obj;
+      name = name.split(".");
 
       while(name.length) {
          res = res[name.shift()];
@@ -51,7 +51,7 @@
          for(const attr in opts) {
             if(banned.indexOf(attr) !== -1) throw new Error(attr + ": opción prohibida");
             defineOption.call(this, attr);
-            if(opts[attr]) this[attr] = opts[attr];
+            if(opts[attr] !== undefined) this[attr] = opts[attr];
          }
          Object.seal(this);
       }
@@ -173,7 +173,6 @@
     *     Los valores cambiantes que se usan para redefinir el icono.
     *
     */
-   const initDivIcon = L.DivIcon.prototype.initialize;
 
    function getElement(e) {
       if(typeof e === "String") {
@@ -205,24 +204,29 @@
    L.DivIcon.extend = function(obj) {
       const Icon = DivIconExtend.call(this, obj);
       const options = Icon.prototype.options;
-      if(options.html && options.updater) options.html = getElement(options.html);
+      if(options.updater && options.html) {
+         if(!options.converter) options.converter = data => Object.assign({}, data);
+         options.html = getElement(options.html);
+         Object.assign(Icon.prototype, IconPrototype);
+      }
       return Icon;
    }
 
-   L.DivIcon.prototype.initialize = function(opts) {
-      const params = opts.params;
-      delete opts.params;
-      initDivIcon.call(this, opts);
-      if(!this.options.updater) return;
-      this.options.params = new Options(params);
-      this.options.params.reset();
-      // container estará indefinido si se proporcionó html en el prototipo.
-      const html = (this.options.html.container !== undefined)?this.options.html.cloneNode(true):getElement(this.options.html);
-      html.container = this.options.html.container;
-      this.options.updater.call(html, this.options.params);
-      this.options.html = html.container?html.innerHTML:html.outerHTML;
-   }
+   const createDivIcon = L.DivIcon.prototype.createIcon;
 
+   const IconPrototype = {
+      createIcon: function() {
+         this.options.params = new Options(this.options.converter(this._marker.getData()));
+         this.options.params.reset();
+         if(!this.options.hasOwnProperty("html")) {
+            const html = this.options.html.cloneNode(true);
+            html.container = this.options.html.container;
+            this.options.updater.call(html, this.options.params);
+            this.options.html = html.container?html.innerHTML:html.outerHTML;
+         }
+         return createDivIcon.call(this, arguments);
+      }
+   }
 
    const MarkerExtend = L.Marker.extend;
 
@@ -239,6 +243,8 @@
             writable: false
          }); 
          Marker.remove = removeMarker;
+         Marker.invoke = invokeMarker;
+         Marker.register = registerCorrMarker;
       }
       return Marker;
    }
@@ -259,13 +265,37 @@
       return true;
    }
 
+   /**
+    * Ejecuta un método para todas las marcas almacenadas en store.
+    *
+    * @param {string} method  Nombre del métodos
+    * @param {...*} param Parámetro que se pasa al método
+    */
+   function invokeMarker(method) {
+      for(const marker of this.store) {
+         const args = Array.prototype.slice.call(arguments, 1);
+         this.prototype[method].apply(marker, args);
+      }
+   }
+
+   /**
+    * Registra una corrección en el sistema de correcciones de la marca.
+    *
+    * @seealso {@link CorrSys.prototype.register} para saber cuáles son sus parámetros.
+    */
+   function registerCorrMarker() {
+      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments);
+   }
+
+
    const MarkerInitialize = L.Marker.prototype.initialize;
+   const MarkerSetIcon = L.Marker.prototype.setIcon;
 
    /**
     * Métodos modificados o adicionales que tendrán los derivados de Marker que al
     * crearse con extend incluyan la opción mutable=true.
     */
-   var prototypeExtra = {
+   const prototypeExtra = {
       refresh: function() {
          const icon = this.options.icon;
          if(!icon.options.params || icon.options.params.updated) return false;
@@ -276,9 +306,12 @@
       initialize: function() {
          MarkerInitialize.apply(this, arguments);
          this.constructor.store.push(this);
+         if(this.options.icon) this.options.icon._marker = this;
       },
-      //TODO: ¿Cuándo narices aplicamos este método? Debe aplicarse cuando
-      //  ya se hayan asociado los datos a la marca.
+      setIcon: function(icon) {
+         icon._marker = this;
+         MarkerSetIcon.apply(this, arguments);
+      },
       prepare: function() {  // Convierte Arrays en Correctables.
          const data = getProperty(this, this.options.mutable);
          if(data === undefined) return false;  // La marca no posee los datos.
@@ -290,16 +323,26 @@
       },
       apply: function(name, params) {  // Aplica una corrección.
          const property = this.options.corr.getProp(name),
-               sc       = this.options[property],
-               arr      = getProperty(this.getData(), property);
+               sc       = this.options.corr[property],
+               arr      = getProperty(this.getData(), property),
+               func     = sc[name].bind(this);
 
-         arr.apply(sc[name].bind(this), params);
+         func.prop = Object.assign({}, sc[name].prop);
+
+         // Conversión en Correctable.
+         if(!(arr instanceof CorrSys.Correctable)) CorrSys.prototype.prepare(this.getData(), property);
+
+         arr.apply(func, params);
+
+         // TODO: Hay que modificar los parámetros del icono.
       },
       unapply: function(name) {  // Elimina la corrección.
          const property = this.options.corr.getProp(name),
                arr      = getProperty(this.getData(), property);
 
          arr.unapply(name);
+
+         // TODO: Hay que modificar los parámetros del icono.
       }
    }
 
@@ -321,10 +364,10 @@
        *
        * Un ejemplo esquemático:
        *
-       *            [ valor1, valor2, valor3]
+       *            [ valor1   , valor2    , valor3]
        *  {
-       *    corr1:  [ true  ,  true , false ]
-       *    corr2:  [ true  , false ,  null ]
+       *    corr1:  [ true     , true      , false ]
+       *    corr2:  [ undefined, undefined ,  null ]
        *  }
        *
        * En este caso, el valor1 lo eliminan ambas correcciones. el valor2 sólo corr1, y
@@ -348,7 +391,7 @@
              * @returns {Array} Array con los nombres
              */
             filters: function(idx) {
-               return Object.keys(this.corr).filter(c => c[idx]);
+               return Object.keys(this.corr).filter(n => this.corr[n][idx]);
             },
             /**
              * Devuelve el valor del elemento idx
@@ -406,9 +449,9 @@
                      add  = func.prop.add;
                if(this.corr.hasOwnProperty(name)) return false; // Ya aplicado.
                if(add) {
-                  const values = func(this, params);
+                  const values = func(null, this, params);
                   let num = values.length;
-                  this.push.apply(this, values);  // La función devuelve un array con los nuevo valores.
+                  this.push.apply(this, values);
 
                   // Aplicamos las correcciones ya existentes a los nuevos valores.
                   for(const n in this.corr) {
@@ -422,7 +465,7 @@
                   if(num>0) this._count = undefined;
                }
                else {
-                  this.corr[name] = this.map(e => func(e, params));
+                  this.corr[name] = this.map(e => func(e, this, params));
                   //this.corr[name] = new Array(this.length);
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i], params);
                   if(this.corr[name].some(e => e)) this._count = undefined;
@@ -477,17 +520,20 @@
                }
             }
          }
+
          // Total de elementos excluyendo los eliminados por correcciones.
-         Object.defineProperty(Prototype, "total", {
+         const total = {
             get: function() {
                if(this._count !== undefined) return this._count;
                this._count = 0;
-               for(let i=0; i<arr.length; i++) if(!this.filters(i)) this._count++;
+               for(let i=0; i<this.length; i++) {
+                  if(this.filters(i).length === 0) this._count++;
+               }
                return this._count;
             },
             enumerable: false,
             configurable: false
-         });
+         }
 
          function Correctable(arr, sc) {
             if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
@@ -513,12 +559,13 @@
                configurable: false,
             });
             // Pre-almacena el número de elementos para mejorar el rendimiento.
-            Object.defineProperty(this, "_count", {
+            Object.defineProperty(arr, "_count", {
                value: arr.length,
                writable: true,
                configurable: false,
                enumerable: false
             });
+            Object.defineProperty(arr, "total", total);
 
             return arr;
          }
@@ -563,13 +610,14 @@
        * expresión, ya que sólo es obligatoria cuando es true. Por último, la corrección está
        * definida por la función corrigeOferta cuya definición podría ser esta:
        *
-       *   function corrigeOferta(value, opts) {
+       *   function corrigeOferta(value, oferta, opts) {
        *      return opts.inv ^ (value.tur === opts.turno || value.tur === "ambos");
        *   }
        *
-       * O sea, recibe como primer argumento uno de los elementos del array y como segundo
-       * argumento unas opciones que dependen de cómo haya configurado la corrección el
-       * usuario interactuando con la interfaz.
+       * O sea, recibe como primer argumento uno de los elementos del array, como segundo
+       * argumento el array mismo y como tercero las opciones que dependen de
+       * cómo haya configurado la corrección el usuario interactuando con la
+       * interfaz.
        *
        * Para aplicar una corrección registrada sobre una marca:
        *
@@ -588,9 +636,9 @@
        *      add: true
        *   });
        *
-       *   function agregaVt(arr) {
+       *   function agregaVt(value, adjudicaciones, opts) {
        *       const res = [];
-       *       // Se obtienen las vacantes telefónicas que se han dado al centro
+       *       // Se añaden a res las vacantes telefónicas que se han dado al centro
        *       // y que se encontrarán entre los datos de la marca (accesible con this).
        *       return res;
        *   }
@@ -610,11 +658,10 @@
           * @param {string} obj.attr    Atributo sobre el que opera la corrección.
           *    Puede usarse la notación attrA.subattrB si es un atributo de un atributo.
           * @param {function} obj.func  Función que determina si se hace corrección o no.
-          *    La función debe usar como contexto la Marca a la que pertenece el objeto
-          *    que contiene el array y recibirá dos parámetros: el primero será o bien
-          *    el atributo array que sufrirá la corrección o bien un elemento
-          *    individual del array (depende de "add"); y el segundo ub objeto con valores
-          *    necesarios para que se pueda ejecutar la función.
+          *    La función usa como contexto la marca a la que pertenece el objeto
+          *    que contiene el array y recibirá tres parámetros: el primero será el
+          *    un elemento individual del array, el segundo el array mismo y el tercero
+          *    un objeto con valores necesarios para que se pueda ejecutar la función.
           * @param {boolean} obj.add    true si la corrección añade elementos al array,
           *    y cualquier otro valor asimilable a false si su intención es filtrar sus
           *    elementos. En el primer caso, la función deberá devolver un array con
@@ -668,14 +715,18 @@
          /**
           * Prepara un objeto convirtiendo los arrays en Correctables.
           *
-          * @param {Object} El objeto que sufrirá el cambio.
+          * @param {Object} obj  El objeto que sufrirá el cambio.
+          * @param {string} prop Un array concreto del objeto que se quiere convertir
+          *    en Correctable. Si no se especifica, se buscan todos para los
+          *    que se hayan definido al menos una corrección.
           */
-         CorrSys.prototype.prepare = function(obj) {
-            for(let attr of this.list()) {
+         CorrSys.prototype.prepare = function(obj, prop) {
+            const attrs = (prop === undefined)?this.list():[prop];
+            for(let attr of attrs) {
                let o, name;
                const idx = attr.lastIndexOf(".");
 
-               if(index === -1) {
+               if(idx === -1) {
                   o = obj;
                   name = attr;
                }
@@ -691,12 +742,12 @@
                   console.error("La propiedad no es un Array");
                   continue
                }
-               o[name] = Correctable(o[name], this[attr]);
+               o[name] = new Correctable(o[name], this[attr]);
             }
          }
 
          /**
-          * Devuelve la propiedad que corrige la corrección.
+          * Devuelve la propiedad de los datos que corrige la corrección.
           *
           * @param {string} name  Nombre de la corrección
           *
@@ -711,6 +762,9 @@
          return CorrSys;
       })();
 
+      CorrSys.Correctable = Correctable;
+
       return CorrSys;
-   });
+   })();
+
 })();
