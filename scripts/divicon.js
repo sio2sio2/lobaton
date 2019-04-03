@@ -53,65 +53,63 @@ async function getStyle(estilo, num, callback) {
       case "muchos":
          // Para los centros generados con este script basta con eliminar
          // algunos atributos como las coordenadas del punto.
-         converter = function (attrs, o) {
-            return Object.keys(o).filter(e => attrs.indexOf(e) !== -1).
-               reduce((res, e) => { res[e] = o[e]; return res}, {});
+         converter = function (o) {
+            return Object.keys(o).reduce((res, e) => { res[e] = o[e]; return res}, {});
          }
          break;
       default:
-         // Para los GeoJSON reales, hay que hacer bastante más.
-         converter = function(attrs, o) {
+         // Conversor para los GeoJSON que se usarán en el programa final
+         // IMPORTANTE: Debemos asegurarnos de que las propiedades que admiten
+         // correcciones se tratan como arrays normales o como arrays corregibles,
+         // ya que en el momento de la invocación de esta función la propiedad
+         // puede aún ser un array normal.
+         // Lo ideal es que la API del array corregible fuera la misma que la del normal
+         // pero eso no parece que se pueda hacer con Javascript.
+         converter = function(o) {
             const res = {};
-            if(attrs.indexOf("numvac") !== -1) {
-               res["numvac"] = 0;
-               if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
-            }
-            if(attrs.indexOf("tipo") !== -1 && o.hasOwnProperty("mod")) {
-               if(o.mod.hasOwnProperty("dif")) res["tipo"] = o.mod.dif;
-               else res["tipo"] = "normal";
-            }
-            if(attrs.indexOf("peticion") !== -1 && o.hasOwnProperty("peticion")) {
-               res["peticion"] = o.peticion;
-            }
-            if(attrs.indexOf("numofer") !== -1) {
-               res["numofer"] = 0;
-               if(o.hasOwnProperty("oferta")) {
-                  if(o.oferta.walk !== undefined) {
-                     for(const ens of o.oferta.walk()) {
-                        if(!ens.value) continue
-                        res["numofer"] += ens.value.mar?3:1;
-                     }
-                  }
-                  else {
-                     for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
-                     res["numofer"] = Math.round(res["numofer"]/3);
-                  }
-               }
-            }
-            if(attrs.indexOf("bil") !== -1 && o.hasOwnProperty("mod")) {
-               //TODO:: Se debe hacer consultando la oferta corregida, no com o.mod.bil
-               if(o.mod.hasOwnProperty("bil")) {
-                  if(o.mod.bil.length>1) res["bil"] = "multi";
-                  else {
-                     switch(o.mod.bil[0]) {
-                        case 10:
-                           res["bil"] = "francés";
-                           break;
-                        case 11:
-                           res["bil"] = "inglés";
-                           break;
-                        case 12:
-                           res["bil"] = "alemán";
-                           break;
-                        default:
-                           console.log(o.mod.bil[0] + ": Idioma desconocido");
-                     }
-                  }
-               }
-               else res["bil"] = null;
-            }
-            if(attrs.indexOf("ofervar") !== -1 && o.hasOwnProperty("mod")) {
+
+            if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
+
+            if(o.hasOwnProperty("mod")) {
+               res["tipo"] = o.mod.hasOwnProperty("dif")?o.mod.dif:"normal";
                res["ofervar"] = o.mod.hasOwnProperty("cam")?o.mod.cam:0;
+            }
+
+            if(o.hasOwnProperty("peticion")) res["peticion"] = o.peticion;
+
+            if(o.hasOwnProperty("oferta")) {
+               res["numofer"] = 0;
+               if(o.oferta.walk !== undefined) {
+                  for(const ens of o.oferta.walk()) {
+                     if(!ens.value) continue
+                     res["numofer"] += ens.value.mar?3:1;
+                  }
+               }
+               else {
+                  for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
+               }
+               res["numofer"] = Math.round(res["numofer"]/3);
+
+               let idiomas;
+
+               // Array con los idiomas de cada enseñanza
+               if(o.oferta.walk) idiomas = Array.from(o.oferta.walk()).map(ens => ens.value && ens.value.idi)
+               else idiomas = o.oferta.map(ens => ens.idi)
+
+               // Eliminamos valores nulos y valores repetidos.
+               idiomas = idiomas.filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
+
+               switch(idiomas.length) {
+                  case 0:
+                     res["bil"] = null;
+                     break;
+                  case 1:
+                     res["bil"] = idiomas[0];
+                     break;
+                  default:
+                     res["bil"] = "multi";
+               }
+
             }
 
             return res;
@@ -127,25 +125,23 @@ async function getStyle(estilo, num, callback) {
 
    const options = {
       updater: updater,
+      converter: converter,
       iconstyle: iconstyle,
    }
 
    switch(estilo) {
       case "css1":
          options.iconstyle = "dist/images/icon1.css";
-         options.converter = converter.bind(null, ["numvac", "tipo"]);
          options.iconSize = null;
          options.iconAnchor = [12.5, 34];
          break;
       case "css2":
          options.iconstyle = "dist/images/icon2.css";
-         options.converter = converter.bind(null, ["numvac", "tipo"]);
          options.iconSize = [25, 34];
          options.iconAnchor = [12.5, 34];
          break;
       case "solicitud":
          options.iconSize = [40, 40];
-         options.converter = converter.bind(null, ["peticion"]);
          options.iconAnchor = [19.556, 35.69];
          options.updater = function(o) {
             var text = this.querySelector("text");
@@ -160,8 +156,7 @@ async function getStyle(estilo, num, callback) {
       case "boliche":
          options.iconSize = [40, 40];
          options.iconAnchor = [19.556, 35.69];
-         options.converter = converter.bind(null, ["numvac", "tipo", "numofer", "bil", "ofervar"]);
-         options.fast = false;
+         options.fast = true;
          options.updater = (function() {
 
             var paletaOferta = new Array(5).fill(null);
@@ -440,8 +435,9 @@ function cambiarIcono(estilo, num, cluster) {
                l.on("click", function(e) {
                   const icon = e.target.options.icon;
                   console.log("DEBUG - ident", e.target.feature.properties.name);
-                  console.log("DEBUG - oferta", e.target.getData().oferta);
-                  console.log("DEBUG - params", icon.options.converter(e.target.getData()));
+                  console.log("DEBUG - data", e.target.getData());
+                  //console.log("DEBUG - params", icon.options.converter(e.target.getData()));
+                  console.log("DEBUG - converter", icon.options.converter(e.target.getData()));
                });
             }
          });
@@ -454,9 +450,10 @@ function cambiarIcono(estilo, num, cluster) {
 
          function agregaCentrosDelTiron(c) {
             agregaCentro(c) // También vale para agregar muchos centros.
-            // Ejemplo de corrección: Se eliminan enseñanzas que no sean bilingüe de inglés.
+            // Aplicación de las correcciones.
             Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
             Centro.invoke("apply", "vt+", {});
+            Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
          }
 
          switch(num) {
@@ -477,7 +474,7 @@ function cargaCorrecciones(Centro) {
    // Elimina enseñanzas que no son bilingües
    Centro.register("bilingue", {
       attr: "oferta",
-      // opts: { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
+      // opts= { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
       func: function(value, oferta, opts) {
          if(!opts.bil || opts.bil.length === 0) return false;
          return opts.bil.indexOf(value.idi) === -1
@@ -488,19 +485,30 @@ function cargaCorrecciones(Centro) {
    Centro.register("vt+", {
       attr: "adj",
       add: true,
-      func: function(value, oferta, opts) {
-         const data = this.getData();
-         return Object.keys(data.pla).filter(pue => data.pla[pue].vt > 0).map(function(pue) {
-            return {
-               col: J,
+      func: function(value, adj, opts) {
+         const data = this.getData(),
+               res = [];
+         for(const puesto in data.pla) {
+            for(let i=0; i<data.pla[puesto].vt; i++) res.push({
+               col: "J",
                esc: [0, 0, 0],
-               pue: pue,
+               pue: puesto,
                pet: null,
                // TODO:: ¿Qué narices es esto?
                per: false,
                ubi: false
-            }
-         });
+            });
+         }
+         return res;
+      }
+   });
+
+   // Elimina las adjudicaciones que no sean de los puestos suministrados.
+   Centro.register("adjpue", {
+      attr: "adj",
+      // opts= {puesto: ["00590059", "11590107"], inv: true}
+      func: function(value, adj, opts) {
+         return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
       }
    });
 }

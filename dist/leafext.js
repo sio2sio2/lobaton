@@ -149,12 +149,11 @@
     *       return this;
     *    }
     *
-    *    // attrs son los parámetros que sirven para dibujar el icono.
     *    // o es el objeto con los datos en crudo a partir de los cuales
-    *    // se obtienen los valores de los parámetros.
-    *    function converter(attrs, o) {
-    *       return Object.keys(o).filter(e => attrs.indexOf(e) !== -1).
-    *          reduce((res, e) => { res[e] = o[e]; return res}, {});
+    *    // se obtienen los valores de los parámetros. En este ejemplo,
+    *    // el conversor consiste en no no hacer conversión.
+    *    function converter(o) {
+    *       return Object.assign({}, o); 
     *    }
     *
     *    const Icon = L.divIcon.extend({
@@ -179,9 +178,7 @@
     *
     * + converter:
     *     Función que a partir de los datos en crudo, genera los valores de
-    *     las propiedades que permiten definir el icono. En el ejemplo, attrs
-    *     debería ser ["numvac", "tipo"] y debería devolver un objeto de la
-    *     forma: { numvac: 5, tipo: "normal"}.
+    *     las propiedades que permiten definir el icono.
     *
     * + fast:
     *     true implica que converter se definió de forma que si el objeto "o" que
@@ -361,17 +358,21 @@
       apply: function(name, params) {  // Aplica una corrección.
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
-               arr      = getProperty(this.getData(), property),
                func     = sc[name].bind(this);
+
+         let   arr      = getProperty(this.getData(), property);
+
 
          func.prop = Object.assign({}, sc[name].prop);
 
-         // Conversión en Correctable.
-         if(!(arr instanceof CorrSys.Correctable)) CorrSys.prototype.prepare(this.getData(), property);
+         // La propiedad aún es un array normal.
+         if(arr === undefined || arr.corr === undefined) {
+            CorrSys.prototype.prepare(this.getData(), property);
+            arr = getProperty(this.getData(), property);
+         }
 
          arr.apply(func, params);
 
-         // TODO: Hay que modificar los parámetros del icono.
          // TODO: Cambiar los GeoJSON para que siempre haya "adj" y "oferta".
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
@@ -504,7 +505,7 @@
                   }
 
                   this.corr[name] = new Array(this.length);
-                  for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = null;
+                  for(let i=this.length-num; i<this.length; i++) this.corr[name][i] = null;
                   if(num>0) this._count = undefined;
                }
                else {
@@ -781,6 +782,8 @@
                   }
                   name = attr.substring(idx+1);
                }
+               // Consideraremos que si falta el atributo, es un array vacío)
+               if(o[name] === undefined) o[name] = [];
                if(!(o[name] instanceof Array)) {
                   console.error("La propiedad no es un Array");
                   continue
