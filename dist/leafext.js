@@ -83,6 +83,21 @@
       }
 
       /**
+       * Cambia de una tacada varios valores.
+       */
+      Object.defineProperty(Options.prototype, "change", {
+         value: function(obj) {
+            for(const name in obj) {
+               if(Object.keys(this).indexOf(name) === -1) continue;
+               this[name] = obj[name];
+            }
+         },
+         writable: false,
+         configurable: false,
+         enumerable: false
+      });
+
+      /**
        * Informa de si se han modificado las opciones. Cuando una opción cambia,
        * se modifica automáticamente el valor de esta propiedad a verdadera.
        */
@@ -134,9 +149,19 @@
     *       return this;
     *    }
     *
+    *    // attrs son los parámetros que sirven para dibujar el icono.
+    *    // o es el objeto con los datos en crudo a partir de los cuales
+    *    // se obtienen los valores de los parámetros.
+    *    function converter(attrs, o) {
+    *       return Object.keys(o).filter(e => attrs.indexOf(e) !== -1).
+    *          reduce((res, e) => { res[e] = o[e]; return res}, {});
+    *    }
+    *
     *    const Icon = L.divIcon.extend({
     *       options: {
     *          updater: updater,
+    *          converter: converter,
+    *          fast: false,
     *          className: "icon",
     *          iconSize: [25, 34],
     *          iconAnchor: [12.5, 34],
@@ -144,8 +169,7 @@
     *       }
     *    });
     *
-    *    const params = {numvac: 6, tipo: "normal"};
-    *    const icon = new Icon({params: params});
+    *    const icon = new Icon();
     *
     * Los parámetros que se pasan son:
     *
@@ -153,9 +177,21 @@
     *     Función que se encarga de modificar el elemento HTML que define
     *     el icono según los valores de sus propiedades (numvac y tipo en el ejemplo).
     *
-    * + iconSize:
-    *     Si definimos el tamaño exacto a través de CSS (lo cual no es recomentable),
-    *     debe ser null.
+    * + converter:
+    *     Función que a partir de los datos en crudo, genera los valores de
+    *     las propiedades que permiten definir el icono. En el ejemplo, attrs
+    *     debería ser ["numvac", "tipo"] y debería devolver un objeto de la
+    *     forma: { numvac: 5, tipo: "normal"}.
+    *
+    * + fast:
+    *     true implica que converter se definió de forma que si el objeto "o" que
+    *     se le pasa no contiene todos lo datos, sólo devuelve valor para
+    *     aquellas propiedades del icono que pueden calcularse. Por ejemplo,
+    *     si en el objeto o hay información sobre el número de adjucudicaciones,
+    *     pero no sobre el tipo, se deulverá algo de la forma: { numvac: 5 }.
+    *     Esto es útil al aplicar una corrección que sólo modifica una parte
+    *     de los datos, ya que se le pasará a converter exclusivamente esa parte
+    *     y la conversión se ahorrará cálculos.
     *
     * + html:
     *     El elemento HTML que se desea usar como icono. Se acepta:
@@ -169,8 +205,9 @@
     *     - Un Document (como lo que devuelve xhr.responseXML) o
     *       DocumentFragment (que es el contenido de un elemento "template").
     *
-    * + params:
-    *     Los valores cambiantes que se usan para redefinir el icono.
+    * + iconSize:
+    *     Si definimos el tamaño exacto a través de CSS (lo cual no es recomentable),
+    *     debe ser null.
     *
     */
 
@@ -335,6 +372,10 @@
          arr.apply(func, params);
 
          // TODO: Hay que modificar los parámetros del icono.
+         // TODO: Cambiar los GeoJSON para que siempre haya "adj" y "oferta".
+         const icon = this.options.icon;
+         const data = icon.options.fast?{[property]: arr}:this.getData();
+         if(icon.options.params) icon.options.params.change(icon.options.converter(data));
       },
       unapply: function(name) {  // Elimina la corrección.
          const property = this.options.corr.getProp(name),
@@ -342,7 +383,9 @@
 
          arr.unapply(name);
 
-         // TODO: Hay que modificar los parámetros del icono.
+         const icon = this.options.icon;
+         const data = icon.options.fast?{[property]: arr}:this.getData();
+         if(icon.options.params) icon.options.params.change(icon.options.converter(data));
       }
    }
 

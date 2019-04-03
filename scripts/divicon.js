@@ -1,5 +1,3 @@
-var l; //Para poder manipular interactivamente la capa desde la consola.
-
 // Peticiones AJAX
 function load(params) {
    const xhr = new XMLHttpRequest();
@@ -65,32 +63,32 @@ async function getStyle(estilo, num, callback) {
          converter = function(attrs, o) {
             const res = {};
             if(attrs.indexOf("numvac") !== -1) {
-               //TODO: Esto ya dene ser un Correctable
-               //res["numvac"] = o.hasOwnProperty("adj")?o.adj.total:0;
-               res["numvac"] = o.hasOwnProperty("adj")?o.adj.length:0;
+               res["numvac"] = 0;
+               if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
             }
-            if(attrs.indexOf("tipo") !== -1) {
+            if(attrs.indexOf("tipo") !== -1 && o.hasOwnProperty("mod")) {
                if(o.mod.hasOwnProperty("dif")) res["tipo"] = o.mod.dif;
                else res["tipo"] = "normal";
             }
-            if(attrs.indexOf("peticion") !== -1) {
-               res["peticion"] = o.hasOwnProperty("peticion")?o.peticion:0;
+            if(attrs.indexOf("peticion") !== -1 && o.hasOwnProperty("peticion")) {
+               res["peticion"] = o.peticion;
             }
             if(attrs.indexOf("numofer") !== -1) {
                res["numofer"] = 0;
                if(o.hasOwnProperty("oferta")) {
-                  //TODO:: Esto ya debe ser un correctable.
-                  /*
-                  for(const ens of o.oferta.walk()) {
-                     if(!ens.value) continue
-                     res["numofer"] += ens.value.mar?3:1;
+                  if(o.oferta.walk !== undefined) {
+                     for(const ens of o.oferta.walk()) {
+                        if(!ens.value) continue
+                        res["numofer"] += ens.value.mar?3:1;
+                     }
                   }
-                  */
-                  for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
-                  res["numofer"] = Math.round(res["numofer"]/3);
+                  else {
+                     for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
+                     res["numofer"] = Math.round(res["numofer"]/3);
+                  }
                }
             }
-            if(attrs.indexOf("bil") !== -1) {
+            if(attrs.indexOf("bil") !== -1 && o.hasOwnProperty("mod")) {
                //TODO:: Se debe hacer consultando la oferta corregida, no com o.mod.bil
                if(o.mod.hasOwnProperty("bil")) {
                   if(o.mod.bil.length>1) res["bil"] = "multi";
@@ -112,7 +110,7 @@ async function getStyle(estilo, num, callback) {
                }
                else res["bil"] = null;
             }
-            if(attrs.indexOf("ofervar") !== -1) {
+            if(attrs.indexOf("ofervar") !== -1 && o.hasOwnProperty("mod")) {
                res["ofervar"] = o.mod.hasOwnProperty("cam")?o.mod.cam:0;
             }
 
@@ -163,6 +161,7 @@ async function getStyle(estilo, num, callback) {
          options.iconSize = [40, 40];
          options.iconAnchor = [19.556, 35.69];
          options.converter = converter.bind(null, ["numvac", "tipo", "numofer", "bil", "ofervar"]);
+         options.fast = false;
          options.updater = (function() {
 
             var paletaOferta = new Array(5).fill(null);
@@ -439,27 +438,34 @@ function cambiarIcono(estilo, num, cluster) {
             }),
             onEachFeature: function(f, l) {
                l.on("click", function(e) {
-                  console.log("DEBUG", e.target);
+                  const icon = e.target.options.icon;
+                  console.log("DEBUG - ident", e.target.feature.properties.name);
+                  console.log("DEBUG - oferta", e.target.getData().oferta);
+                  console.log("DEBUG - params", icon.options.converter(e.target.getData()));
                });
             }
          });
 
-         function addCentro(c) {
+         function agregaCentro(c) {
             layer.addData(c);
             cluster.addLayer(layer);
             layer.clearLayers();
+         }
 
+         function agregaCentrosDelTiron(c) {
+            agregaCentro(c) // También vale para agregar muchos centros.
             // Ejemplo de corrección: Se eliminan enseñanzas que no sean bilingüe de inglés.
             Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
+            Centro.invoke("apply", "vt+", {});
          }
 
          switch(num) {
             case "dos":
             case "muchos":
-               for(const c of genCentros(num)) addCentro(c);
+               for(const c of genCentros(num)) agregaCentro(c);
                break;
             default:
-               getCentros(num, addCentro);
+               getCentros(num, agregaCentrosDelTiron);
          }
       }
    });
@@ -475,6 +481,26 @@ function cargaCorrecciones(Centro) {
       func: function(value, oferta, opts) {
          if(!opts.bil || opts.bil.length === 0) return false;
          return opts.bil.indexOf(value.idi) === -1
+      }
+   });
+
+   // Añade las vacantes telefónicas a las adjudicaciones.
+   Centro.register("vt+", {
+      attr: "adj",
+      add: true,
+      func: function(value, oferta, opts) {
+         const data = this.getData();
+         return Object.keys(data.pla).filter(pue => data.pla[pue].vt > 0).map(function(pue) {
+            return {
+               col: J,
+               esc: [0, 0, 0],
+               pue: pue,
+               pet: null,
+               // TODO:: ¿Qué narices es esto?
+               per: false,
+               ubi: false
+            }
+         });
       }
    });
 }
