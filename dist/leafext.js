@@ -18,6 +18,32 @@
 
 
    /**
+    * Comprueba si dos objetos son iguales a efectos de los requerido
+    * en este código.
+    *
+    * @param {Object} o  Un objeto.
+    * @param {Object} p  El otro.
+    *
+    * @returns {boolean]
+    */
+   function equals(o,p) {
+      if(typeof o !== typeof p) return false;
+      if(typeof o !== "object") return o == p;  // Comparación laxa.
+
+      const oprop = Object.getOwnPropertyNames(o);
+      const pprop = Object.getOwnPropertyNames(p);
+
+      if(oprop.length !== pprop.length) return false;
+
+      for(let i=0; i<oprop.length; i++) {
+         const name = oprop[i];
+         if(!equals(o[name], p[name])) return false;
+      }
+      return true;
+   }
+
+
+   /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
     * desde la última vez que se reseteó (con el método reset).
     *
@@ -31,7 +57,7 @@
     *    o.reset()
     *    o.updated  // true. Resetear marca el objeto como actualizado.
     *
-    * Una vez creado el objeto, puede modificarse los valores de los atributos
+    * Una vez creado el objeto, pueden modificarse los valores de los atributos
     * (a, b y c, en el ejemplo); pero no añadir nuevos o eliminar alguno de los
     * existentes.
     *
@@ -333,6 +359,7 @@
       refresh: function() {
          const icon = this.options.icon;
          if(!icon.options.params || icon.options.params.updated) return false;
+         if(!this.getElement()) return false;  // La marca no está en el mapa.
          icon.options.updater.call(this.getElement(), icon.options.params.modified);
          icon.options.params.reset();
          return true;
@@ -355,38 +382,58 @@
       getData: function() {  // Devuelve los datos asociados a la marca.
          return getProperty(this, this.options.mutable);
       },
-      apply: function(name, params) {  // Aplica una corrección.
+      /**
+       *  Aplica una corrección a la marca.
+       *
+       *  @method apply
+       *
+       *  @param {string} name   Nombre de la corrección
+       *  @param {Object} params Opciones que emplea la función de corrección
+       *    para realizar su tarea.
+       */
+      apply: function(name, params) {
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
                func     = sc[name].bind(this);
 
          let   arr      = getProperty(this.getData(), property);
 
-
          func.prop = Object.assign({}, sc[name].prop);
+         if(func.prop.add) func.prop.context = this;
 
          // La propiedad aún es un array normal.
          if(arr === undefined || arr.corr === undefined) {
-            CorrSys.prototype.prepare(this.getData(), property);
+            this.options.corr.prepare(this.getData(), property);
             arr = getProperty(this.getData(), property);
          }
 
-         arr.apply(func, params);
+         if(!arr.apply(func, params)) return false;
 
-         // TODO: Cambiar los GeoJSON para que siempre haya "adj" y "oferta".
+         // Cambia los parámetros de dibujo del icono en función de los datos corregidos
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
          if(icon.options.params) icon.options.params.change(icon.options.converter(data));
+         return true;
       },
+      /**
+       * Elimina una corrección de la marca.
+       *
+       * @method unapply
+       *
+       * @param {string} name    Nombre de la corrección.
+       */
       unapply: function(name) {  // Elimina la corrección.
          const property = this.options.corr.getProp(name),
+               sc       = this.options.corr[property],
+               func     = sc[name],
                arr      = getProperty(this.getData(), property);
 
-         arr.unapply(name);
+         if(!arr.unapply(name)) return false;
 
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
          if(icon.options.params) icon.options.params.change(icon.options.converter(data));
+         return true;
       }
    }
 
@@ -490,23 +537,36 @@
              */
             apply: function(func, params) {
                const name = func.prop.name,
-                     add  = func.prop.add;
-               if(this.corr.hasOwnProperty(name)) return false; // Ya aplicado.
+                     add  = func.prop.add,
+                     marker = func.prop.context;
+
+               // Si la correción ya está aplicada, sólo no se aplica en
+               // caso de que se aplicara con las mismas opciones.
+               if(this.corr.hasOwnProperty(name)) {
+                  if(equals(this.corr[name].params, params)) return false;
+                  else this.unapply(name);  // Hay que eliminar antes la corrección
+               }
+
                if(add) {
                   const values = func(null, this, params);
                   let num = values.length;
                   this.push.apply(this, values);
 
-                  // Aplicamos las correcciones ya existentes a los nuevos valores.
-                  for(const n in this.corr) {
-                     thhis.corr[n].length = this.length;
-                     if(this._sc[n].add) continue;  // Es una corrección que añade valores.
-                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func(this.length[i]);
-                  }
-
                   this.corr[name] = new Array(this.length);
                   for(let i=this.length-num; i<this.length; i++) this.corr[name][i] = null;
                   if(num>0) this._count = undefined;
+
+                  // Las correcciones que eliminan valores,
+                  // pueden eliminar los valores añadidos.
+                  for(const n in this.corr) {
+                     this.corr[n].length = this.length;
+                     if(this._sc[n].prop.add) continue;  // Es una corrección que añade valores.
+
+                     const func = this._sc[n];
+                     const params = this.corr[n].params;
+                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, this[i], this, params);
+                  }
+
                }
                else {
                   this.corr[name] = this.map(e => func(e, this, params));
@@ -514,6 +574,8 @@
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i], params);
                   if(this.corr[name].some(e => e)) this._count = undefined;
                }
+
+               this.corr[name].params = params;
                return true;
             },
             /**
@@ -526,15 +588,16 @@
              */
             unapply: function(name) {
                if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
-               if(this._sc[name].add) {
+
+               if(this._sc[name].prop.add) {
                   const arr = this.corr[name];
                   let a, b;
                   for(let i=0; i<arr.length; i++) {
                      if(arr[i] === null) {
                         if(a === undefined) a=i;
                      }
-                     else {
-                        if(a !== undefined) b=i;
+                     else if(a !== undefined) {
+                        b=i;
                         break;
                      }
                   }
@@ -550,6 +613,7 @@
                   if(this.corr[name].some(e => e)) this._count = undefined;
                   delete this.corr[name];
                }
+
                return true;
             },
             /**
@@ -807,8 +871,6 @@
 
          return CorrSys;
       })();
-
-      CorrSys.Correctable = Correctable;
 
       return CorrSys;
    })();

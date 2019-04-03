@@ -1,3 +1,5 @@
+var C;  // Para acceder a Centro desde consola.
+
 // Peticiones AJAX
 function load(params) {
    const xhr = new XMLHttpRequest();
@@ -424,6 +426,8 @@ function cambiarIcono(estilo, num, cluster) {
             options: {mutable: "feature.properties.data"}
          });
 
+         C = Centro;
+
          cargaCorrecciones(Centro);
 
          const layer = L.geoJSON(null, {
@@ -434,9 +438,9 @@ function cambiarIcono(estilo, num, cluster) {
             onEachFeature: function(f, l) {
                l.on("click", function(e) {
                   const icon = e.target.options.icon;
+                  console.log("DEBUG - marca", e.target);
                   console.log("DEBUG - ident", e.target.feature.properties.name);
                   console.log("DEBUG - data", e.target.getData());
-                  //console.log("DEBUG - params", icon.options.converter(e.target.getData()));
                   console.log("DEBUG - converter", icon.options.converter(e.target.getData()));
                });
             }
