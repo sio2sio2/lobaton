@@ -275,17 +275,43 @@
    const createDivIcon = L.DivIcon.prototype.createIcon;
 
    const IconPrototype = {
+      /**
+       * Wrapper para el método homónimo de DivIcon.
+       *
+       * Detecta si cambiaron las opciones de dibujo, mientras el icono no
+       * estaba dibujado, y, en ese caso, regenera options.html a partir de la
+       * plantilla HTML.
+       *
+       */
       createIcon: function() {
-         this.options.params = new Options(this.options.converter(this._marker.getData()));
-         this.options.params.reset();
+         this.options.params = this.options.params || new Options(this.options.converter(this._marker.getData()));
+
+         // Las opciones de dibujo cambiaron mientras el icono no estaba presente en el mapa.
+         if(!this.options.params.updated) delete this.options.html;
+
          if(!this.options.hasOwnProperty("html")) {
             const html = this.options.html.cloneNode(true);
             html.container = this.options.html.container;
             this.options.updater.call(html, this.options.params);
-            this.options.html = html.container?html.innerHTML:html.outerHTML;
+            if(html.container !== undefined) this.options.html = html.container?html.innerHTML:html.outerHTML;
+            this.options.params.reset();
          }
+
          return createDivIcon.call(this, arguments);
-      }
+      },
+      /**
+       * Refresca el icono, en caso de que hayan cambiado las opciones de dibujo.
+       * El método modifica directamente el HTML sobre el documento.
+       */
+      refresh: function() {
+         if(!this.options.params || this.options.params.updated) return false;
+         this.options.updater.call(this._marker.getElement(), this.options.params.modified);
+         this.options.params.reset();
+
+         // Si se cambia el icono dibujado, el options.html guardado ya no vale.
+         delete this.options.html;
+         return true;
+      },
    }
 
    const MarkerExtend = L.Marker.extend;
@@ -357,12 +383,8 @@
     */
    const prototypeExtra = {
       refresh: function() {
-         const icon = this.options.icon;
-         if(!icon.options.params || icon.options.params.updated) return false;
          if(!this.getElement()) return false;  // La marca no está en el mapa.
-         icon.options.updater.call(this.getElement(), icon.options.params.modified);
-         icon.options.params.reset();
-         return true;
+         this.options.icon.refresh();
       },
       initialize: function() {
          MarkerInitialize.apply(this, arguments);

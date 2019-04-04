@@ -65,7 +65,7 @@ async function getStyle(estilo, num, callback) {
          // correcciones se tratan como arrays normales o como arrays corregibles,
          // ya que en el momento de la invocación de esta función la propiedad
          // puede aún ser un array normal.
-         // Lo ideal es que la API del array corregible fuera la misma que la del normal
+         // Lo ideal es que la API del array corregible fuera la misma que la del normal,
          // pero eso no parece que se pueda hacer con Javascript.
          converter = function(o) {
             const res = {};
@@ -431,10 +431,26 @@ function cambiarIcono(estilo, num, cluster) {
          cargaCorrecciones(Centro);
 
          const layer = L.geoJSON(null, {
+            /*
             pointToLayer: (f, p) => new Centro(p, {
                icon: new Icon(),
                title: f.properties.name
             }),
+            */
+            pointToLayer: function (f,p) {
+               const marker = new Centro(p, {
+                  icon: new Icon(),
+                  title: f.properties.name
+               })
+
+               /*
+               marker.on("add", function(e) {
+                  //if(this.feature.properties.name.indexOf("Alyanub") !== -1) console.log("Añadimos " + this.feature.properties.name, (this.getData().oferta));
+                  this.options.icon.options.params.reset();
+               });
+               */
+               return marker;
+            },
             onEachFeature: function(f, l) {
                l.on("click", function(e) {
                   const icon = e.target.options.icon;
@@ -458,6 +474,8 @@ function cambiarIcono(estilo, num, cluster) {
             Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
             Centro.invoke("apply", "vt+", {});
             Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
+            // La aplicación de correcciones, no redibuja automáticamente, así que:
+            Centro.invoke("refresh");
          }
 
          switch(num) {
@@ -519,7 +537,7 @@ function cargaCorrecciones(Centro) {
 
 
 function init() {
-   var map = L.map('map').setView([37.07, -6.27], 9);
+   map = L.map('map').setView([37.07, -6.27], 9);
    map.addControl(new L.Control.Fullscreen({position: "topright"}));
    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
      maxZoom: 18
