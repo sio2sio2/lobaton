@@ -417,21 +417,19 @@
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
                func     = sc[name].bind(this);
-
-         let   arr      = getProperty(this.getData(), property);
+         let   arr;
 
          func.prop = Object.assign({}, sc[name].prop);
          if(func.prop.add) func.prop.context = this;
 
-         // La propiedad aún es un array normal.
-         if(arr === undefined || arr.corr === undefined) {
+         if(!(arr = this.options.corr.isCorrectable(property, this))) {
             this.options.corr.prepare(this.getData(), property);
             arr = getProperty(this.getData(), property);
          }
 
          if(!arr.apply(func, params)) return false;
 
-         // Cambia los parámetros de dibujo del icono en función de los datos corregidos
+         // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
          if(icon.options.params) icon.options.params.change(icon.options.converter(data));
@@ -810,13 +808,16 @@
          }
 
          /**
-          * Informa de si la propiedad requerida es corregible.
+          * Informa de si la propiedad de una marca es corregible.
           *
-          * @param {string} attr  Nombre de la propiedad que se quiere investigar.
-          * @return {boolean}
+          * @param {string} attr     Nombre de la propiedad que se quiere investigar.
+          * @param {L.Marker} marker Marca donde se encuentra la propiedad
+          * @return {?Correctable}   La propia propiedad si es corregible, o nulo.
           */
-         CorrSys.prototype.isCorrectable = function(attr) {
-            return this.hasOwnProperty(attr);
+         CorrSys.prototype.isCorrectable = function(attr, marker) {
+            const arr = getProperty(marker.getData(), attr);
+            if(arr && arr.corr) return arr;
+            else null;
          }
 
 

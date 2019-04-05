@@ -133,12 +133,12 @@ async function getStyle(estilo, num, callback) {
 
    switch(estilo) {
       case "css1":
-         options.iconstyle = "dist/images/icon1.css";
+         options.iconstyle = "../dist/images/icon1.css";
          options.iconSize = null;
          options.iconAnchor = [12.5, 34];
          break;
       case "css2":
-         options.iconstyle = "dist/images/icon2.css";
+         options.iconstyle = "../dist/images/icon2.css";
          options.iconSize = [25, 34];
          options.iconAnchor = [12.5, 34];
          break;
@@ -293,13 +293,13 @@ async function getStyle(estilo, num, callback) {
                break;
             case "solicitud":
                load({
-                  url: "dist/images/solicitud.svg", 
+                  url: "../dist/images/solicitud.svg", 
                   callback: function(xhr) { resolve(xhr.responseXML) }
                });
                break;
             case "boliche":
                load({
-                  url: "dist/images/centro.svg", 
+                  url: "../dist/images/centro.svg", 
                   callback: function(xhr) { resolve(xhr.responseXML) }
                });
          }

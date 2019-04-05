@@ -12,13 +12,13 @@
    <!-- Plugin: Añade botón para maximizar el mapa -->
    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet'>
+   <link id="iconstyle" rel="stylesheet" href="dist/images/icon2.css">
    <!-- Plugin: Agrupa marcas contiguas -->
    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
-   <script src="dist/leafext.js"></script>
-   <link rel='stylesheet' href="styles/divicon.css">
-   <link id="iconstyle" rel="alternate stylesheet" href="dist/images/icon1.css">
+   <script src="../dist/leafext.js"></script>
+   <script src="scripts/cluster.js"></script>
 
    <style>
       /*<![CDATA[*/
@@ -27,35 +27,16 @@
          margin: 0; padding: 0;
          height: 100%;
       }
-      #selector {
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         height: 4em;
-      }
       #map {
         margin: 0;
         padding: 0;
-        height: calc(100% - 4em);
+        height: 100%;
       }
       /*]]>*/
    </style>
-   <script src="scripts/divicon.js"></script>
+   <link rel="stylesheet" href="styles/screen.css">
 
-   <form id="selector" action="">
-      <select name="estilo">
-         <option value="css1">Icono (px en el CSS)</option>
-         <option value="css2">Icono (% en el CSS)</option>
-         <option value="solicitud">Antiguo SVG de solicitud</option>
-         <option value="boliche" selected>Antiguo SVG de centro</option>
-      </select>
-      <select name="marca">
-         <option value="dos">Dos</option>
-         <option value="muchos">Muchos</option>
-         <option value="json/590104.json" selected>590104</option>
-         <option value="json/590107.json">590107</option>
-      </select>
-   </form>
+   <div id="progress"><div id="progress-bar"></div></div>
    <div id="map"></div>
    <!-- Elementos del icono para decorar con CSS images/icon[12].css -->
    <template>
