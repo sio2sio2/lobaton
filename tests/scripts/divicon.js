@@ -133,16 +133,19 @@ async function getStyle(estilo, num, callback) {
 
    switch(estilo) {
       case "css1":
-         options.iconstyle = "../dist/images/icon1.css";
+         options.iconstyle = "../dist/images/piolin.css";
+         options.className = "piolin";
          options.iconSize = null;
          options.iconAnchor = [12.5, 34];
          break;
       case "css2":
-         options.iconstyle = "../dist/images/icon2.css";
+         options.iconstyle = "../dist/images/chupachups.css";
+         options.className = "chupachups";
          options.iconSize = [25, 34];
          options.iconAnchor = [12.5, 34];
          break;
       case "solicitud":
+         options.className = "svg";
          options.iconSize = [40, 40];
          options.iconAnchor = [19.556, 35.69];
          options.updater = function(o) {
@@ -156,6 +159,7 @@ async function getStyle(estilo, num, callback) {
          }
          break;
       case "boliche":
+         options.className = "svg";
          options.iconSize = [40, 40];
          options.iconAnchor = [19.556, 35.69];
          options.fast = true;
@@ -299,7 +303,7 @@ async function getStyle(estilo, num, callback) {
                break;
             case "boliche":
                load({
-                  url: "../dist/images/centro.svg", 
+                  url: "../dist/images/boliche.svg", 
                   callback: function(xhr) { resolve(xhr.responseXML) }
                });
          }
@@ -412,7 +416,7 @@ function cambiarIcono(estilo, num, cluster) {
       
       delete opts.iconstyle;
 
-      const options = Object.assign(opts, {className: "icon"});
+      const options = Object.assign(opts);
 
       const Icon = L.DivIcon.extend({ options: options });
 

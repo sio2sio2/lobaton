@@ -1,4 +1,4 @@
-.icon {
+.piolin {
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   width: 25px;
 }
 
-.icon .content {
+.piolin .content {
   position: relative;
   height: 15px;
   line-height: 15px;
@@ -20,7 +20,7 @@
   overflow: hidden;
 }
 
-.icon .arrow {
+.piolin .arrow {
   position: relative;
   width: 0px; height: 0px;
   border-style: solid;
@@ -30,14 +30,14 @@
   margin-left: -6px;
 }
 
-.icon .dificil {
+.piolin .dificil {
    border-top-color: #c13;
 }
 
-.icon .compensatoria {
+.piolin .compensatoria {
    border-top-color: #25d;
 }
 
-.icon .normal {
+.piolin .normal {
    border-top-color: #bbb;
 }

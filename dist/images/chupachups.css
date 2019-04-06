@@ -1,4 +1,4 @@
-.icon .content {
+.chupachups .content {
    position: relative;
    box-sizing: border-box;
    height: 70%;
@@ -11,7 +11,7 @@
    font-weight: bold;
 }
 
-.icon .arrow {
+.chupachups .arrow {
    position: relative;
    margin: 0; padding: 0;
    width: 10%; height: 30%;
@@ -19,15 +19,15 @@
    background-color: #444;
 }
 
-.icon .normal {
+.chupachups .normal {
    background-color: #ddd;
 }
 
-.icon .compensatoria {
+.chupachups .compensatoria {
    background-color: #7be;
 }
 
-.icon .dificil {
+.chupachups .dificil {
    background-color: #ebb;
 }
 

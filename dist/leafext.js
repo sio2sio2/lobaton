@@ -1,6 +1,77 @@
 (function() {
    "use strict";
 
+   L.utils = {};
+
+   /**
+    * Realiza peticiones AJAX. Uso:
+    *
+    *    load({
+    *       url: 'image/centro.svg',
+    *       params: {
+    *          a: 1,
+    *          b: 2
+    *       },
+    *       method: "GET",
+    *       context: objeto,
+    *       callback: funcion(xhr) { console.log("Éxito"); },
+    *       failback: function(xhr) { console.log("Error"); },
+    *    });
+    *
+    * Si no se especifica el método, se usará GET cuando no haya parámetros
+    * y POST cuando sí los haya.
+    *
+    * La petición será asíncrona cuando se proporcionen funciones callback o
+    * failback, y síncrona en caso contrario.
+    * 
+    * context permite indicar qué objeto se usará de contexto (this) para la
+    * ejecución de callback y failback.
+    */
+   function load(params) {
+      const xhr = new XMLHttpRequest();
+      let qs = '', method = "GET"; 
+
+      if(params.params) {
+         qs = Object.keys(params.params).map(k => k + "=" + encodeURIComponent(params.params[k])).join('&');
+         method = "POST";
+      }
+
+      method = (params.method || method).toUpperCase();
+
+      if(method === "GET" && params.params) {
+         params.url = params.url + "?" + qs;
+         qs = "";
+      }
+
+      xhr.open(method, params.url, !!params.callback);
+      if(params.callback || params.failback) {
+         xhr.onreadystatechange = function() {
+             if(xhr.readyState === 4) {
+               if (xhr.status === 200) {
+                  if(params.callback) {
+                     if(params.context) params.callback.call(params.context, xhr);
+                     else params.callback(xhr);
+                  }
+               }
+               else if(params.failback) {
+                  if(params.context) params.failback.call(params.context, xhr);
+                  else params.failback(xhr);
+               }
+             }
+         };
+         if(params.url.endsWith(".html")) { // Permite para las respuestas HTML, obtener un responseXML
+            xhr.responseType = "document";
+         }
+      }
+
+      if(method === 'POST') xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhr.send(qs);
+
+      // Sólo es útil cuando la petición es síncrona.
+      return xhr;
+   }
+   L.utils.load = load;
+
    /**
     * Permite obtener el valor de una propiedad de forma
     * que getProperty(x, "a.b") devolvería el valor de x.a.b
@@ -42,6 +113,87 @@
       return true;
    }
 
+   // Issue #2
+   /**
+    * Facilita la construcción de clases de iconos.
+    *
+    * @param {string} name          Nombre identificativo para la clase de icono.
+    * @param {Object} optiones      Opciones de construcción de la clase.
+    * @param {string} options.css   Para un icono creado con CSS, el archivo .css.
+    * @param {string|DocumentFragment|Document} options.html  HTML que define el
+    *    icono. Se puede pasar como:
+    *
+    *    + Una cadena que contenga directamente el código HTML.
+    *    + Un DocumentFragment, que sería lo que se obtiene como contenido de
+    *       un template:
+    *
+    *          var fragmento = document.querySelector("template").content;
+    *
+    *    + Un Document, que sería lo que se obtiene de haber hecho una petición
+    *      AJAX:
+    *
+    *          var doc = xhr.responseXML;
+    *
+    * @param {string} options.url   Alternativamente a la opción anterior,
+    *    la URL de un archivo donde está definido el icono (p.e. un SVG).
+    *
+    * @param {function} options.converter  Función que convierte en opciones
+    *     de dibujo los datos asociados a la entidad que representa la marca.
+    *     Recibe como único argumento los datos a convertir. Es conveniente que
+    *     se escriba permitiendo el paso de datos parciales, de manera que sólo
+    *     genere las opciones de dibujo asociadas a esos datos parciales y no
+    *     todas. Por ejemplo, supongamos que tenemos dos datos:
+    *
+    *     + gente: Array con personas de un mismo sexo.
+    *     + sexo: Valor que puede ser hombre o mujer.
+    *
+    *     y que estos datos se convierten en las opciones de dibujo num (número
+    *     de personas) y sexo (el sexo):
+    *
+    *     function converter(data) {
+    *          const opts= {};
+    *          if(data.hasOwnProperty("gente") opts["num"] = data.gente.length;
+    *          if(data.hasOwnProperty("sexo") opts["sexo"] = data.sexo;
+    *          return opts;
+    *     }
+    *
+    *     La función anterior sólo devuelve la opción de dibujo "num", si se le
+    *     pasó la propiedad "gente"; y sólo "sexo", si la propiedad "sexo".
+    *     Si se escribe de este modo (admitiendo datos parciales), puede
+    *     añadirse la opción "fast: true" para que el programa tome ventaja de
+    *     este hecho.
+    *    
+    * @param {function} updater  Función que actualiza el aspecto del icono
+    *    a partir de los nuevos valores que tengan las opciones de dibujo.
+    *    Toma las opciones de dibujo (o una parte de ellas) y modifica el
+    *    elemento DIV (o SVG. etc.) del icono para que adquiera un aspecto
+    *    adecuado. Debe escribirse teniendo presente que no se pasan todas
+    *    las opciones de dibujo, sino sólo las que se modificaron desde
+    *    la última vez que se dibujó el icono. Por tanto, debe escribirse la
+    *    función para realizar modificaciones sobre el aspecto preexistente
+    *    del icono, en vez de escribirse para recrear el icono desde cero.
+    *
+    *    TODO:: Crear una opción semejante a fast para esta función que
+    *       permita recrear siempre desde cero.
+    */
+   L.utils.createMutableIconClass = function(name, options) {
+
+      if(!options.updater) console.warn("Falta opción updater: el icono no será mutable");
+
+      if(options.css) {
+         const link = document.createElement("link");
+         link.rel = "stylesheet";
+         link.href = options.css;
+         link.id = "leafext-css-" + name;
+         document.querySelector("head").appendChild(link);
+         delete options.css
+      }
+
+      options.className = options.className || name;
+
+      return L.DivIcon.extend({options: options});
+   }
+   // Fin issue #2
 
    /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
@@ -235,8 +387,8 @@
     */
 
    function getElement(e) {
-      if(typeof e === "String") {
-         e = new DomParser().parseFromString("<div>" + html + "</div>", 'text/html');
+      if(typeof e === "string" || e instanceof String) {
+         e = new DomParser().parseFromString("<div>" + e + "</div>", 'text/html');
          e.container = true;
       }
       else if(e instanceof Document || e instanceof DocumentFragment) {
@@ -264,9 +416,33 @@
    L.DivIcon.extend = function(obj) {
       const Icon = DivIconExtend.call(this, obj);
       const options = Icon.prototype.options;
-      if(options.updater && options.html) {
+      if(options.updater) {
          if(!options.converter) options.converter = data => Object.assign({}, data);
-         options.html = getElement(options.html);
+         // Issue #2
+         if(options.html) options.html = getElement(options.html);
+         else if(!options.url) throw new Error("Falta definir las opciones html o url");
+         Object.defineProperty(Icon, "ready", {
+            get: () => Icon.prototype.options.html,
+            configurable: false,
+            enumerable: false
+         });
+         Icon.onready = async function(func_success, func_fail) {
+            if(!this.ready) {
+               new Promise(function(resolve, reject) {
+                  if(Icon.ready) resolve();
+                  load({
+                     url: Icon.prototype.options.url,
+                     callback: function(xhr) {
+                        Icon.prototype.options.html = getElement(xhr.responseXML);
+                        resolve();
+                     },
+                     failback: xhr => reject(new Error(xhr.statusText))
+                  });
+               }).then(func_success, func_fail);
+            }
+            else func_success();
+         }
+         // Fin Issue #2
          Object.assign(Icon.prototype, IconPrototype);
       }
       return Icon;
