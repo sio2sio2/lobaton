@@ -166,12 +166,16 @@ function crearIconos() {
          bil: "oferta"
       }
 
-      // Nos cargamos las propiedades irrelevantes de los datos 
-      if(attrs) o = Object.keys(map).filter(e => attrs.indexOf(e) !== -1)
-                                    .reduce((r, e) => { r[map[e]] = o[map[e]]; return r }, {});
+      if (attrs) {
+         const pre_o = o;
+         o = {};
+         for(const opt in map) {
+            if(attrs.indexOf(opt) === -1) continue;
+            if(pre_o.hasOwnProperty(map[opt])) o[map[opt]] = pre_o[map[opt]];
+         }
+      }
 
       if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
-
       if(o.hasOwnProperty("mod")) {
          res["tipo"] = o.mod.hasOwnProperty("dif")?o.mod.dif:"normal";
          res["ofervar"] = o.mod.hasOwnProperty("cam")?o.mod.cam:0;
@@ -355,7 +359,9 @@ function crearIconos() {
          css:  "../dist/images/piolin.css",
          html: html,
          converter: converter.bind(null, ["numvac", "tipo"]),
-         //fast: true,
+         // TODO:: Quizás es mejor las opciones efectivas de dibujo
+         // a través de fast: fast: ["numvac", "tipo"]
+         fast: true,
          updater: updaterCSS
       }),
       chupachups: L.utils.createMutableIconClass("chupachups", {
@@ -364,7 +370,7 @@ function crearIconos() {
          css:  "../dist/images/chupachups.css",
          html: html,
          converter: converter.bind(null, ["numvac", "tipo"]),
-         //fast: true,
+         fast: true,
          updater: updaterCSS
       }),
       solicitud: L.utils.createMutableIconClass("solicitud", {
@@ -372,7 +378,7 @@ function crearIconos() {
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/solicitud.svg",
          converter: converter.bind(null, ["peticion"]),
-         //fast: true,
+         fast: true,
          updater: function(o) {
             var text = this.querySelector("text");
             if(o.peticion !== undefined) {
@@ -388,7 +394,7 @@ function crearIconos() {
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/boliche.svg",
          converter: converter.bind(null, undefined),
-         //fast: true,
+         fast: true,
          updater: updaterBoliche,
       }),
    }
