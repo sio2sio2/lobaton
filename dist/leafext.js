@@ -444,12 +444,16 @@
          }
          // Fin Issue #2
          // Issue #3
-         if(options.fast instanceof Array) {
+         if(options.fast) {
+            if(!(options.fast instanceof Array)) {
+               options.fast = Object.keys(options.fast).map(k => options.fast[k])
+                                                       .filter((e, i, arr) => arr.indexOf(e) === i);
+            }
             const converter = options.converter;
             options.converter = function(o) {
                const o_f = {};
-               for(const opt in options.fast) {
-                  if(o.hasOwnProperty(options.fast[opt])) o_f[options.fast[opt]] = o[options.fast[opt]];
+               for(const opt of options.fast) {
+                  if(o.hasOwnProperty(opt)) o_f[opt] = o[opt];
                }
                return converter(o_f);
             }
