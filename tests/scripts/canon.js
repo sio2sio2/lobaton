@@ -156,24 +156,8 @@ function crearIconos() {
     *    Si no se pasan, se sobrentiende que se quieren usar todas las opciones.
     * @params {Object} o  Objeto con los datos.
     */
-   function converter(attrs, o) {
+   function converter(o) {
       const res = {};
-      const map = {  // De qué propiedad de los datos depende cada opción de dibujo.
-         numvac: "adj",
-        tipo: "mod",
-         ofertavar: "mod",
-         numofer: "oferta",
-         bil: "oferta"
-      }
-
-      if (attrs) {
-         const pre_o = o;
-         o = {};
-         for(const opt in map) {
-            if(attrs.indexOf(opt) === -1) continue;
-            if(pre_o.hasOwnProperty(map[opt])) o[map[opt]] = pre_o[map[opt]];
-         }
-      }
 
       if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
       if(o.hasOwnProperty("mod")) {
@@ -358,10 +342,8 @@ function crearIconos() {
          iconAnchor: [12.5, 34],
          css:  "../dist/images/piolin.css",
          html: html,
-         converter: converter.bind(null, ["numvac", "tipo"]),
-         // TODO:: Quizás es mejor las opciones efectivas de dibujo
-         // a través de fast: fast: ["numvac", "tipo"]
-         fast: true,
+         converter: converter,
+         fast: {numvac: "adj", tipo: "mod"},
          updater: updaterCSS
       }),
       chupachups: L.utils.createMutableIconClass("chupachups", {
@@ -369,16 +351,16 @@ function crearIconos() {
          iconAnchor: [12.5, 34],
          css:  "../dist/images/chupachups.css",
          html: html,
-         converter: converter.bind(null, ["numvac", "tipo"]),
-         fast: true,
+         converter: converter,
+         fast: {numvac: "adj", tipo: "mod"},
          updater: updaterCSS
       }),
       solicitud: L.utils.createMutableIconClass("solicitud", {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/solicitud.svg",
-         converter: converter.bind(null, ["peticion"]),
-         fast: true,
+         converter: converter,
+         fast: {peticion: "peticion"},
          updater: function(o) {
             var text = this.querySelector("text");
             if(o.peticion !== undefined) {
@@ -393,8 +375,7 @@ function crearIconos() {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/boliche.svg",
-         converter: converter.bind(null, undefined),
-         fast: true,
+         converter: converter,
          updater: updaterBoliche,
       }),
    }

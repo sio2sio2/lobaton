@@ -443,6 +443,18 @@
             else func_success();
          }
          // Fin Issue #2
+         // Issue #3
+         if(options.fast instanceof Array) {
+            const converter = options.converter;
+            options.converter = function(o) {
+               const o_f = {};
+               for(const opt in options.fast) {
+                  if(o.hasOwnProperty(options.fast[opt])) o_f[options.fast[opt]] = o[options.fast[opt]];
+               }
+               return converter(o_f);
+            }
+         }
+         // Fin Issue #3
          Object.assign(Icon.prototype, IconPrototype);
       }
       return Icon;
