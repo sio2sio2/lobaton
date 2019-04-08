@@ -1,0 +1,120 @@
+.. highlight:: js
+
+Creación de mapas
+*****************
+Aunque se haya usado la librería para crear un mapa concreto de
+consulta de adjudicaciones y oferta educativa, y la interfaz de usuario se haya
+confeccionado con vue.js_, ésta se presta a la creación de cualquier otro mapa
+de cualquier otra temática y con cualquier otra herramienta. La intención de
+este apartado es ilustrar cómo usarla de forma práctica para este fin.
+
+¿Cuándo puede resultarme útil?
+==============================
+La librería se torna útil cuando, dado un conjunto de datos a representar sobre
+un mapa:
+
+#. Los iconos que representan los datos se quiere que no sean exactamente
+   iguales, sino que sufran alteraciones dependiendo del valor que adquiera el
+   dato para cada uno de ellos en concreto. Por ejemplo, que el color dependa de
+   lo grande que sea la magnitud del valor correspondiente.
+
+#. Los datos puede sufrir correcciones por la interacción del usuario, lo cual
+   por supuesto se reflejará en el aspecto del icono que adoptará aquel que
+   refleje su nuevo valor.
+
+#. Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
+   decisiones del usuario.
+
+Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
+
+Preliminares
+============
+Como es obvio, el uso de la librería exige la carga previa de Leaflet_:
+
+.. code-block:: html
+
+   <!-- Leaflet -->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+         integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin="">
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+           integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+           crossorigin=""></script>
+
+A lo que podríamos añadir nuestros *plugins* favoritos de Leaflet_, y la carga de
+nuestra librería y el *script* donde desarrollaremos la creación del mapa.
+
+.. code-block:: html
+
+   <!-- Extensión para el soporte de iconos mutables -->
+   <script src="../dist/leafext.js"></script>
+
+   <!-- Script particular para este mapa -->
+   <script src="scripts/demo.js"></script>
+
+También, por supuesto, deberíamos incluir en el documento un elemento en el que
+incrustar el mapa. Típicamente:
+
+.. code-block:: html
+
+   <div id="map"></div>
+
+Uso básico
+==========
+Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
+
+   const Icono = crearIcono();
+
+   const Centro = L.Marker.extend({
+      options: {mutable: "feature.properties.data"}
+   });   
+
+   map = L.map("map").setView([37.07, -6.27], 9);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       maxZoom: 18
+   }).addTo(map);
+
+   // Y una capa GeoJSON para añadir los datos y crear las marcas
+   const layer =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      })
+   }).addTo(map);
+
+#. La creación del icono, que hemos incluido dentro de la función
+   ``crearIcono()``, a lo que dedicaremos el próximo apartado.
+
+#. La creación de la marca apropiada que requiere obligatoriamente la inclusión
+   de la opción *mutable* cuyo valor debe ser la propiedad de la marca donde se
+   guardarán los datos asociados a la marca. Dado que usamos como origen de los
+   datos un objeto GeoJSON_, los datos apareceran dentro de
+   ``feature.properties``. En nuestro caso, hemos supuesto que los datos que nos
+   interesan se encuentran en ``feature.properties.data``, aunque podríamos
+   haber pasado como valor de ``mutable`` también ``feature.properties``. Lo
+   importante es tener presente que:
+
+   * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
+     precisos para tratar la mutabilidad de los iconos.
+
+   * Esa será la propiedad en la consulte los datos la aplicación y será la
+     propiedad cuyo valor devuelva el método de marca ``.getData()``.
+
+#. La creación del mapa, que es la habitual con Leaflet_.
+
+#. La creación de una capa para el tratamiento de los datos en formato
+   *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
+   previamente de algún modo.
+
+.. _crear-icono:
+
+Creación del icono
+==================
+
+Uso de Leaflet.markercluster_
+=============================
+
+.. _vue.js: https://vuejs.org/
+.. _leaflet: https://leafletjs.com/
+.. _leaflet.markercluster: https://github.com/Leaflet/Leaflet.markercluster
+.. _GeoJSON: http://geojson.org/

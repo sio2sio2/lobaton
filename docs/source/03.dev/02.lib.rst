@@ -1,0 +1,5 @@
+|API|
+*****
+
+
+.. |API| replace:: :abbr:`API (Application Programming Interface)`

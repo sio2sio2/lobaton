@@ -1,2 +1,5 @@
 **.bak
 TODO
+node_modules
+package-lock.json
+docs/build
