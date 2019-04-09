@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Mapa</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+      integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+      crossorigin=""/>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+      integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+      crossorigin=""></script>
+
+    <!-- Plugin: Añade botón para maximizar el mapa -->
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet'>
+    
+    <!-- Plugin: Agrupa marcas contiguas -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css"
+      integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css"
+      integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/component-custom-switch.css">
+    
+    <link id="iconstyle" rel="alternate stylesheet" href="dist/images/centro.svg">
+    
+    </head>
+  <body>
+    <!-- HTML para los iconos que se decoran con CSS -->
+    <template id="iconos">
+        <div class="content"><span></span></div>
+        <div class="arrow"></div>
+    </template>
+
+    <form id="selector" action="">
+        <select name="estilo">
+           <option value="piolin">Icono (px en el CSS)</option>
+           <option value="chupachups" selected>Icono (% en el CSS)</option>
+           <option value="solicitud">Antiguo SVG de solicitud</option>
+           <option value="boliche">Antiguo SVG de centro</option>
+        </select>
+        <select name="especialidad">
+           <option value="json/590104.json" selected>590104</option>
+           <option value="json/590107.json">590107</option>
+        </select>
+     </form>
+
+    <div id="map">
+      <div class="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar">
+          <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div class="section-cardbox">
+            <div class="section-cardbox-header" data-toggle="collapse" href="#filtros">
+              <span>Filtra los centros</span>
+            </div>
+            <div id="filtros" class="section-cardbox-content collapse show">
+              <form autocomplete="off" id="form_filtros">
+                <template id="template_correccion">
+                  <div>
+                  <template v-for="cor in correcciones">
+                    <fieldset class="form-group" :name="cor.correccion_id">
+                        <legend>{{cor.nombre}}</legend>
+                        <small class="help" class="form-text text-muted">{{cor.descripcion}}</small>
+                        <template v-for="opcion in cor.values">
+                          <div class="form-group row">
+                            <label class="etiqueta col-sm-10 col-form-label" :for="opcion.opcion_id">{{opcion.opcion_label}}</label>
+                            <div class="custom-switch custom-switch-xs pl-0 col-sm-2">
+                              <input :name="cor.correccion_name" class="custom-switch-input correccion" :id="opcion.opcion_id" type="checkbox" :value="opcion.opcion_valor" :checked="opcion.opcion_checked">
+                              <label class="custom-switch-btn" :for="opcion.opcion_id"></label>
+                            </div>
+                          </div>
+                        </template>
+                    </fieldset>
+                  </template>
+                  </div>
+                </template>
+                <div id="correcciones"></div>
+              </form>
+            </div>
+          </div>
+
+
+          <template id="template-centro">
+            <div class="section-cardbox" id="template-centro">
+              <div class="section-cardbox-header" data-toggle="collapse" href="#info-centro">
+                <span>{{datosCentro.name}}</span>
+              </div>
+
+              <div class="card collapse show" id="info-centro">
+                <div class="card-body">
+                  <h5 class="card-title">Cod. {{datosCentro.data.id.cod}}</h5>
+                  <p class="card-text">Dirección: {{datosCentro.data.id.dom}}. {{datosCentro.data.id.mun}}. {{datosCentro.data.id.cp}}. {{datosCentro.data.id.pro}}.</p>
+                </div>
+                <div class="card-header">
+                  Plazas relevantes
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive-sm">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr class="table-primary">
+                          <th scope="col">Puesto</th>
+                          <th scope="col"><abbr title="Plantilla Orgánica">P.O.</abbr></th>
+                          <th scope="col"><abbr title="Plantilla de Funcionamiento">P.F.</abbr></th>
+                          <th scope="col"><abbr title="Vacantes Iniciales">V.I.</abbr></th>
+                          <th scope="col"><abbr title="Vacantes Telefónicas">V.T.</abbr></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(plantilla, cod) in datosCentro.data.pla">
+                          <th scope="row"><abbr v-bind:title="info.puestos[cod]">{{cod}}</abbr></th>
+                          <td>{{plantilla.org}}</td>
+                          <td>{{plantilla.fun}}</td>
+                          <td>{{plantilla.vi}}</td>
+                          <td>{{plantilla.vt}}</td>
+                        </tr>
+                      </tbody>
+                    </table>                 
+                  </div>
+                </div>
+                <div class="card-header">
+                  Oferta educativa
+                </div>
+                <div class="card-body">
+                    <template v-for="of in datosCentro.data.oferta">
+                        <h5 class="card-title">{{info.ens[of.ens].nombre}}</h5>
+                        <!--Si ha sido trasladado-->
+                        <p class="card-text info-oferta">
+                          <span v-if="of.esp">{{of.esp | capitalize }}. </span>
+                          <span v-if="of.ori">Trasladado desde {{of.ori | decodificaCentro }} </span>
+                          <span v-if="of.tur !== 'matutino'">{{of.tur | capitalize }}. </span>
+                        </p>
+                        <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
+                    </template>
+                </div>
+                <div class="card-header">
+                  Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
+                </div>
+                <div class="card-body">
+                    <template v-for="plaza in datosCentro.data.adj">
+                      <h5 class="card-title">Puesto <abbr>{{plaza.pue}}</abbr></h5>
+                      <p class="card-text puesto-pce" v-if="plaza.col==='J'">({{plaza.col}}) {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet. {{plaza.pet}}).</p>
+                      <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc: {{plaza.esc}} (pet. {{plaza.pet}}).</p>
+                    </template>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <div class="bottom">
+
+          </div>          
+        </div>
+        <div>
+          <button type="button" id="sidebarCollapse" class="btn btn-info invisible">
+            <i class="fa fa-bars"></i>
+            <span></span>
+          </button>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <!-- Extensión para el soporte de iconos mutables -->
+    <script src="dist/leafext.js"></script>
+    <!-- Menú izquierdo -->
+    <script src="scripts/menu.js"></script>
+    <!-- Particularidades de esta página -->
+    <script src="tests/scripts/canon.js"></script>
+    <!-- Filtros y correcciones de centros -->
+    <script src="scripts/filtros_centros.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>

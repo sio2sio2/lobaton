@@ -1,0 +1,171 @@
+body, html, #map {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Roboto, sans-serif;
+}
+
+.btn-info {
+    background-color: #fff;
+    color: #aaa;
+    border-color: #aaa;
+}
+
+.btn-info:hover {
+    background-color: #aaa;
+    color: #fff;
+    border-color: #fff;
+}
+
+/* ---------------------------------------------------
+    COMMON SIDEBAR STYLE
+----------------------------------------------------- */
+
+.wrapper {
+    display: fixed;
+    width: 100%;
+}
+
+#sidebar {
+    cursor: default;
+    position: relative;
+    height: 100vh;
+    overflow: auto;
+    z-index: 1001;
+    background: #F5F5F5;
+    color: #000;
+    float: left;
+}
+
+.close {
+    margin: 5px 10px 5px 0;
+    clear: both;
+}
+
+.invisible {
+    display: none;
+}
+
+#sidebarCollapse {
+    z-index: 1001;
+    position: relative;
+    float: left;
+    margin: 2em;
+}
+
+.section-cardbox {
+    background-color: #fff;
+    box-sizing: border-box;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-top: 0.7em;
+    margin-left: 0.5em;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-cardbox-header {
+    background-color: #4285f4;
+    color: #fff;
+    height: 3em;
+    padding: .8em;
+}
+
+.section-cardbox-content {
+    padding: 1em 2em;
+}
+
+.etiqueta {
+    float: left;
+    width: 80%;
+}
+
+.info-oferta, .puesto-pce {
+    padding-left: 2em;
+}
+
+.section-cardbox-header:after {
+    font-family: 'Font Awesome 5 Free';
+    content: "\f068";
+    float: right; 
+    font-weight: 500;
+}
+.section-cardbox-header.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\f067";
+}
+
+.bottom {
+    height: 100px;
+}
+
+/* 
+    ##Device = Laptops, Desktops
+    ##Screen = B/w 1025px to 1280px
+  */
+  /* 
+    ##Device = Tablets, Ipads (portrait)
+    ##Screen = B/w 768px to 1024px
+  */
+
+@media (min-width: 768px) {
+    #sidebar {
+        width: 350px;
+    }
+
+    #sidebar.active {
+        margin-left: -350px;
+    }
+
+    .section-cardbox {
+        width: 321px;
+    }
+}
+
+/* 
+    ##Device = Tablets, Ipads (landscape)
+    ##Screen = B/w 768px to 1024px
+  */
+
+/*@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    //CSS
+}*/
+
+/* 
+    ##Device = Low Resolution Tablets, Mobiles (Landscape)
+    ##Screen = B/w 481px to 767px
+  */
+
+@media (min-width: 481px) and (max-width: 767px) {
+    #sidebar {
+        width: 350px;
+    }
+
+    #sidebar.active {
+        margin-left: -350px;
+    }
+
+    .section-cardbox {
+        width: 334px;
+    }
+}
+
+/* 
+    ##Device = Most of the Smartphones Mobiles (Portrait)
+    ##Screen = B/w 320px to 479px
+  */
+
+@media (min-width: 320px) and (max-width: 480px) {
+    #sidebar {
+        width: 100vw;
+    }
+
+    #sidebar.active {
+        margin-left: -100vw;
+    }
+
+    .section-cardbox {
+        width: 95vw;
+    }
+}

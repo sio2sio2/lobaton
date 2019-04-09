@@ -1,12 +1,12 @@
-(function() {
-
-// Objeto para acceso desde todo el script
-const g = {
+ // Objeto para acceso desde todo el script
+ var g = {
    map: undefined,     // Mapa.
    Centro: undefined,  // Clase para las marcas de centro.
    general: undefined  // Datos generales del mapa (la primera feature).
-}
+};
 
+
+(function() {
 
 // Carga del mapa con todos sus avíos.
 function init() {
@@ -14,6 +14,7 @@ function init() {
    var cluster;
    const Iconos = crearIconos();
 
+  
    function crearMapa() {
       g.map = L.map("map").setView([37.07, -6.27], 9);
       g.map.addControl(new L.Control.Fullscreen({position: "topright"}));
@@ -70,6 +71,7 @@ function init() {
          onEachFeature: function(f, l) {
             // A efectos de depuración
             l.on("click", function(e) {
+               displayInfoCentro(e.target.feature.properties, g.general, datos.features);
                const icon = e.target.options.icon;
                console.log("DEBUG - ident", e.target.feature.properties.name);
                console.log("DEBUG - marca", e.target);
@@ -79,16 +81,17 @@ function init() {
       });
 
       cluster.addLayer(layer);
+      cargaCorrecciones();
       //layer.clearLayers();
 
       // Aplicamos algunas correcciones a las marcas recién creadas
       // para comprobar que funciona el sistema de correcciones correctamente
-      g.Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
-      g.Centro.invoke("apply", "vt+", {});
-      g.Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
+      //g.Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
+      //g.Centro.invoke("apply", "vt+", {});
+      //g.Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
       // La aplicación de correcciones, no redibuja el icono automáticamente,
       // así que cuando termian de aplicarse todas, toca redibujar.
-      g.Centro.invoke("refresh");
+      //g.Centro.invoke("refresh");
    }
 
    crearMapa();
@@ -99,7 +102,7 @@ function init() {
 }
 
 
-function definirCorrecciones() {
+function definirCorrecciones(c) {
    // Elimina enseñanzas que no son bilingües
    this.register("bilingue", {
       attr: "oferta",
@@ -110,6 +113,7 @@ function definirCorrecciones() {
       }
    });
 
+   
    // Añade las vacantes telefónicas a las adjudicaciones.
    this.register("vt+", {
       attr: "adj",
@@ -140,6 +144,87 @@ function definirCorrecciones() {
          return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
       }
    });
+   
+}
+
+function cargaCorrecciones(){
+
+   // menuCorrecciones será un array con las opciones que serán mostradas en el menú de correcciones/filtrado
+   let menuCorrecciones = [];
+
+   /* 
+   Registramos manualmente los idiomas por los que queremos que se pueda filtrar. 
+   Dichos idiomas no pueden obtenerse de ningún listado, por lo que si el día de mañana
+   cambiaran, habría que añadirlos a mano
+   */
+  idiomas = [
+      {
+      opcion_id: "ing",
+      opcion_label: "Inglés",
+      opcion_valor: "Inglés",
+      opcion_checked: ""
+      },
+      {
+         opcion_id: "fra",
+         opcion_label: "Francés",
+         opcion_valor: "Francés",
+         opcion_checked: ""
+      },
+      {
+         opcion_id: "ale",
+         opcion_label: "Alemán",
+         opcion_valor: "Alemán",
+         opcion_checked: ""
+      }
+   ];
+
+   //Añadimos las correcciones de bilingüismo al menú
+   menuCorrecciones.push({
+      nombre: "Bilingüismo",
+      correccion_id: "bil",
+      correccion_name: "bilingue[]",
+      descripcion: "Muestra únicamente centros bilingües en:",
+      values: idiomas
+   });
+
+   //Añadimos las correcciones de vacantes telefónicas al menú
+   menuCorrecciones.push({
+      nombre: "Vacantes telefónicas",
+      correccion_id: "vac",
+      correccion_name: "vt+",
+      descripcion: "Añade las vacantes telefónicas a las adjudicaciones",
+      values: [{
+         opcion_id: "vac",
+         opcion_label: "Añadir vacantes",
+         opcion_valor: "Vac",
+         opcion_checked: ""
+         }]
+   });
+
+   // Correcciones de adjudicaciones
+   menuCorrecciones.push({
+      nombre: "Adjudicaciones",
+      correccion_id: "puesto",
+      correccion_name: "adjpue[]",
+      descripcion: "Elimina las adjudicaciones que no sean de los puestos:",
+      values: Object.keys(g.general.puestos).map(function(key, index){
+         return {
+            opcion_id: key,
+            opcion_label: g.general.puestos[key],
+            opcion_valor: key,
+            opcion_checked: "checked"
+         }
+      })
+   });
+
+   // Por último, asignamos los valores a la plantilla
+   var app = new Vue({
+      el: '#correcciones',
+      data: {
+          correcciones: menuCorrecciones
+      },
+      template: "#template_correccion"
+  });
 }
 
 
@@ -218,7 +303,7 @@ function crearIconos() {
    }
 
    // Los dos iconos CSS comparten el HTML que está definido en un template
-   const html = document.querySelector("template").content;
+   const html = document.querySelector("#iconos").content;
 
    // Los dos iconos CSS comparten el mismo HTML
    function updaterCSS(o) {
@@ -352,7 +437,7 @@ function crearIconos() {
       piolin: L.utils.createMutableIconClass("piolin", {
          iconSize: null,
          iconAnchor: [12.5, 34],
-         css:  "../dist/images/piolin.css",
+         css:  "dist/images/piolin.css",
          html: html,
          converter: converter.bind(null, ["numvac", "tipo"]),
          //fast: true,
@@ -361,7 +446,7 @@ function crearIconos() {
       chupachups: L.utils.createMutableIconClass("chupachups", {
          iconSize: [25, 34],
          iconAnchor: [12.5, 34],
-         css:  "../dist/images/chupachups.css",
+         css:  "dist/images/chupachups.css",
          html: html,
          converter: converter.bind(null, ["numvac", "tipo"]),
          //fast: true,
@@ -370,7 +455,7 @@ function crearIconos() {
       solicitud: L.utils.createMutableIconClass("solicitud", {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
-         url:  "../dist/images/solicitud.svg",
+         url:  "dist/images/solicitud.svg",
          converter: converter.bind(null, ["peticion"]),
          //fast: true,
          updater: function(o) {
@@ -386,7 +471,7 @@ function crearIconos() {
       boliche: L.utils.createMutableIconClass("boliche", {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
-         url:  "../dist/images/boliche.svg",
+         url:  "dist/images/boliche.svg",
          converter: converter.bind(null, undefined),
          //fast: true,
          updater: updaterBoliche,
@@ -394,6 +479,44 @@ function crearIconos() {
    }
 }
 
+function displayInfoCentro(centro, infoEspecialidad, data){
+   // Test to see if the browser supports the HTML template element by checking
+   // for the presence of the template element's content attribute.
+   if ('content' in document.createElement('template')) {
+       var app = new Vue({
+           el: '#template-centro',
+           data: {
+               datosCentro: centro,
+               info: infoEspecialidad
+           },
+           template: "#template-centro",
+           filters: {
+               capitalize: function (value) {
+                 if (!value) return ''
+                 value = value.toString()
+                 return value.charAt(0).toUpperCase() + value.slice(1)
+               },
+               /* 
+               * DecodificaCentro devuelve el nombre de un centro dado un código. 
+               * Utilizado principalmente para obtener el nombre del centro en enseñanzas trasladadas
+               */
+               decodificaCentro: function(codCentro){
+                   centro = data.features.filter(
+                       function (feature){
+                           /*
+                           Con feature.geometry distinto de undefined nos estamos asegurando que la feature es un centro,
+                           ya que la primera feature es en realidad información relacionada con la especialidad
+                           */
+                           return typeof feature.geometry !== 'undefined' && feature.properties.data.id.cod == codCentro
+                       }
+                   );
+                   //Ahora en centro tenemos los datos del centro cuyo código coincide con el buscado
+                   return centro[0].properties.name;
+               }
+             }
+       });
+   }
+}
 
 window.onload = init
 
