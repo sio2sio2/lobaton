@@ -29,6 +29,64 @@ Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
 
 Preliminares
 ============
+
+.. _dev-map-data:
+
+Datos
+-----
+Los **datos** deben obtenerse de algún modo y presentar algún formato.
+Consideremos que son de tipo GeoJSON_:
+
+.. code-block:: json
+
+   {
+      "type": "FeatureCollection",
+      "features": [
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-5.9526, 37.275475]
+            },
+            "properties": {
+               "name": "Centro 1",
+               "data": {
+                  "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+                  "oferta": ["SMR", "DAM", "BACHILLERATO"],
+                  "tipo": "normal"
+               }
+            }
+
+         },
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-4.6389, 37.58434]
+            },
+            "properties": {
+               "name": "Centro 2",
+               "data": {
+                  "adj": ["Concursillo", "Expectativa", "Interino"],
+                  "oferta": ["SMR", "ASIR"],
+                  "tipo": "dificil"
+               }
+            }
+
+         }
+      ]
+   }
+
+.. note:: No es requisito que los datos tengan este formato, pero es un
+   estándar y Leaflet_ dispone de `un tipo de capa
+   <https://leafletjs.com/reference-1.4.0.html#geojson>`_ que es capaz de
+   interpretarlos directamente generando una marca y conectando los datos
+   a ella a través de la propiedad ``feature``. En cualquier caso, es posible
+   tratar un formato cualquiera de datos, creando independientemente la marca
+   y conectando a través de una propiedad el dato correspondiente a ella .
+
+Carga del mapa
+--------------
 Como es obvio, el uso de la librería exige la carga previa de Leaflet_:
 
 .. code-block:: html
@@ -52,7 +110,10 @@ nuestra librería y el *script* donde desarrollaremos la creación del mapa.
    <!-- Script particular para este mapa -->
    <script src="scripts/demo.js"></script>
 
-También, por supuesto, deberíamos incluir en el documento un elemento en el que
+Las pautas para escribir este último *script* (:file:`scripts/demo.js`) (y el
+propio duocumento |HTML| claro está) son el propósito de este documento.
+
+También, por supuesto, deberíamos incluir en el |HTML| un elemento en el que
 incrustar el mapa. Típicamente:
 
 .. code-block:: html
@@ -74,7 +135,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
        maxZoom: 18
    }).addTo(map);
 
-   // Y una capa GeoJSON para añadir los datos y crear las marcas
+   // Y una capa GeoJSON para crear las marcas y conectarles los datos.
    const layer =  L.geoJSON(datos, {
       pointToLayer: (f, p) => new Centro(p, {
          icon: new Icono(),
@@ -86,35 +147,270 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    ``crearIcono()``, a lo que dedicaremos el próximo apartado.
 
 #. La creación de la marca apropiada que requiere obligatoriamente la inclusión
-   de la opción *mutable* cuyo valor debe ser la propiedad de la marca donde se
-   guardarán los datos asociados a la marca. Dado que usamos como origen de los
-   datos un objeto GeoJSON_, los datos apareceran dentro de
-   ``feature.properties``. En nuestro caso, hemos supuesto que los datos que nos
-   interesan se encuentran en ``feature.properties.data``, aunque podríamos
-   haber pasado como valor de ``mutable`` también ``feature.properties``. Lo
-   importante es tener presente que:
+   de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
+   se guardarán los datos asociados a la marca. Dado que usamos como origen de
+   los datos un objeto GeoJSON_, éstos apareceran dentro de
+   ``feature.properties``. En :ref:`nuestro caso <dev-map-data>`, hemos
+   supuesto que los datos que nos interesan se encuentran en
+   ``feature.properties.data``, aunque podríamos haber pasado como valor de
+   ``mutable`` también ``feature.properties``. Lo importante es tener presente
+   que:
 
    * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
-     precisos para tratar la mutabilidad de los iconos.
+     precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
+     la marca será un `L.Marker
+     <https://leafletjs.com/reference-1.4.0.html#marker>`_ común y corriente de
+     LeafLet_.
 
-   * Esa será la propiedad en la consulte los datos la aplicación y será la
-     propiedad cuyo valor devuelva el método de marca ``.getData()``.
+   * El valor de de la propiedad se tomará como los datos asociados a la marca
+     y de hecho, tal valor será el que devuelva el método de marca ``.getData()``.
+
+     .. todo:: Convertir esto en un enlace al método.
 
 #. La creación del mapa, que es la habitual con Leaflet_.
 
 #. La creación de una capa para el tratamiento de los datos en formato
    *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
-   previamente de algún modo.
+   previamente de algún modo. En caso de que el formato de entrada no sea
+   GeoJSON_, podríamos usar simplemente `L.LayerGroup
+   <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
+   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
+
+   .. seealso:: Vea
+
+.. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
+   también, es imprescindible usar la extensión `L.MarkerCluster
+   <https://github.com/Leaflet/Leaflet.markercluster>`_ para agrupar las
+   marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
+   que aumentamos la escala. Consulte :ref:`el uso de esta capa de clusters más
+   adelante <dev-map-cluster>`.
 
 .. _crear-icono:
 
-Creación del icono
-==================
+Definición del icono
+====================
+La definición del icono es la parte más engorrosa de toda la programación, en la medida
+en que al ser un icono cuyo aspecto cambia según los datos particulares
+asociados a cada marca o según las correcciones que el usuario imponga a estos
+datos, hay que definir cuáles son las reglas de cambio. En un icono normal,
+además de propiedades adicionales como el tamaño o el punto de anclaje, la propiedad
+fundamental es aquella que define cuál es el icono: ``iconUrl`` para iconos que
+se definen como imágenes, y ``html`` para iconos `L.DivIcon
+<https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
+diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
+en detalles visuales dentro del icono.
+
+Ingredientes
+------------
+Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icono son las siguientes:
+
+``html`` (o bien, ``url``)
+   Define la plantilla que se usará para crear el icono. Sobre esa plantilla se
+   realizarán variaciones determinadas por los valores concretos de los datos. Si
+   se proporciona ``url`` se entiende que es un fichero donde se ha almacenado
+   la definición. Un típico caso, sería pasar la |URL| a un |SVG|::
+
+      const url = "images/centro.svg";
+
+   ``html``, en cambio, debe usarse cuado la definición de la plantilla se hace:
+
+   * A través de una cadena::
+
+      const html = '<div class="content"><span></span></div><div class="arrow"></div>'
+
+   * A través de un DocumentFragment_ que sería el objeto que obtendríamos
+     si hubiéramos incluido la definición a través de un `<template>`_ |HTML|:
+
+     .. code-block:: html
+
+        <template id="icono">
+            <div class="content"><span></span></div>
+            <div class="arrow"></div>
+        </template>
+
+     que permitiría hacer en el código *Javascript* esta definición::
+
+        const html = document.getElementById("icono").content;
+
+   * Directamente a través de un HTMLElement_\ [#]_::
+
+      const html = document.createElement("div");
+      const content = document.createElement("div");
+      content.className = "content";
+      html.appendChild(content);
+      const arrow = document.createElement("div");
+      arrow.className = "arrow";
+      html.appendChild(arrow);
+      content.appendChild("span");
+
+``css``
+   Cuando el icono se define a través de elementos |HTML| (o sea, todos los
+   ejemplos anteriores, excepto el icono |SVG|), es preciso indicar las reglas
+   |CSS| que permiten generar el icono::
+
+      css = "images/chupachups.css";
+
+   El fichero podría ser algo así:
+
+   .. code-block:: css
+
+      .chupachups .content {
+         position: relative;
+         box-sizing: border-box;
+         height: 70%;
+         margin: 0; padding: 3px;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border: solid 3px #888;
+         font-weight: bold;
+      }
+
+      .chupachups .arrow {
+         position: relative;
+         margin: 0; padding: 0;
+         width: 10%; height: 30%;
+         left: 45%;
+         background-color: #444;
+      }
+
+      .chupachups .normal {
+         background-color: #ddd;
+      }
+
+      .chupachups .compensatoria {
+         background-color: #7be;
+      }
+
+      .chupachups .dificil {
+         background-color: #ebb;
+      }
+
+   que provoca que el icono adquiera la forma de un *chupachups* y en el que se
+   pretende notar dos características: la cantidad de adjudicaciones (como
+   contenido del elemento ``<span>``) y el tipo de centro como color de fondo.
+
+``converter``
+   El aspecto del icono depende de los datos asociados, pero es bastante
+   probable que no dependa de todos, sino sólo de una parte. En nuestro ejemplo,
+   los datos son::
+
+      "data": {
+         "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+         "oferta": ["SMR", "DAM", "BACHILLERATO"]
+         "tipo": "normal".
+      }
+
+   o sea, las adjudicaciones, la oferta y el tipo de centro. Sin embargo, el
+   icono se representa tomando el número de adjudicaciones y el tipo de centro;
+   la oferta no contribuye al aspecto en obsoluto. Por tanto, las **opciones de
+   dibujo** deberían ser::
+
+      opts = {
+         adj: 4,
+         tipo: "normal"
+      }
+
+   y, en consecuencia, requerimos una función que permita transformar los
+   *datos* en *opciones de dibujo*. A esta función la denominaremos ``converter``::
+
+      function converter(data) {
+         const res = {};
+         if(data.hasOwnProperty("adj")) res["numadj"] = data.adj.length;
+         if(data.hasOwnProperty("tipo")) res["tipo"] = data.tipo;
+
+         return res;
+      }
+
+   Es interesante que escribamos la función ``converter``, de modo que sólo
+   calculemos las opciones de dibujo asociadas a los datos que se nos
+   suministran. En el caso sencillo del ejemplo, devolveremos un objeto con
+   únicamente la opción de dibujo ``numadj``, si el dato suministrado sólo
+   aportaba el *array* de adjudicaciones; e idéntica cosa ocurrirá con
+   ``tipo``.
+
+``updater``
+
+``fast``
+   Provoca que la librería pase a la función ``converter`` solamente los datos
+   modificados desde la última vez que se dibujó el icono. Esto agiliza la
+   conversión, ya que no se calcularán **opciones de dibujo** que dependan de
+   datos no modificados y que en consecuencia adquieran el mismo valor y
+   provoquen el mismo efecto de dibujo en el icono. Su valor puede ser:
+
+   * Un objeto que relacione las opciones de dibujo con la propiedad de los
+     datos del que derivan::
+
+      fast = {numadj: "adjudicaciones", tipo: "tipo"}
+
+   * Directamente, las propiedades de los datos que contribuyen a generar los
+     valores de las *opciones de dibujo*::
+
+      fast = [ "adjudiaciones", "tipo" ]
+
+Definición
+----------
+Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
+
+   function crearIcono() {
+      // Definiciones de html, css, converter, updater, fast.
+
+      return Icono = L.utils.createMutableIconClass("chupachups", {
+         iconSize: [25, 34],
+         iconAnchor: [12.5, 34],
+         css: css,
+         html: html,
+         converter: converter,
+         fast: fast,
+         updater: updater
+      });
+   }
+
+.. note:: Por supuesto, podemos seguir añadiendo opciones definidas para la
+   clase `L.Icon <https://leafletjs.com/reference-1.4.0.html#icon>`_ como es el
+   caso de ``iconSize`` e ``iconAnchor``.
+
+Correcciones
+============
+
+.. Hablar de prepare en onEachFeature.
+
+Variantes
+=========
+
+.. _dev-map-cluster:
 
 Uso de Leaflet.markercluster_
-=============================
+-----------------------------
+
+Datos que no son GeoJSON_
+-------------------------
+
+Barra de progreso
+-----------------
+
+.. todo:: Evento layeradd de FeatureGroup.
+
+Ejemplo completo
+================
+
+.. rubric:: Notas al pie
+
+.. [#] O sea, una clase de icono a partir de la cual se crearán los iconos
+   particulares de cada marca.
+.. [#] Estamos reproduciendo la definición anterior, pero en este caso debemos
+   añadir un contenedor ``<div>`` extra.
+
+.. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
+.. |HTML| replace:: :abbr:`HTML (HyperText Markup Language)`
+.. |SVG| replace:: :abbr:`SVG (Scalable Vector Graphics)`
+.. |CSS| replace:: :abbr:`CSS (Cascading Style Sheets)`
 
 .. _vue.js: https://vuejs.org/
 .. _leaflet: https://leafletjs.com/
 .. _leaflet.markercluster: https://github.com/Leaflet/Leaflet.markercluster
 .. _GeoJSON: http://geojson.org/
+.. _<template>: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template
+.. _documentfragment: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+.. _HTMLElement: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
