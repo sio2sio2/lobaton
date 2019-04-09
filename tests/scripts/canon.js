@@ -48,6 +48,7 @@ function init() {
             callback: function(xhr) {
                const centros = JSON.parse(xhr.responseText);
                Icono.onready(agregarCentros.bind(null, Icono, centros));
+               
             }
          });
       });
@@ -148,7 +149,7 @@ function definirCorrecciones(c) {
 }
 
 function cargaCorrecciones(){
-
+   console.log("Cargando correcciones");
    // menuCorrecciones será un array con las opciones que serán mostradas en el menú de correcciones/filtrado
    let menuCorrecciones = [];
 
@@ -212,7 +213,7 @@ function cargaCorrecciones(){
             opcion_id: key,
             opcion_label: g.general.puestos[key],
             opcion_valor: key,
-            opcion_checked: "checked"
+            opcion_checked: ""
          }
       })
    });

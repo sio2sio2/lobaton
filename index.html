@@ -73,15 +73,15 @@
             <div id="filtros" class="section-cardbox-content collapse show">
               <form autocomplete="off" id="form_filtros">
                 <template id="template_correccion">
-                  <div>
+                  <div id="correcciones">
                   <template v-for="cor in correcciones">
                     <fieldset class="form-group" :name="cor.correccion_id">
                         <legend>{{cor.nombre}}</legend>
                         <small class="help" class="form-text text-muted">{{cor.descripcion}}</small>
                         <template v-for="opcion in cor.values">
                           <div class="form-group row">
-                            <label class="etiqueta col-sm-10 col-form-label" :for="opcion.opcion_id">{{opcion.opcion_label}}</label>
-                            <div class="custom-switch custom-switch-xs pl-0 col-sm-2">
+                            <label class="etiqueta col-form-label" :for="opcion.opcion_id">{{opcion.opcion_label}}</label>
+                            <div class="custom-switch custom-switch-xs pl-0 ">
                               <input :name="cor.correccion_name" class="custom-switch-input correccion" :id="opcion.opcion_id" type="checkbox" :value="opcion.opcion_valor" :checked="opcion.opcion_checked">
                               <label class="custom-switch-btn" :for="opcion.opcion_id"></label>
                             </div>
