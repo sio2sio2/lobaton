@@ -145,70 +145,13 @@ function definirCorrecciones() {
 
 // Definición de los distintos estilos para iconos.
 function crearIconos() {
-   /**
-    * Función que convierte los datos en opciones de dibujo.
-    *
-    * @params {Array} attrs  Las opciones de dibujo que realmente se usan para dibujar el icono.
-    *    Como definimos varias clases de iconos y algunos son más simples que otros,
-    *    necesitan menos opciones de dibujo. Este argumento permite enumerar qué opciones
-    *    requiere la clase de icono en particular y así evitar que para todas las clases de
-    *    iconos se hagan las conversiones a todas las opciones de dibujo.
-    *    Si no se pasan, se sobrentiende que se quieren usar todas las opciones.
-    * @params {Object} o  Objeto con los datos.
-    */
-   function converter(o) {
-      const res = {};
+   // Los dos iconos CSS comparten todo, excepto el estilo CSS.
+   const converterCSS = new L.utils.Converter(["numvac", "tipo"])
+                              .define("tipo", "mod.tipo", t => t || "normal")
+                              .define("numvac", "adj", a => a.total !== undefined?a.total:a.length);
 
-      if(o.hasOwnProperty("adj")) res["numvac"] = (o.adj.total !== undefined)?o.adj.total:o.adj.length;
-      if(o.hasOwnProperty("mod")) {
-         res["tipo"] = o.mod.hasOwnProperty("dif")?o.mod.dif:"normal";
-         res["ofervar"] = o.mod.hasOwnProperty("cam")?o.mod.cam:0;
-      }
-
-      if(o.hasOwnProperty("peticion")) res["peticion"] = o.peticion;
-
-      if(o.hasOwnProperty("oferta")) {
-         res["numofer"] = 0;
-         if(o.oferta.walk !== undefined) {
-            for(const ens of o.oferta.walk()) {
-               if(!ens.value) continue
-               res["numofer"] += ens.value.mar?3:1;
-            }
-         }
-         else {
-            for(const ens of o.oferta) res["numofer"] += ens.mar?3:1;
-         }
-         res["numofer"] = Math.round(res["numofer"]/3);
-
-         let idiomas;
-
-         // Array con los idiomas de cada enseñanza
-         if(o.oferta.walk) idiomas = Array.from(o.oferta.walk()).map(ens => ens.value && ens.value.idi)
-         else idiomas = o.oferta.map(ens => ens.idi)
-
-         // Eliminamos valores nulos y valores repetidos.
-         idiomas = idiomas.filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
-
-         switch(idiomas.length) {
-            case 0:
-               res["bil"] = null;
-               break;
-            case 1:
-               res["bil"] = idiomas[0];
-               break;
-            default:
-               res["bil"] = "multi";
-         }
-
-      }
-
-      return res;
-   }
-
-   // Los dos iconos CSS comparten el HTML que está definido en un template
    const html = document.querySelector("template").content;
 
-   // Los dos iconos CSS comparten el mismo HTML
    function updaterCSS(o) {
       const content = this.querySelector(".content");
       if(o.tipo) content.className = "content " + o.tipo;
@@ -216,7 +159,50 @@ function crearIconos() {
       return this;
    }
 
+   const converterSol = new L.utils.Converter(["peticion"]).define("peticion");
+
    // Los boliches tienen mucha miga...
+   const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar"])
+                              .define("tipo", "mod.tipo", t => t || "normal")
+                              .define("numvac", "adj", a => a.total !== undefined?a.total:a.length)
+                              .define("ofervar", "mod.cam", c => c || 0);
+
+   // Para calcular la cantidad de oferta se considera
+   // 1 una enseñanza deseable y 1/3 una que no lo es.
+   converterBol.define("numofer", "oferta", function(oferta) {
+      res = 0;
+      if(oferta.walk !== undefined) {
+         for(const ens of oferta.walk()) {
+            if(!ens.value) continue
+            res += ens.value.mar?3:1;
+         }
+      }
+      else {
+         for(const ens of oferta) res += ens.mar?3:1;
+      }
+      res = Math.round(res/3);
+   });
+
+   converterBol.define("bil", "oferta", function(oferta) {
+      const idiomas = oferta.walk?
+         Array.from(oferta.walk()).map(ens => ens.value && ens.value.idi):
+         oferta.map(ens => ens.idi)
+
+      // Eliminamos valores nulos y valores repetidos.
+      idiomas = idiomas.filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
+
+      switch(idiomas.length) {
+         case 0:
+            return null;
+            break;
+         case 1:
+            return idiomas[0];
+            break;
+         default:
+            return "multi";
+      }
+   });
+
    const updaterBoliche = (function(o) {
       const paletaOferta = new Array(5).fill(null);
       const paletaPlazas = new Array(7).fill(null);
@@ -342,8 +328,7 @@ function crearIconos() {
          iconAnchor: [12.5, 34],
          css:  "../dist/images/piolin.css",
          html: html,
-         converter: converter,
-         fast: {numvac: "adj", tipo: "mod"},
+         converter: converterCSS,
          updater: updaterCSS
       }),
       chupachups: L.utils.createMutableIconClass("chupachups", {
@@ -351,16 +336,14 @@ function crearIconos() {
          iconAnchor: [12.5, 34],
          css:  "../dist/images/chupachups.css",
          html: html,
-         converter: converter,
-         fast: {numvac: "adj", tipo: "mod"},
+         converter: converterCSS,
          updater: updaterCSS
       }),
       solicitud: L.utils.createMutableIconClass("solicitud", {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/solicitud.svg",
-         converter: converter,
-         fast: {peticion: "peticion"},
+         converter: converterSol,
          updater: function(o) {
             var text = this.querySelector("text");
             if(o.peticion !== undefined) {
@@ -375,7 +358,7 @@ function crearIconos() {
          iconSize: [40, 40],
          iconAnchor: [19.556, 35.69],
          url:  "../dist/images/boliche.svg",
-         converter: converter,
+         converter: converterBol,
          updater: updaterBoliche,
       }),
    }
