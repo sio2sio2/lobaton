@@ -180,11 +180,11 @@ function crearIconos() {
       else {
          for(const ens of oferta) res += ens.mar?3:1;
       }
-      res = Math.round(res/3);
+      return Math.round(res/3);
    });
 
    converterBol.define("bil", "oferta", function(oferta) {
-      const idiomas = oferta.walk?
+      let idiomas = oferta.walk?
          Array.from(oferta.walk()).map(ens => ens.value && ens.value.idi):
          oferta.map(ens => ens.idi)
 

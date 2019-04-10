@@ -229,14 +229,25 @@
        * @param {string}  attr  Nombre parcial de la propiedad. En principio,
        *                        sólo se usa el parámetro en las llamadas recursivas.
        */
-      function getNestedKeys(o, arr, attr) {
-         let attrs,
-             res = [];
+      function getNestedKeys(o, depth, arr, attr) {
+         let res = [],
+             attrs;
+         if(depth === undefined) depth = null;
          if(attr) res.push(attr);
-         if(arr && o.constructor === Array) attrs = o.keys();
-         else if(o.constructor === Object) attrs = Object.keys(o);
-         else return res;
-         for(const p of attrs) res.push.apply(res, getNestedKeys(o[p], arr, attr?attr + "." + p:p));
+         if(o === null || typeof o !== "object" || depth !== null && depth < 1) return res;
+         if(o.constructor === Array) {
+            if(arr) attrs = o.keys();
+            else return res;
+         }
+         else attrs = Object.keys(o);
+         if(depth !== null) depth--;
+         for(const p of attrs) res.push.apply(res, getNestedKeys(o[p], depth, arr, attr?attr + "." + p:p));
+         return res;
+      }
+
+      function countChar(string, ch) {
+         let res = 0;
+         for(const c of string) if(c===ch) res++;
          return res;
       }
 
@@ -253,6 +264,15 @@
             depends: [],
             converter: null
          }
+         // Profundidad máxima en la que se encuentra
+         // una propiedad del objeto original que influye
+         // en el valor de alguna propiedad del objeto destino.
+         Object.defineProperty(this, "__depth", {
+            value: 1,
+            writable: true,
+            configurable: false,
+            enumerable: false
+         });
       }
 
       Object.defineProperties(Converter.prototype, {
@@ -348,6 +368,8 @@
                }
                this._params[param].depends = properties;
                this._params[param].converter = func || (x => x);
+               const depth = Math.max(properties.map(p => countChar(p, ".") + 1));
+               if(depth > this.__depth) this.__depth = depth;
                return this;
             },
             writable: false,
@@ -382,7 +404,7 @@
          "run": {
             value: function(o) {
                const res = {};
-               for(const p of this._getParams(getNestedKeys(o))) {
+               for(const p of this._getParams(getNestedKeys(o, this.__depth))) {
                   if(!this.isDefined(p)) throw new Error(`${p}: su conversión no está definida`);
                   const converter = this._params[p].converter,
                         depends = this._params[p].depends;
@@ -828,7 +850,7 @@
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
-         if(icon.options.params) icon.options.params.change(icon.options.converter.ruu(data));
+         if(icon.options.params) icon.options.params.change(icon.options.converter.run(data));
          return true;
       },
       /**
