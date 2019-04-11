@@ -2,11 +2,10 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -d build/doctrees
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
-#BUILDDIR      = build
-BUILDDIR      = ..
+BUILDDIR      = ../..
 
 # Put it first so that "make" without argument is like "make help".
 help:
