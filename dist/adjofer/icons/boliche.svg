@@ -56,7 +56,7 @@
       </g>
 
       <!-- +, - o nada, dependiendo de la oferta -->
-      <g class="ofervar" fill-opacity="0" stroke-width="6" stroke="black">
+      <g display="none" class="ofervar" fill-opacity="0" stroke-width="6" stroke="black">
          <path d="M 62 14 h 20" />
          <path d="M 72 4 v 20" />
       </g>

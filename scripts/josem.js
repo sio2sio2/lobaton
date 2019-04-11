@@ -1,5 +1,6 @@
+var g;
+
 (function() {
-   var g;
 
    function init() {
       g = M("map");  // Cargamos el mapa y los iconos.
@@ -167,5 +168,6 @@
       }
    }
    window.onload = init();
+
 })();
 
