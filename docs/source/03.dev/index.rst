@@ -1,5 +1,5 @@
-Documentación para desarrolladores
-==================================
+Documentación de desarrollo
+===========================
 
 .. toctree::
    :glob:

@@ -149,12 +149,12 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
 #. La creación de la marca apropiada que requiere obligatoriamente la inclusión
    de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
    se guardarán los datos asociados a la marca. Dado que usamos como origen de
-   los datos un objeto GeoJSON_, éstos apareceran dentro de
-   ``feature.properties``. En :ref:`nuestro caso <dev-map-data>`, hemos
-   supuesto que los datos que nos interesan se encuentran en
-   ``feature.properties.data``, aunque podríamos haber pasado como valor de
-   ``mutable`` también ``feature.properties``. Lo importante es tener presente
-   que:
+   los datos un objeto GeoJSON_ y los añadimos al mapa mediante una capa
+   `L.GeoJSON`_ , éstos apareceran dentro de ``feature.properties``. En
+   :ref:`nuestro caso <dev-map-data>`, hemos supuesto que los datos que nos
+   interesan se encuentran en ``feature.properties.data``, aunque podríamos
+   haber pasado como valor de ``mutable`` también ``feature.properties``. Lo
+   importante es tener presente que:
 
    * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
      precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
@@ -176,7 +176,8 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
    <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
 
-   .. seealso:: Vea
+   .. seealso:: Vea cómo :ref:`tratar datos que no tenga formato GeoJSON
+      <dev-map-no-geojson>`.
 
 .. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
    también, es imprescindible usar la extensión `L.MarkerCluster
@@ -198,7 +199,7 @@ fundamental es aquella que define cuál es el icono: ``iconUrl`` para iconos que
 se definen como imágenes, y ``html`` para iconos `L.DivIcon
 <https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
 diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
-en detalles visuales dentro del icono.
+en detalles visuales del icono.
 
 Ingredientes
 ------------
@@ -243,6 +244,8 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
       html.appendChild(arrow);
       content.appendChild("span");
 
+.. _dev-map-css:
+
 ``css``
    Cuando el icono se define a través de elementos |HTML| (o sea, todos los
    ejemplos anteriores, excepto el icono |SVG|), es preciso indicar las reglas
@@ -250,7 +253,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
       css = "images/chupachups.css";
 
-   El fichero podría ser algo así:
+   El fichero podría ser algo así\ [#]_:
 
    .. code-block:: css
 
@@ -308,46 +311,103 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
    dibujo** deberían ser::
 
       opts = {
-         adj: 4,
+         numadj: 4,
          tipo: "normal"
       }
 
-   y, en consecuencia, requerimos una función que permita transformar los
-   *datos* en *opciones de dibujo*. A esta función la denominaremos ``converter``::
+   Para definir cómo transformar ``data`` en ``opts``, la librería provee de una
+   clase ``L.utils.Converter``::
 
-      function converter(data) {
-         const res = {};
-         if(data.hasOwnProperty("adj")) res["numadj"] = data.adj.length;
-         if(data.hasOwnProperty("tipo")) res["tipo"] = data.tipo;
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => a.length)
+                           .define("tipo");
 
-         return res;
-      }
+   Aunque hayamos definido todo en una sola orden, hemos realizado tres tareas:
 
-   Es interesante que escribamos la función ``converter``, de modo que sólo
-   calculemos las opciones de dibujo asociadas a los datos que se nos
-   suministran. En el caso sencillo del ejemplo, devolveremos un objeto con
-   únicamente la opción de dibujo ``numadj``, si el dato suministrado sólo
-   aportaba el *array* de adjudicaciones; e idéntica cosa ocurrirá con
-   ``tipo``.
+   #. Crear el objeto::
+
+         const converter = new L.utils.Converter(["numadj", "tipo"]);
+
+      que permite especificar cuáles son las opciones de dibujo de las que
+      dependerán los detalles visuales del icono: "*numadj*" y ""*tipo*".
+      
+   #. Definir cómo obtener ``numadj`` a partir de los datos::
+
+         converter.define("numadj", "adj", a => a.length);
+
+      qye significa: para obtener ``nmumadj`` (primer argumento) debemos
+      basarnos en el valor de ``adj`` (segundo argumento) y obtener la longitud
+      de su valor (que es el significado de la función que se ha usado en tercer
+      lugar).
+
+   #. Definir cómo obtener ``tipo``, para lo cual se ha hecho esta simple
+      definición::
+
+         converter.define("tipo");
+
+      lo cual es posible, ya que si no especifica el nombre de la propiedad de
+      los datos, éste coincide con el de la opción de dibujo; y, si no se
+      especifica la función conversora, el valor no se transforma en absoluto.
+      Por tanto, lo anterior es equivalente a::
+
+         converter.define("tipo", "tipo", t => t);
+
+   Como el método ``.define()`` devuelve el objeto mismo, es posible hacer
+   encadenamiento y convertir las tres instrucciones en una sola.
+
+   Hay, no obstante, dos puntualizaciones que hacer:
+
+   #. Cuando la opción de dibujo depende de dos o más propiedades, puede usarse
+      un array. Por ejemplo, supongamos que una opción de dibujo fuera
+      ``adjofer`` que es la suma del número de adjudicaciones y el número de
+      enseñanzas. En ese caso, la definición podría haber sido::
+
+         converter.define("adjofer", ["adj", "oferta"], (a, o) => a.length + o.length);
+
+      Téngase en cuenta que los argumentos de la función conversora siguen el
+      orden definido en el array. Por tanto, ``a`` representa al array de
+      adjudicaciones y ``o`` al de oferta.
+
+   #. Cuando la propiedad está anidada dentro de los datos puede usarse la
+      notaciión de punto. Por ejemplo, supongamos que la definición de los datos
+      hubiera sido así::
+
+         "data": {
+            "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+            "oferta": ["SMR", "DAM", "BACHILLERATO"]
+            "mod": {
+               "tipo": "normal".
+            }
+         }
+
+      En ese caso la definición de ``tipo`` podría haberse hecho del siguiente
+      modo::
+
+         converter.define("tipo", "mod.tipo");
+         
 
 ``updater``
+   Define la función que traslada los valores de las opciones de dibujo al
+   dibujo en sí::
 
-``fast``
-   Provoca que la librería pase a la función ``converter`` solamente los datos
-   modificados desde la última vez que se dibujó el icono. Esto agiliza la
-   conversión, ya que no se calcularán **opciones de dibujo** que dependan de
-   datos no modificados y que en consecuencia adquieran el mismo valor y
-   provoquen el mismo efecto de dibujo en el icono. Su valor puede ser:
+      function updater(o) {
+         const content = this.querySelector(".content");
+         if(o.tipo) content.className = "content " + o.tipo;
+         if(o.numvac !== undefined) content.firstElementChild.textContent = o.numvac;
+         return this;
+      }
 
-   * Un objeto que relacione las opciones de dibujo con la propiedad de los
-     datos del que derivan::
+   El contexto de la función es el elemento |HTML| que representa al icono en la
+   página\ [#]_, y ``o`` es el objeto que contiene las opciones de dibujo.
 
-      fast = {numadj: "adjudicaciones", tipo: "tipo"}
-
-   * Directamente, las propiedades de los datos que contribuyen a generar los
-     valores de las *opciones de dibujo*::
-
-      fast = [ "adjudiaciones", "tipo" ]
+   .. warning:: Para la mejora del rendimiento, no se pasan todos los parámetros
+      sino sólo aquellos que han cambiado desde la última vez que se dibujó el
+      icono. Por ese motivo, debe definir la función teniendo en cuenta esto.
+      En la función de ejemplo, si no se pasa el *tipo*, no se modifica la clase
+      de "*content*", y si no se pasa *numvac*, no se modifica el número
+      contenido en el elemento ``<span>``. Esto es así, porque no pasar la
+      opción significa que su valor no ha cambiado y, en consecuencia, ese
+      aspecto del dibujo debe permanecer igual.
 
 Definición
 ----------
@@ -357,24 +417,49 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
       // Definiciones de html, css, converter, updater, fast.
 
       return Icono = L.utils.createMutableIconClass("chupachups", {
+         className: "chupachups",
          iconSize: [25, 34],
          iconAnchor: [12.5, 34],
          css: css,
          html: html,
          converter: converter,
-         fast: fast,
          updater: updater
       });
    }
 
 .. note:: Por supuesto, podemos seguir añadiendo opciones definidas para la
    clase `L.Icon <https://leafletjs.com/reference-1.4.0.html#icon>`_ como es el
-   caso de ``iconSize`` e ``iconAnchor``.
+   caso de ``className``, ``iconSize`` e ``iconAnchor``. El valor de la primera
+   opción es la causante de que en el |CSS| que definía la forma del icono, se
+   hubiera usado la clase "*chupachups*".
 
 Correcciones
 ============
+El :dfn:`sistema de correcciones` permite alterar los datos iniciales de las
+marcas según una serie de criterios predefinidos. En el ejemplo anterior, un
+cirerio podría ser: *eliminar todas las adjudicaciones* que sean de un colectivo
+determinado. Si el colectivo fuese el de *interinos*, es claro que las
+adjudicaciones pasarían de **4** a **3** y de **3** a **2**.
 
-.. Hablar de prepare en onEachFeature.
+.. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
+   cuyo valor sea un *array*.
+
+Definición
+==========
+Para definir los criterios de corrección es preciso registrar cada criterio
+sobre la clase de la marca::
+
+   Centro.register("adjpue", {
+      attr: "adj",
+      func: function(value, adj, opts) {
+         return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
+      }
+   });
+
+.. Hablar de prepare en onEachFeature (o en layeradd).
+
+Filtros
+=======
 
 Variantes
 =========
@@ -383,6 +468,8 @@ Variantes
 
 Uso de Leaflet.markercluster_
 -----------------------------
+
+.. _dev-map-no-geojson:
 
 Datos que no son GeoJSON_
 -------------------------
@@ -401,6 +488,11 @@ Ejemplo completo
    particulares de cada marca.
 .. [#] Estamos reproduciendo la definición anterior, pero en este caso debemos
    añadir un contenedor ``<div>`` extra.
+.. [#] El por qué se usa la clase "*.chupachups*" en este trozo de |CSS| se
+   descubrirá más adelante.
+.. [#] Tenga presente que Leaflet_ envuelve la definición que con ``html`` o
+   ``url`` hayamos hecho en un elemento ``<div>``, y es este elemento el que
+   representa ``this``.
 
 .. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
 .. |HTML| replace:: :abbr:`HTML (HyperText Markup Language)`
@@ -414,3 +506,4 @@ Ejemplo completo
 .. _<template>: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template
 .. _documentfragment: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 .. _HTMLElement: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+.. _L.GeoJSON: https://leafletjs.com/reference-1.4.0.html#geojson
