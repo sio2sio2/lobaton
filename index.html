@@ -98,13 +98,13 @@
           <template id="template-centro">
             <div class="section-cardbox" id="template-centro">
               <div class="section-cardbox-header" data-toggle="collapse" href="#info-centro">
-                <span>{{datosCentro.name}}</span>
+                <span>{{datosCentro.id.nom}}</span>
               </div>
 
               <div class="card collapse show" id="info-centro">
                 <div class="card-body">
-                  <h5 class="card-title">Cod. {{datosCentro.data.id.cod}}</h5>
-                  <p class="card-text">Dirección: {{datosCentro.data.id.dom}}. {{datosCentro.data.id.mun}}. {{datosCentro.data.id.cp}}. {{datosCentro.data.id.pro}}.</p>
+                  <h5 class="card-title">Cod. {{datosCentro.id.cod}}</h5>
+                  <p class="card-text">Dirección: {{datosCentro.id.dom}}. {{datosCentro.id.mun}}. {{datosCentro.id.cp}}. {{datosCentro.id.pro}}.</p>
                 </div>
                 <div class="card-header">
                   Plazas relevantes
@@ -122,7 +122,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(plantilla, cod) in datosCentro.data.pla">
+                        <tr v-for="(plantilla, cod) in datosCentro.pla">
                           <th scope="row"><abbr v-bind:title="info.puestos[cod]">{{cod}}</abbr></th>
                           <td>{{plantilla.org}}</td>
                           <td>{{plantilla.fun}}</td>
@@ -137,7 +137,7 @@
                   Oferta educativa
                 </div>
                 <div class="card-body">
-                    <template v-for="of in datosCentro.data.oferta">
+                    <template v-for="of in datosCentro.oferta">
                         <h5 class="card-title">{{info.ens[of.ens].nombre}}</h5>
                         <!--Si ha sido trasladado-->
                         <p class="card-text info-oferta">
@@ -152,7 +152,7 @@
                   Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
                 </div>
                 <div class="card-body">
-                    <template v-for="plaza in datosCentro.data.adj">
+                    <template v-for="plaza in datosCentro.adj">
                       <h5 class="card-title">Puesto <abbr>{{plaza.pue}}</abbr></h5>
                       <p class="card-text puesto-pce" v-if="plaza.col==='J'">({{plaza.col}}) {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet. {{plaza.pet}}).</p>
                       <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc: {{plaza.esc}} (pet. {{plaza.pet}}).</p>
