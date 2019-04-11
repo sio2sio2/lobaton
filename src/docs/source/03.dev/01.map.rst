@@ -306,7 +306,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
       "data": {
          "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-         "oferta": ["SMR", "DAM", "BACHILLERATO"]
+         "oferta": ["SMR", "DAM", "BACHILLERATO"],
          "tipo": "normal".
       }
 
@@ -379,7 +379,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          "data": {
             "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-            "oferta": ["SMR", "DAM", "BACHILLERATO"]
+            "oferta": ["SMR", "DAM", "BACHILLERATO"],
             "mod": {
                "tipo": "normal".
             }
@@ -453,25 +453,61 @@ la librería:
 Correcciones
 ============
 El :dfn:`sistema de correcciones` permite alterar los datos iniciales de las
-marcas según una serie de criterios predefinidos. En el ejemplo anterior, un
-cirerio podría ser: *eliminar todas las adjudicaciones* que sean de un colectivo
-determinado. Si el colectivo fuese el de *interinos*, es claro que las
+marcas según una serie de criterios predefinidos. En el ejemplo anterior, podríamos
+desear "*eliminar todas las adjudicaciones que sean de un colectivo
+determinado*". Si el colectivo fuese el de *interinos*, es claro que las
 adjudicaciones pasarían de **4** a **3** y de **3** a **2**.
 
 .. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
    cuyo valor sea un *array*.
+
+Hay dos tipos diferentes de correcciones:
+
+a. Las correcciones que eliminan elementos del *array*. como es el caso de la
+   corrección de ejemplo que se acaba de enunciar.
+
+#. Las correcciones que añaden elementos al *array*.
 
 Definición
 ----------
 Para definir los criterios de corrección es preciso registrar cada criterio
 sobre la clase de la marca::
 
-   Centro.register("adjpue", {
+   Centro.register("adjcol", {
       attr: "adj",
       func: function(value, adj, opts) {
-         return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
+         return !!(opts.inv ^ (opts.colectivo.indexOf(value.pue) === -1));
       }
    });
+
+El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
+propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
+elmenetos, se ejecutará la función suministrada por ``func`` para cada uno de
+los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
+eliminará el elemento y cuando devuelva ``false``, se conservará.
+
+La función usa como contexto la marca y tiene tres argumentos:
+
+``value``
+   que es el valor del elemento del array que se pretende comprobar.
+
+``adj``
+   que es el array completo. En el ejemplo, el array ``adj``.
+
+``opts``
+   que es un objeto que contiene las opciones que permiten determinar la
+   corrección y cuya obtención será tarea de la interfaz de usuario. Para el
+   caso de ejemplo, se necesita los colectivos cuya adjudicación deseamos
+   conservar (propiedad ``colectivo``) y una propiedad ``inv`` que sirve para
+   invertir el significado. 
+
+En caso de que la corrección sirva para añdir elementos, no se recorrerá el
+array alemento por elemento, sino que la función se ejecutará una v vez y deberá
+devolver un *array* con los elementos que se desean incorporar. Como ``value``
+no tiene sentido en este caso, tomará el valor de *null*.
+
+.. warning:: Aunque tenga disponible el *array*, no añada los nuevos elementos
+   en la función, limítese a devolverlos.
 
 .. Hablar de prepare en onEachFeature (o en layeradd).
 
