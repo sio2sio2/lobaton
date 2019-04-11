@@ -23,14 +23,7 @@ window.onload = function() {
 
    const g = M("map");
    g.fire(function() {
-      console.log("Se han acabado de cargar los centros");
-      // Para aplicar del tirón algunas corrección a todas las marcas.
-      /*
-      g.Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
-      g.Centro.invoke("apply", "vt+", {});
-      g.Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
-      g.Centro.invoke("refresh");
-      */
+      console.log("DEBUG: Se han acabado de cargar los centros");
    });
 
    // A efectos de depuración
@@ -44,6 +37,7 @@ window.onload = function() {
       });
    });
 
+   /*
    // A cada centro añadido le aplicamos algunas correciones.
    g.cluster.on("layeradd", function(e) {
       const marca = e.layer;
@@ -53,6 +47,7 @@ window.onload = function() {
       // Redibujamos por si la marca ya estaba pintada.
       marca.refresh();
    });
+   */
 
    poblarSelectores()
    document.querySelector("select[name='especialidad']").dispatchEvent(new Event("change"));
