@@ -2,3 +2,4 @@
 TODO
 node_modules
 package-lock.json
+src/docs/build/doctrees
