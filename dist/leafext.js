@@ -73,23 +73,28 @@
    L.utils.load = load;
 
    /**
-    * Permite obtener el valor de una propiedad de forma
-    * que getProperty(x, "a.b") devolvería el valor de x.a.b
+    * Devuelve el valor de la propiedad "anidada" de un objeto.
+    *
+    * @example
+    *
+    * o = {a:1, b: {c:2, d:3}}
+    * geProperty(o, "b.c") === o.b.c  // true
+    *
+    * No obstante, comprueba antes que la propiedad no sea "anidada".
+    *
+    * @example
+    *
+    * o = {a:1, "b.c": 2, "b.d": 3}
+    * geProperty(o, "b.c") === o["b.c"]  // true
+    *
+    * @param {Object}  obj  El objeto del que se busca la propiedad.
+    * @param {string}  name El nombre de la propiedad anidada.
     */
-   function getProperty(obj, name) {
-      let res = obj;
-      name = name.split(".");
-
-      while(name.length) {
-         res = res[name.shift()];
-         if(res === undefined) break;
-      }
-      return res;
-   }
+   const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
 
 
    /**
-    * Comprueba si dos objetos son iguales a efectos de los requerido
+    * Comprueba si dos objetos son iguales a efectos de lo requerido
     * en este código.
     *
     * @param {Object} o  Un objeto.
@@ -194,6 +199,244 @@
       return L.DivIcon.extend({options: options});
    }
    // Fin issue #2
+
+   // Issue #21
+   /**
+    * Clase que permite definir cómo un objeto se obtiene a partir de otro.
+    */
+   L.utils.Converter = (function() {
+
+      // Calcula la intersección entre dos arrays.
+      const intersection = (a1, a2) => a1.filter(e => a2.indexOf(e) !== -1);
+
+      /**
+       * Obtiene los nombres de las propiedades de un objeto,
+       * así como los nombres de las propiedades anidadas.
+       *
+       * Sólo se extraen propiedades de objetos cuyo constructor
+       * sea directamente ``Object``, y opcionalmente los índices
+       * de los arrays.
+       *
+       * @example
+       *
+       * o = {a: 1, arr: [2, 3], b: {c: 4}}
+       * getNestedKeys(o)  // ["a", "arr", "b", "b.c"]
+       * getNestedKeys(o, true)  // ["a", "arr", "arr.0", "arr.1", ,"b", "b.c"]
+       *
+       * @param {Object}  o     El objeto a inspeccionar.
+       * @param {boolean} arr   true, si se desea inspeccionar las propiedades
+       *                        que son arrays.
+       * @param {string}  attr  Nombre parcial de la propiedad. En principio,
+       *                        sólo se usa el parámetro en las llamadas recursivas.
+       */
+      function getNestedKeys(o, depth, arr, attr) {
+         let res = [],
+             attrs;
+         if(depth === undefined) depth = null;
+         if(attr) res.push(attr);
+         if(o === null || typeof o !== "object" || depth !== null && depth < 1) return res;
+         if(o.constructor === Array) {
+            if(arr) attrs = o.keys();
+            else return res;
+         }
+         else attrs = Object.keys(o);
+         if(depth !== null) depth--;
+         for(const p of attrs) res.push.apply(res, getNestedKeys(o[p], depth, arr, attr?attr + "." + p:p));
+         return res;
+      }
+
+      function countChar(string, ch) {
+         let res = 0;
+         for(const c of string) if(c===ch) res++;
+         return res;
+      }
+
+      /**
+       * Constructor de la clase.
+       *
+       * @param {Array} params Enumera las nombres de las propiedades que tiene
+       *                       el objeto destino.
+       */
+      function Converter(params) {
+         this._params = {}
+         for(const p of params) this._params[p] = {
+            enabled: true,
+            depends: [],
+            converter: null
+         }
+         // Profundidad máxima en la que se encuentra
+         // una propiedad del objeto original que influye
+         // en el valor de alguna propiedad del objeto destino.
+         Object.defineProperty(this, "__depth", {
+            value: 1,
+            writable: true,
+            configurable: false,
+            enumerable: false
+         });
+      }
+
+      Object.defineProperties(Converter.prototype, {
+         /**
+          * Deshabilita una propiedad del objeto destino. Esto significa
+          * que cuando se obre la conversión del objeto, nunca se intentará
+          * obtener el valor de esta propiedad.
+          *
+          * @method disable
+          *
+          * @param {string} param  Nombre de la propiedad.
+          *
+          * @returns {Converter} El propio objeto.
+          */
+         "disable": {
+            value: function(param) {
+               this._params[param].enabled = false;
+               return this;
+            },
+            writable: false,
+            configurable: false
+         },
+         /**
+          * Habilita una propiedad del objeto destino.
+          *
+          * @method enable
+          *
+          * @param {string} param  Nombre de la propiedad.
+          *
+          * @returns {Converter} El propio objeto.
+          */
+         "enable": {
+            value: function(param) {
+               this._params[param].enabled = true;
+               return this;
+            },
+            writable: false,
+            configurable: false
+         },
+         /**
+          * Las propiedades definidas para el objeto de destino.
+          */
+         "params": {
+            get: function() {
+               return Object.keys(this._params);
+            },
+            configurable: false
+         },
+         /**
+          * Las propiedades habilitadas para el objeto de destino.
+          */
+         "enabled": {
+            get: function() {
+               return this.params.filter(p => this._params[p].enabled);
+            },
+            configurable: false
+         },
+         /**
+          * true, si todas las propiedades habilitadas tienen definida una conversión.
+          */
+         "defined": {
+            get: function() {
+               return this.params.every(p => !this._params[p].enabled || this.isDefined(p));
+            },
+            configurable: false
+         },
+         /**
+          * Define cómo obtener una propiedad del objeto de destino.
+          * 
+          * @method define
+          *
+          * @param {string} param     El nombre de la propiedad.
+          * @param {Array|string} properties Los nombres de las propiedades del objeto
+          *       original que contribuyen a formar el valor de la propiedad del objeto
+          *       de destino. Si la propiedad es una sola, puede evitarse el uso del
+          *       array y escribir directamente el nombre. Si se omite este argumento,
+          *       se sobreentiende que el nombre de la propiedad en el objeto original
+          *       y el de destino es el mismo.
+          * @param {function} func    La función conversora. Debe construirse de modo
+          *       que, conservando el orden, reciba como argumentos los valores de las
+          *       propiedades que se enumeran en ``properties``.
+          *
+          * @returns {?Converter} El propio objeto de conversión o null, si
+          *       la propiedad que se intenta definir, no se registro al crear
+          *       el objeto.
+          */
+         "define": {
+            value: function(param, properties, func) {
+               if(!(properties instanceof Array)) properties = [properties || param];
+               if(!this._params.hasOwnProperty(param)) {
+                  console.warn(`Opción ${param} inexistente. No se hace ninguna definición`);
+                  return null;
+               }
+               this._params[param].depends = properties;
+               this._params[param].converter = func || (x => x);
+               const depth = Math.max(properties.map(p => countChar(p, ".") + 1));
+               if(depth > this.__depth) this.__depth = depth;
+               return this;
+            },
+            writable: false,
+            configurable: false
+         },
+         /**
+          * Informa de si la propiedad tiene definida la conversión.
+          *
+          * @method isDefined
+          *
+          * @param {string} param  El nombre de la propiedad.
+          *
+          * @returns {boolean}
+          */
+         "isDefined": {
+            value: function(param) {
+               return this._params[param].converter !== null;
+            },
+            writable: false,
+            configurable: false
+         },
+         /**
+          * Lleva a cabo la conversión de un objeto suministrado. Sólo se
+          * obtienen las propiedades que estén habilitadas y para las que
+          * se pueda realizar la conversión, porque exista toda la
+          * información requerida en el objeto.
+          *
+          * @param {Object} o El objeto con los datos originales.
+          *
+          * @returns {Object} El objeto de conversión.
+          */
+         "run": {
+            value: function(o) {
+               const res = {};
+               for(const p of this._getParams(getNestedKeys(o, this.__depth))) {
+                  if(!this.isDefined(p)) throw new Error(`${p}: su conversión no está definida`);
+                  const converter = this._params[p].converter,
+                        depends = this._params[p].depends;
+                  res[p] = converter.apply(null, depends.map(d => getProperty(o, d)));
+               }
+               return res;
+            },
+            writable: false,
+            configurable: false
+         },
+         /**
+          * Devuelve las propiedades habilitadas cuyas dependecias
+          * se encuentran por completo en la lista de propiedades
+          * que se suministra.
+          *
+          * @param {Array} properties Lista con nombres de propiedades
+          *
+          * @returns {boolean}
+          */
+         "_getParams": {
+            value: function(properties) {
+               return this.params.filter(p => this._params[p].enabled
+                                           && this._params[p].depends.length == intersection(this._params[p].depends, properties).length);
+            },
+            writable: false,
+            configurable: false
+         }
+      });
+
+      return Converter;
+   })();
+   // Fin issue #21
 
    /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
@@ -416,8 +659,7 @@
    L.DivIcon.extend = function(obj) {
       const Icon = DivIconExtend.call(this, obj);
       const options = Icon.prototype.options;
-      if(options.updater) {
-         if(!options.converter) options.converter = data => Object.assign({}, data);
+      if(options.updater && options.converter) {
          // Issue #2
          if(options.html) options.html = getElement(options.html);
          else if(!options.url) throw new Error("Falta definir las opciones html o url");
@@ -460,7 +702,7 @@
        *
        */
       createIcon: function() {
-         this.options.params = this.options.params || new Options(this.options.converter(this._marker.getData()));
+         this.options.params = this.options.params || new Options(this.options.converter.run(this._marker.getData()));
 
          // Las opciones de dibujo cambiaron mientras el icono no estaba presente en el mapa.
          if(!this.options.params.updated) delete this.options.html;
@@ -608,7 +850,7 @@
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
          const data = icon.options.fast?{[property]: arr}:this.getData();
-         if(icon.options.params) icon.options.params.change(icon.options.converter(data));
+         if(icon.options.params) icon.options.params.change(icon.options.converter.run(data));
          return true;
       },
       /**
@@ -627,8 +869,7 @@
          if(!arr.unapply(name)) return false;
 
          const icon = this.options.icon;
-         const data = icon.options.fast?{[property]: arr}:this.getData();
-         if(icon.options.params) icon.options.params.change(icon.options.converter(data));
+         if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
          return true;
       }
    }
