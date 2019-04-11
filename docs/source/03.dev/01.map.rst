@@ -1,5 +1,6 @@
 .. highlight:: js
 
+*****************
 Creación de mapas
 *****************
 Aunque se haya usado la librería para crear un mapa concreto de
@@ -8,8 +9,10 @@ confeccionado con vue.js_, ésta se presta a la creación de cualquier otro mapa
 de cualquier otra temática y con cualquier otra herramienta. La intención de
 este apartado es ilustrar cómo usarla de forma práctica para este fin.
 
+.. _dev-map-util:
+
 ¿Cuándo puede resultarme útil?
-==============================
+******************************
 La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:
 
@@ -27,6 +30,8 @@ un mapa:
 
 Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
 
+Uso básico
+**********
 Preliminares
 ============
 
@@ -85,7 +90,7 @@ Consideremos que son de tipo GeoJSON_:
    tratar un formato cualquiera de datos, creando independientemente la marca
    y conectando a través de una propiedad el dato correspondiente a ella .
 
-Carga del mapa
+Requerimientos
 --------------
 Como es obvio, el uso de la librería exige la carga previa de Leaflet_:
 
@@ -120,8 +125,8 @@ incrustar el mapa. Típicamente:
 
    <div id="map"></div>
 
-Uso básico
-==========
+Carga básica
+============
 Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
 
    const Icono = crearIcono();
@@ -251,7 +256,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
    ejemplos anteriores, excepto el icono |SVG|), es preciso indicar las reglas
    |CSS| que permiten generar el icono::
 
-      css = "images/chupachups.css";
+      const css = "images/chupachups.css";
 
    El fichero podría ser algo así\ [#]_:
 
@@ -393,7 +398,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
       function updater(o) {
          const content = this.querySelector(".content");
          if(o.tipo) content.className = "content " + o.tipo;
-         if(o.numvac !== undefined) content.firstElementChild.textContent = o.numvac;
+         if(o.numadj !== undefined) content.firstElementChild.textContent = o.numadj;
          return this;
       }
 
@@ -404,7 +409,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
       sino sólo aquellos que han cambiado desde la última vez que se dibujó el
       icono. Por ese motivo, debe definir la función teniendo en cuenta esto.
       En la función de ejemplo, si no se pasa el *tipo*, no se modifica la clase
-      de "*content*", y si no se pasa *numvac*, no se modifica el número
+      de "*content*", y si no se pasa *numadj*, no se modifica el número
       contenido en el elemento ``<span>``. Esto es así, porque no pasar la
       opción significa que su valor no ha cambiado y, en consecuencia, ese
       aspecto del dibujo debe permanecer igual.
@@ -416,8 +421,7 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
    function crearIcono() {
       // Definiciones de html, css, converter, updater, fast.
 
-      return Icono = L.utils.createMutableIconClass("chupachups", {
-         className: "chupachups",
+      return L.utils.createMutableIconClass("chupachups", {
          iconSize: [25, 34],
          iconAnchor: [12.5, 34],
          css: css,
@@ -429,9 +433,20 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
 
 .. note:: Por supuesto, podemos seguir añadiendo opciones definidas para la
    clase `L.Icon <https://leafletjs.com/reference-1.4.0.html#icon>`_ como es el
-   caso de ``className``, ``iconSize`` e ``iconAnchor``. El valor de la primera
-   opción es la causante de que en el |CSS| que definía la forma del icono, se
-   hubiera usado la clase "*chupachups*".
+   caso de ``className``, ``iconSize`` o ``iconAnchor``. En el caso de esta primera
+   opción no se ha definido valor alguno, pero cuando eso ocurre, la función
+   añade un nombre de clase igual al del nombre que se le da al icono ("*chupachups*"),
+   de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
+   clase "*chupachups*".
+
+.. rubric:: Ejemplo de aplicación
+
+Con lo expuesto hasta ahora, seríamos capaces de construir un mapa con marcas
+que ajustas su aspecto al valor de sus datos, esto es, que son capaces de
+realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
+la librería.
+
+Descargue el :download:`ejemplo completo en formato zip <files/demo.minima.zip>`.
 
 Correcciones
 ============
@@ -445,7 +460,7 @@ adjudicaciones pasarían de **4** a **3** y de **3** a **2**.
    cuyo valor sea un *array*.
 
 Definición
-==========
+----------
 Para definir los criterios de corrección es preciso registrar cada criterio
 sobre la clase de la marca::
 
@@ -458,29 +473,35 @@ sobre la clase de la marca::
 
 .. Hablar de prepare en onEachFeature (o en layeradd).
 
+Aplicación
+----------
+
+Reversión
+---------
+
 Filtros
 =======
 
 Variantes
-=========
+*********
 
 .. _dev-map-cluster:
 
 Uso de Leaflet.markercluster_
------------------------------
+=============================
 
 .. _dev-map-no-geojson:
 
 Datos que no son GeoJSON_
--------------------------
+=========================
 
 Barra de progreso
------------------
+=================
 
 .. todo:: Evento layeradd de FeatureGroup.
 
 Ejemplo completo
-================
+****************
 
 .. rubric:: Notas al pie
 
