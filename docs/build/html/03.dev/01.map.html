@@ -1,0 +1,750 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="es" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="es" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.1. Creación de mapas &mdash; documentación de Lobatón - 0.1.0</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" />
+    <link rel="next" title="3.2. API" href="02.lib.html" />
+    <link rel="prev" title="3. Documentación de desarrollo" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Lobatón
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html">1. ¿Por qué Lobatón?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02.user/index.html">2. Documentación de usuario</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3.1. Creación de mapas</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cuando-puede-resultarme-util">3.1.1. ¿Cuándo puede resultarme útil?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uso-basico">3.1.2. Uso básico</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#preliminares">3.1.2.1. Preliminares</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#carga-basica">3.1.2.2. Carga básica</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#definicion-del-icono">3.1.2.3. Definición del icono</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#correcciones">3.1.2.4. Correcciones</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#filtros">3.1.2.5. Filtros</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#variantes">3.1.3. Variantes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#uso-de-leaflet-markercluster">3.1.3.1. Uso de Leaflet.markercluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#datos-que-no-son-geojson">3.1.3.2. Datos que no son GeoJSON</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#barra-de-progreso">3.1.3.3. Barra de progreso</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ejemplo-completo">3.1.4. Ejemplo completo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="02.lib.html">3.2. <abbr title="Application Programming Interface">API</abbr></a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Lobatón</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">3. Documentación de desarrollo</a> &raquo;</li>
+        
+      <li>3.1. Creación de mapas</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/03.dev/01.map.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="creacion-de-mapas">
+<h1>3.1. Creación de mapas<a class="headerlink" href="#creacion-de-mapas" title="Enlazar permanentemente con este título">¶</a></h1>
+<p>Aunque se haya usado la librería para crear un mapa concreto de
+consulta de adjudicaciones y oferta educativa, y la interfaz de usuario se haya
+confeccionado con <a class="reference external" href="https://vuejs.org/">vue.js</a>, ésta se presta a la creación de cualquier otro mapa
+de cualquier otra temática y con cualquier otra herramienta. La intención de
+este apartado es ilustrar cómo usarla de forma práctica para este fin.</p>
+<div class="section" id="cuando-puede-resultarme-util">
+<span id="dev-map-util"></span><h2>3.1.1. ¿Cuándo puede resultarme útil?<a class="headerlink" href="#cuando-puede-resultarme-util" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La librería se torna útil cuando, dado un conjunto de datos a representar sobre
+un mapa:</p>
+<ol class="arabic simple">
+<li>Los iconos que representan los datos se quiere que no sean exactamente
+iguales, sino que sufran alteraciones dependiendo del valor que adquiera el
+dato para cada uno de ellos en concreto. Por ejemplo, que el color dependa de
+lo grande que sea la magnitud del valor correspondiente.</li>
+<li>Los datos puede sufrir correcciones por la interacción del usuario, lo cual
+por supuesto se reflejará en el aspecto del icono que adoptará aquel que
+refleje su nuevo valor.</li>
+<li>Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
+decisiones del usuario.</li>
+</ol>
+<p>Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)</p>
+</div>
+<div class="section" id="uso-basico">
+<h2>3.1.2. Uso básico<a class="headerlink" href="#uso-basico" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="preliminares">
+<h3>3.1.2.1. Preliminares<a class="headerlink" href="#preliminares" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="datos">
+<span id="dev-map-data"></span><h4>3.1.2.1.1. Datos<a class="headerlink" href="#datos" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Los <strong>datos</strong> deben obtenerse de algún modo y presentar algún formato.
+Consideremos que son de tipo <a class="reference external" href="http://geojson.org/">GeoJSON</a>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">-5.9526</span><span class="p">,</span> <span class="mf">37.275475</span><span class="p">]</span>
+         <span class="p">},</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 1&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+               <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">],</span>
+               <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+            <span class="p">}</span>
+         <span class="p">}</span>
+
+      <span class="p">},</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">-4.6389</span><span class="p">,</span> <span class="mf">37.58434</span><span class="p">]</span>
+         <span class="p">},</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 2&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Expectativa&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+               <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;ASIR&quot;</span><span class="p">],</span>
+               <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;dificil&quot;</span>
+            <span class="p">}</span>
+         <span class="p">}</span>
+
+      <span class="p">}</span>
+   <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">No es requisito que los datos tengan este formato, pero es un
+estándar y <a class="reference external" href="https://leafletjs.com/">Leaflet</a> dispone de <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">un tipo de capa</a> que es capaz de
+interpretarlos directamente generando una marca y conectando los datos
+a ella a través de la propiedad <code class="docutils literal notranslate"><span class="pre">feature</span></code>. En cualquier caso, es posible
+tratar un formato cualquiera de datos, creando independientemente la marca
+y conectando a través de una propiedad el dato correspondiente a ella .</p>
+</div>
+</div>
+<div class="section" id="requerimientos">
+<h4>3.1.2.1.2. Requerimientos<a class="headerlink" href="#requerimientos" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Como es obvio, el uso de la librería exige la carga previa de <a class="reference external" href="https://leafletjs.com/">Leaflet</a>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!-- Leaflet --&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet@1.4.0/dist/leaflet.css&quot;</span>
+      <span class="na">integrity</span><span class="o">=</span><span class="s">&quot;sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==&quot;</span>
+       <span class="na">crossorigin</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet@1.4.0/dist/leaflet.js&quot;</span>
+        <span class="na">integrity</span><span class="o">=</span><span class="s">&quot;sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==&quot;</span>
+        <span class="na">crossorigin</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>A lo que podríamos añadir nuestros <em>plugins</em> favoritos de <a class="reference external" href="https://leafletjs.com/">Leaflet</a>, y la carga de
+nuestra librería y el <em>script</em> donde desarrollaremos la creación del mapa.</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!-- Extensión para el soporte de iconos mutables --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;../dist/leafext.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Script particular para este mapa --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;scripts/demo.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Las pautas para escribir este último <em>script</em> (<code class="file docutils literal notranslate"><span class="pre">scripts/demo.js</span></code>) (y el
+propio duocumento <abbr title="HyperText Markup Language">HTML</abbr> claro está) son el propósito de este documento.</p>
+<p>También, por supuesto, deberíamos incluir en el <abbr title="HyperText Markup Language">HTML</abbr> un elemento en el que
+incrustar el mapa. Típicamente:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;map&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="carga-basica">
+<h3>3.1.2.2. Carga básica<a class="headerlink" href="#carga-basica" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">crearIcono</span><span class="p">();</span>
+
+<span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span><span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties.data&quot;</span><span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">map</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="s2">&quot;map&quot;</span><span class="p">).</span><span class="nx">setView</span><span class="p">([</span><span class="mf">37.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.27</span><span class="p">],</span> <span class="mi">9</span><span class="p">);</span>
+<span class="nx">L</span><span class="p">.</span><span class="nx">tileLayer</span><span class="p">(</span><span class="s1">&#39;https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">maxZoom</span><span class="o">:</span> <span class="mi">18</span>
+<span class="p">}).</span><span class="nx">addTo</span><span class="p">(</span><span class="nx">map</span><span class="p">);</span>
+
+<span class="c1">// Y una capa GeoJSON para crear las marcas y conectarles los datos.</span>
+<span class="kr">const</span> <span class="nx">layer</span> <span class="o">=</span>  <span class="nx">L</span><span class="p">.</span><span class="nx">geoJSON</span><span class="p">(</span><span class="nx">datos</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">pointToLayer</span><span class="o">:</span> <span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">p</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nx">Centro</span><span class="p">(</span><span class="nx">p</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">icon</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Icono</span><span class="p">(),</span>
+      <span class="nx">title</span><span class="o">:</span> <span class="nx">f</span><span class="p">.</span><span class="nx">properties</span><span class="p">.</span><span class="nx">name</span>
+   <span class="p">})</span>
+<span class="p">}).</span><span class="nx">addTo</span><span class="p">(</span><span class="nx">map</span><span class="p">);</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p class="first">La creación del icono, que hemos incluido dentro de la función
+<code class="docutils literal notranslate"><span class="pre">crearIcono()</span></code>, a lo que dedicaremos el próximo apartado.</p>
+</li>
+<li><p class="first">La creación de la marca apropiada que requiere obligatoriamente la inclusión
+de la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code>, cuyo valor debe ser la propiedad de la marca donde
+se guardarán los datos asociados a la marca. Dado que usamos como origen de
+los datos un objeto <a class="reference external" href="http://geojson.org/">GeoJSON</a> y los añadimos al mapa mediante una capa
+<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> , éstos apareceran dentro de <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>. En
+<a class="reference internal" href="#dev-map-data"><span class="std std-ref">nuestro caso</span></a>, hemos supuesto que los datos que nos
+interesan se encuentran en <code class="docutils literal notranslate"><span class="pre">feature.properties.data</span></code>, aunque podríamos
+haber pasado como valor de <code class="docutils literal notranslate"><span class="pre">mutable</span></code> también <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>. Lo
+importante es tener presente que:</p>
+<ul class="simple">
+<li>Al pasar la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code> la marca añadirá los métodos y propiedades
+precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
+la marca será un <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#marker">L.Marker</a> común y corriente de
+<a class="reference external" href="https://leafletjs.com/">LeafLet</a>.</li>
+<li>El valor de de la propiedad se tomará como los datos asociados a la marca
+y de hecho, tal valor será el que devuelva el método de marca <code class="docutils literal notranslate"><span class="pre">.getData()</span></code>.</li>
+</ul>
+</li>
+<li><p class="first">La creación del mapa, que es la habitual con <a class="reference external" href="https://leafletjs.com/">Leaflet</a>.</p>
+</li>
+<li><p class="first">La creación de una capa para el tratamiento de los datos en formato
+<em>GeoJSON</em>. En este caso se ha supuesto que los datos se obtuvieron
+previamente de algún modo. En caso de que el formato de entrada no sea
+<a class="reference external" href="http://geojson.org/">GeoJSON</a>, podríamos usar simplemente <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#layergroup">L.LayerGroup</a> o <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Vea cómo <a class="reference internal" href="#dev-map-no-geojson"><span class="std std-ref">tratar datos que no tenga formato GeoJSON</span></a>.</p>
+</div>
+</li>
+</ol>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Cuando los datos son numerosos y, en consecuencia, las marcas
+también, es imprescindible usar la extensión <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a> para agrupar las
+marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
+que aumentamos la escala. Consulte <a class="reference internal" href="#dev-map-cluster"><span class="std std-ref">el uso de esta capa de clusters más
+adelante</span></a>.</p>
+</div>
+</div>
+<div class="section" id="definicion-del-icono">
+<span id="crear-icono"></span><h3>3.1.2.3. Definición del icono<a class="headerlink" href="#definicion-del-icono" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>La definición del icono es la parte más engorrosa de toda la programación, en la medida
+en que al ser un icono cuyo aspecto cambia según los datos particulares
+asociados a cada marca o según las correcciones que el usuario imponga a estos
+datos, hay que definir cuáles son las reglas de cambio. En un icono normal,
+además de propiedades adicionales como el tamaño o el punto de anclaje, la propiedad
+fundamental es aquella que define cuál es el icono: <code class="docutils literal notranslate"><span class="pre">iconUrl</span></code> para iconos que
+se definen como imágenes, y <code class="docutils literal notranslate"><span class="pre">html</span></code> para iconos <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#divicon">L.DivIcon</a>. Para nuestros iconos
+diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
+en detalles visuales del icono.</p>
+<div class="section" id="ingredientes">
+<h4>3.1.2.3.1. Ingredientes<a class="headerlink" href="#ingredientes" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Las opciones que debemos proporcionar en la creación de un estilo<a class="footnote-reference" href="#id6" id="id1">[1]</a> de icono son las siguientes:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">html</span></code> (o bien, <code class="docutils literal notranslate"><span class="pre">url</span></code>)</dt>
+<dd><p class="first">Define la plantilla que se usará para crear el icono. Sobre esa plantilla se
+realizarán variaciones determinadas por los valores concretos de los datos. Si
+se proporciona <code class="docutils literal notranslate"><span class="pre">url</span></code> se entiende que es un fichero donde se ha almacenado
+la definición. Un típico caso, sería pasar la <abbr title="Uniform Resource Locator">URL</abbr> a un <abbr title="Scalable Vector Graphics">SVG</abbr>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">url</span> <span class="o">=</span> <span class="s2">&quot;images/centro.svg&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">html</span></code>, en cambio, debe usarse cuado la definición de la plantilla se hace:</p>
+<ul class="last">
+<li><p class="first">A través de una cadena:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">html</span> <span class="o">=</span> <span class="s1">&#39;&lt;div class=&quot;content&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;arrow&quot;&gt;&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">A través de un <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment">DocumentFragment</a> que sería el objeto que obtendríamos
+si hubiéramos incluido la definición a través de un <a class="reference external" href="template">template</a> <abbr title="HyperText Markup Language">HTML</abbr>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">template</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;icono&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;content&quot;</span><span class="p">&gt;&lt;</span><span class="nt">span</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;arrow&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>que permitiría hacer en el código <em>Javascript</em> esta definición:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">html</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&quot;icono&quot;</span><span class="p">).</span><span class="nx">content</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Directamente a través de un <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a><a class="footnote-reference" href="#id7" id="id2">[2]</a>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">html</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">content</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
+<span class="nx">content</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">;</span>
+<span class="nx">html</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">content</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">arrow</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
+<span class="nx">arrow</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;arrow&quot;</span><span class="p">;</span>
+<span class="nx">html</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">arrow</span><span class="p">);</span>
+<span class="nx">content</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="s2">&quot;span&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils" id="dev-map-css">
+<dt><code class="docutils literal notranslate"><span class="pre">css</span></code></dt>
+<dd><p class="first">Cuando el icono se define a través de elementos <abbr title="HyperText Markup Language">HTML</abbr> (o sea, todos los
+ejemplos anteriores, excepto el icono <abbr title="Scalable Vector Graphics">SVG</abbr>), es preciso indicar las reglas
+<abbr title="Cascading Style Sheets">CSS</abbr> que permiten generar el icono:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">css</span> <span class="o">=</span> <span class="s2">&quot;images/chupachups.css&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>El fichero podría ser algo así<a class="footnote-reference" href="#id8" id="id3">[3]</a>:</p>
+<div class="highlight-css notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">content</span> <span class="p">{</span>
+   <span class="k">position</span><span class="p">:</span> <span class="kc">relative</span><span class="p">;</span>
+   <span class="k">box-sizing</span><span class="p">:</span> <span class="kc">border-box</span><span class="p">;</span>
+   <span class="k">height</span><span class="p">:</span> <span class="mi">70</span><span class="kt">%</span><span class="p">;</span>
+   <span class="k">margin</span><span class="p">:</span> <span class="mi">0</span><span class="p">;</span> <span class="k">padding</span><span class="p">:</span> <span class="mi">3</span><span class="kt">px</span><span class="p">;</span>
+   <span class="k">border-radius</span><span class="p">:</span> <span class="mi">50</span><span class="kt">%</span><span class="p">;</span>
+   <span class="k">display</span><span class="p">:</span> <span class="kc">flex</span><span class="p">;</span>
+   <span class="k">align-items</span><span class="p">:</span> <span class="kc">center</span><span class="p">;</span>
+   <span class="k">justify-content</span><span class="p">:</span> <span class="kc">center</span><span class="p">;</span>
+   <span class="k">border</span><span class="p">:</span> <span class="kc">solid</span> <span class="mi">3</span><span class="kt">px</span> <span class="mh">#888</span><span class="p">;</span>
+   <span class="k">font-weight</span><span class="p">:</span> <span class="kc">bold</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">arrow</span> <span class="p">{</span>
+   <span class="k">position</span><span class="p">:</span> <span class="kc">relative</span><span class="p">;</span>
+   <span class="k">margin</span><span class="p">:</span> <span class="mi">0</span><span class="p">;</span> <span class="k">padding</span><span class="p">:</span> <span class="mi">0</span><span class="p">;</span>
+   <span class="k">width</span><span class="p">:</span> <span class="mi">10</span><span class="kt">%</span><span class="p">;</span> <span class="k">height</span><span class="p">:</span> <span class="mi">30</span><span class="kt">%</span><span class="p">;</span>
+   <span class="k">left</span><span class="p">:</span> <span class="mi">45</span><span class="kt">%</span><span class="p">;</span>
+   <span class="k">background-color</span><span class="p">:</span> <span class="mh">#444</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">normal</span> <span class="p">{</span>
+   <span class="k">background-color</span><span class="p">:</span> <span class="mh">#ddd</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">compensatoria</span> <span class="p">{</span>
+   <span class="k">background-color</span><span class="p">:</span> <span class="mh">#7be</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">dificil</span> <span class="p">{</span>
+   <span class="k">background-color</span><span class="p">:</span> <span class="mh">#ebb</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="last">que provoca que el icono adquiera la forma de un <em>chupachups</em> y en el que se
+pretende notar dos características: la cantidad de adjudicaciones (como
+contenido del elemento <code class="docutils literal notranslate"><span class="pre">&lt;span&gt;</span></code>) y el tipo de centro como color de fondo.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">converter</span></code></dt>
+<dd><p class="first">El aspecto del icono depende de los datos asociados, pero es bastante
+probable que no dependa de todos, sino sólo de una parte. En nuestro ejemplo,
+los datos son:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;adj&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+   <span class="s2">&quot;oferta&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">]</span>
+   <span class="s2">&quot;tipo&quot;</span><span class="o">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">.</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>o sea, las adjudicaciones, la oferta y el tipo de centro. Sin embargo, el
+icono se representa tomando el número de adjudicaciones y el tipo de centro;
+la oferta no contribuye al aspecto en obsoluto. Por tanto, las <strong>opciones de
+dibujo</strong> deberían ser:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">opts</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="nx">numadj</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span>
+   <span class="nx">tipo</span><span class="o">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Para definir cómo transformar <code class="docutils literal notranslate"><span class="pre">data</span></code> en <code class="docutils literal notranslate"><span class="pre">opts</span></code>, la librería provee de una
+clase <code class="docutils literal notranslate"><span class="pre">L.utils.Converter</span></code>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Aunque hayamos definido todo en una sola orden, hemos realizado tres tareas:</p>
+<ol class="arabic">
+<li><p class="first">Crear el objeto:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>que permite especificar cuáles son las opciones de dibujo de las que
+dependerán los detalles visuales del icono: «<em>numadj</em>» y «»<em>tipo</em>».</p>
+</li>
+<li><p class="first">Definir cómo obtener <code class="docutils literal notranslate"><span class="pre">numadj</span></code> a partir de los datos:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">converter</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>qye significa: para obtener <code class="docutils literal notranslate"><span class="pre">nmumadj</span></code> (primer argumento) debemos
+basarnos en el valor de <code class="docutils literal notranslate"><span class="pre">adj</span></code> (segundo argumento) y obtener la longitud
+de su valor (que es el significado de la función que se ha usado en tercer
+lugar).</p>
+</li>
+<li><p class="first">Definir cómo obtener <code class="docutils literal notranslate"><span class="pre">tipo</span></code>, para lo cual se ha hecho esta simple
+definición:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">converter</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>lo cual es posible, ya que si no especifica el nombre de la propiedad de
+los datos, éste coincide con el de la opción de dibujo; y, si no se
+especifica la función conversora, el valor no se transforma en absoluto.
+Por tanto, lo anterior es equivalente a:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">converter</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="nx">t</span> <span class="p">=&gt;</span> <span class="nx">t</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Como el método <code class="docutils literal notranslate"><span class="pre">.define()</span></code> devuelve el objeto mismo, es posible hacer
+encadenamiento y convertir las tres instrucciones en una sola.</p>
+<p>Hay, no obstante, dos puntualizaciones que hacer:</p>
+<ol class="last arabic">
+<li><p class="first">Cuando la opción de dibujo depende de dos o más propiedades, puede usarse
+un array. Por ejemplo, supongamos que una opción de dibujo fuera
+<code class="docutils literal notranslate"><span class="pre">adjofer</span></code> que es la suma del número de adjudicaciones y el número de
+enseñanzas. En ese caso, la definición podría haber sido:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">converter</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;adjofer&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="s2">&quot;oferta&quot;</span><span class="p">],</span> <span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">o</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="nx">o</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Téngase en cuenta que los argumentos de la función conversora siguen el
+orden definido en el array. Por tanto, <code class="docutils literal notranslate"><span class="pre">a</span></code> representa al array de
+adjudicaciones y <code class="docutils literal notranslate"><span class="pre">o</span></code> al de oferta.</p>
+</li>
+<li><p class="first">Cuando la propiedad está anidada dentro de los datos puede usarse la
+notaciión de punto. Por ejemplo, supongamos que la definición de los datos
+hubiera sido así:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;data&quot;</span><span class="o">:</span> <span class="p">{</span>
+   <span class="s2">&quot;adj&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+   <span class="s2">&quot;oferta&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">]</span>
+   <span class="s2">&quot;mod&quot;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="s2">&quot;tipo&quot;</span><span class="o">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">.</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>En ese caso la definición de <code class="docutils literal notranslate"><span class="pre">tipo</span></code> podría haberse hecho del siguiente
+modo:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">converter</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="s2">&quot;mod.tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">updater</span></code></dt>
+<dd><p class="first">Define la función que traslada los valores de las opciones de dibujo al
+dibujo en sí:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">updater</span><span class="p">(</span><span class="nx">o</span><span class="p">)</span> <span class="p">{</span>
+   <span class="kr">const</span> <span class="nx">content</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s2">&quot;.content&quot;</span><span class="p">);</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">tipo</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;content &quot;</span> <span class="o">+</span> <span class="nx">o</span><span class="p">.</span><span class="nx">tipo</span><span class="p">;</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">numadj</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">firstElementChild</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">numadj</span><span class="p">;</span>
+   <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>El contexto de la función es el elemento <abbr title="HyperText Markup Language">HTML</abbr> que representa al icono en la
+página<a class="footnote-reference" href="#id9" id="id4">[4]</a>, y <code class="docutils literal notranslate"><span class="pre">o</span></code> es el objeto que contiene las opciones de dibujo.</p>
+<div class="last admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Para la mejora del rendimiento, no se pasan todos los parámetros
+sino sólo aquellos que han cambiado desde la última vez que se dibujó el
+icono. Por ese motivo, debe definir la función teniendo en cuenta esto.
+En la función de ejemplo, si no se pasa el <em>tipo</em>, no se modifica la clase
+de «<em>content</em>», y si no se pasa <em>numadj</em>, no se modifica el número
+contenido en el elemento <code class="docutils literal notranslate"><span class="pre">&lt;span&gt;</span></code>. Esto es así, porque no pasar la
+opción significa que su valor no ha cambiado y, en consecuencia, ese
+aspecto del dibujo debe permanecer igual.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="definicion">
+<h4>3.1.2.3.2. Definición<a class="headerlink" href="#definicion" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Con todos los ingredientes anteriores, podemos definir un estilo para el icono:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">crearIcono</span><span class="p">()</span> <span class="p">{</span>
+   <span class="c1">// Definiciones de html, css, converter, updater, fast.</span>
+
+   <span class="k">return</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">createMutableIconClass</span><span class="p">(</span><span class="s2">&quot;chupachups&quot;</span><span class="p">,</span> <span class="p">{</span>
+      <span class="nx">iconSize</span><span class="o">:</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+      <span class="nx">iconAnchor</span><span class="o">:</span> <span class="p">[</span><span class="mf">12.5</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+      <span class="nx">css</span><span class="o">:</span> <span class="nx">css</span><span class="p">,</span>
+      <span class="nx">html</span><span class="o">:</span> <span class="nx">html</span><span class="p">,</span>
+      <span class="nx">converter</span><span class="o">:</span> <span class="nx">converter</span><span class="p">,</span>
+      <span class="nx">updater</span><span class="o">:</span> <span class="nx">updater</span>
+   <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Por supuesto, podemos seguir añadiendo opciones definidas para la
+clase <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#icon">L.Icon</a> como es el
+caso de <code class="docutils literal notranslate"><span class="pre">className</span></code>, <code class="docutils literal notranslate"><span class="pre">iconSize</span></code> o <code class="docutils literal notranslate"><span class="pre">iconAnchor</span></code>. En el caso de esta primera
+opción no se ha definido valor alguno, pero cuando eso ocurre, la función
+añade un nombre de clase igual al del nombre que se le da al icono («<em>chupachups</em>»),
+de ahí que en el <abbr title="Cascading Style Sheets">CSS</abbr> que definía la forma del icono, se hubiera usado la
+clase «<em>chupachups</em>».</p>
+</div>
+<p class="rubric">Ejemplo de aplicación</p>
+<p>Con lo expuesto hasta ahora, seríamos capaces de construir un mapa con marcas
+que ajustas su aspecto al valor de sus datos, esto es, que son capaces de
+realizar <a class="reference internal" href="#dev-map-util"><span class="std std-ref">el primer punto con que expusimos la utilidad</span></a> de
+la librería:</p>
+<ul class="simple">
+<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/examples/demo.minima.html">en línea el resultado del ejemplo</a>.</li>
+<li>Descargue el <a class="reference download internal" download="" href="../_downloads/2dceb1bcdca5debcd6b3997153ff893a/demo.minima.zip"><code class="xref download docutils literal notranslate"><span class="pre">ejemplo</span> <span class="pre">completo</span> <span class="pre">en</span> <span class="pre">formato</span> <span class="pre">zip</span></code></a>.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="correcciones">
+<h3>3.1.2.4. Correcciones<a class="headerlink" href="#correcciones" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>El <em class="dfn">sistema de correcciones</em> permite alterar los datos iniciales de las
+marcas según una serie de criterios predefinidos. En el ejemplo anterior, un
+cirerio podría ser: <em>eliminar todas las adjudicaciones</em> que sean de un colectivo
+determinado. Si el colectivo fuese el de <em>interinos</em>, es claro que las
+adjudicaciones pasarían de <strong>4</strong> a <strong>3</strong> y de <strong>3</strong> a <strong>2</strong>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
+cuyo valor sea un <em>array</em>.</p>
+</div>
+<div class="section" id="id5">
+<h4>3.1.2.4.1. Definición<a class="headerlink" href="#id5" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Para definir los criterios de corrección es preciso registrar cada criterio
+sobre la clase de la marca:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjpue&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">puesto</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">value</span><span class="p">.</span><span class="nx">pue</span><span class="p">)</span> <span class="o">===</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="aplicacion">
+<h4>3.1.2.4.2. Aplicación<a class="headerlink" href="#aplicacion" title="Enlazar permanentemente con este título">¶</a></h4>
+</div>
+<div class="section" id="reversion">
+<h4>3.1.2.4.3. Reversión<a class="headerlink" href="#reversion" title="Enlazar permanentemente con este título">¶</a></h4>
+</div>
+</div>
+<div class="section" id="filtros">
+<h3>3.1.2.5. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h3>
+</div>
+</div>
+<div class="section" id="variantes">
+<h2>3.1.3. Variantes<a class="headerlink" href="#variantes" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="uso-de-leaflet-markercluster">
+<span id="dev-map-cluster"></span><h3>3.1.3.1. Uso de <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.markercluster</a><a class="headerlink" href="#uso-de-leaflet-markercluster" title="Enlazar permanentemente con este título">¶</a></h3>
+</div>
+<div class="section" id="datos-que-no-son-geojson">
+<span id="dev-map-no-geojson"></span><h3>3.1.3.2. Datos que no son <a class="reference external" href="http://geojson.org/">GeoJSON</a><a class="headerlink" href="#datos-que-no-son-geojson" title="Enlazar permanentemente con este título">¶</a></h3>
+</div>
+<div class="section" id="barra-de-progreso">
+<h3>3.1.3.3. Barra de progreso<a class="headerlink" href="#barra-de-progreso" title="Enlazar permanentemente con este título">¶</a></h3>
+</div>
+</div>
+<div class="section" id="ejemplo-completo">
+<h2>3.1.4. Ejemplo completo<a class="headerlink" href="#ejemplo-completo" title="Enlazar permanentemente con este título">¶</a></h2>
+<p class="rubric">Notas al pie</p>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>O sea, una clase de icono a partir de la cual se crearán los iconos
+particulares de cada marca.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Estamos reproduciendo la definición anterior, pero en este caso debemos
+añadir un contenedor <code class="docutils literal notranslate"><span class="pre">&lt;div&gt;</span></code> extra.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>El por qué se usa la clase «<em>.chupachups</em>» en este trozo de <abbr title="Cascading Style Sheets">CSS</abbr> se
+descubrirá más adelante.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td>Tenga presente que <a class="reference external" href="https://leafletjs.com/">Leaflet</a> envuelve la definición que con <code class="docutils literal notranslate"><span class="pre">html</span></code> o
+<code class="docutils literal notranslate"><span class="pre">url</span></code> hayamos hecho en un elemento <code class="docutils literal notranslate"><span class="pre">&lt;div&gt;</span></code>, y es este elemento el que
+representa <code class="docutils literal notranslate"><span class="pre">this</span></code>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="02.lib.html" class="btn btn-neutral float-right" title="3.2. API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="3. Documentación de desarrollo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, José Miguel Sánchez Alés/José Manuel Bermudo Ancio
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
