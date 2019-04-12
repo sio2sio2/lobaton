@@ -898,13 +898,9 @@
       apply: function(name) {
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
-               // TODO:: Posponer el bind al apply de Correctable, ya que se pasa el contexto.
-               func     = sc[name].bind(this),
-               params   = sc[name].prop.params;
+               func     = sc[name],
+               params   = func.prop.params;
          let   arr;
-
-         func.prop = Object.assign({}, sc[name].prop);
-         if(func.prop.add) func.prop.context = this;
 
          // La resolución de issue #22, hace que esto ocurra sólo
          // si se registra la corrección después de haber añadido la marca.
@@ -913,7 +909,7 @@
             arr = getProperty(this.getData(), property);
          }
 
-         if(!arr.apply(func, params)) return false;
+         if(!arr.apply(this, name)) return false;
 
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
@@ -1040,21 +1036,16 @@
              * @returns {boolean}  Verdadero si se aplicó la correción y
              *    falso si no se hizo porque ya estaba aplicada.
              */
-            apply: function(func, params) {
-               //TODO:: Se puede pasar name y la marca, en vez la función.
-               const name = func.prop.name,
+            apply: function(marker, name) {
+               const func = this._sc[name],
                      add  = func.prop.add,
-                     old_params = func.prop.params,
-                     marker = func.prop.context;
+                     params = func.prop.params;
 
-               if(this.corr.hasOwnProperty(name)) {
-                  // TODO: Eliminar el if, porque ya no pinta nada.
-                  if(equals(old_params, params)) return false;
-                  else this.unapply(name);  // Hay que eliminar antes la corrección
-               }
+               // La corrección ya estaba aplicada: la desaplicamos.
+               if(this.corr.hasOwnProperty(name)) this.unapply(name);
 
                if(add) {
-                  const values = func(null, this, params);
+                  const values = func.call(marker, null, this, params);
                   let num = values.length;
                   this.push.apply(this, values);
 
@@ -1069,16 +1060,16 @@
                      if(this._sc[n].prop.add) continue;  // Es una corrección que añade valores.
 
                      const func = this._sc[n];
-                     const params = this.corr[n].params;
+                     const params = marker.options.corr.getOptions(n).params;
                      for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, this[i], this, params);
                   }
 
                }
                else {
-                  this.corr[name] = this.map((e, i) => func(i, this, params));
-                  // Si la corrección ha filtrado algún valor:
+                  this.corr[name] = this.map((e, i) => func.call(marker, i, this, params));
                   //this.corr[name] = new Array(this.length);
-                  //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i], params);
+                  //for(let i=0; i<this.length; i++) this.corr[name][i] = func.call(marker, this.length[i], params);
+                  // Si la corrección ha filtrado algún valor:
                   if(this.corr[name].some(e => e)) this._count = undefined;
                }
 
@@ -1129,9 +1120,7 @@
                // Primer elemento que tiene un null (o sea, no formaba parte del array original.
                const idx = Math.min.apply(null, Object.keys(this.corr).map(k => this.corr[k].indexOf(null)).filter(e => e >= 0));
                this.length = idx;
-               for(const name in this.corr) {
-                  if(this.corr.hasOwnProperty(name)) delete this.corr[name];
-               }
+               for(const name in Object.getOwnPropertyNames(this.corr)) delete this.corr[name];
             }
          }
 

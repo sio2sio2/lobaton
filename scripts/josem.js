@@ -16,8 +16,9 @@ var g;
          });
          marca.on("click", function(e) {
             const m = e.target;
-            console.log("DEBUG", m.getData().id.nom);
-            console.log("DEBUG", m.getData());
+            console.log("DEBUG -- nombre --", m.getData().id.nom);
+            console.log("DEBUG -- marca --", m);
+            console.log("DEBUG -- datos --", m.getData());
          });
       });
 
