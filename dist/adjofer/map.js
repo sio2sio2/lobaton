@@ -68,9 +68,9 @@ const M = function(id) {
       this.register("bilingue", {
          attr: "oferta",
          // opts= { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
-         func: function(value, oferta, opts) {
+         func: function(idx, oferta, opts) {
             if(!opts.bil || opts.bil.length === 0) return false;
-            return opts.bil.indexOf(value.idi) === -1
+            return opts.bil.indexOf(oferta[idx].idi) === -1
          }
       });
 
@@ -78,7 +78,7 @@ const M = function(id) {
       this.register("vt+", {
          attr: "adj",
          add: true,
-         func: function(value, adj, opts) {
+         func: function(idx, adj, opts) {
             const data = this.getData(),
                   res = [];
             for(const puesto in data.pla) {
@@ -100,8 +100,8 @@ const M = function(id) {
       this.register("adjpue", {
          attr: "adj",
          // opts= {puesto: ["00590059", "11590107"], inv: true}
-         func: function(value, adj, opts) {
-            return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
+         func: function(idx, adj, opts) {
+            return !!(opts.inv ^ (opts.puesto.indexOf(adj[i].pue) === -1));
          }
       });
    }
@@ -135,25 +135,17 @@ const M = function(id) {
       // 1 una enseñanza deseable y 1/3 una que no lo es.
       converterBol.define("numofer", "oferta", function(oferta) {
          let res = 0;
-         if(oferta.walk !== undefined) {
-            for(const ens of oferta.walk()) {
-               if(!ens.value) continue
-               res += ens.value.mar?3:1;
-            }
-         }
-         else {
-            for(const ens of oferta) res += ens.mar?3:1;
+         for(const ens of oferta.walk()) {
+            if(!ens.value) continue
+            res += ens.value.mar?3:1;
          }
          return Math.round(res/3);
       });
 
       converterBol.define("bil", "oferta", function(oferta) {
-         let idiomas = oferta.walk?
-            Array.from(oferta.walk()).map(ens => ens.value && ens.value.idi):
-            oferta.map(ens => ens.idi)
-
-         // Eliminamos valores nulos y valores repetidos.
-         idiomas = idiomas.filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
+         const idiomas = Array.from(oferta.walk()).map(ens => ens.value && ens.value.idi)
+                                                  // Eliminamos valores nulos y valores repetidos.
+                                                  .filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
 
          switch(idiomas.length) {
             case 0:

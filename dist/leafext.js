@@ -808,12 +808,34 @@
          MarkerInitialize.apply(this, arguments);
          this.constructor.store.push(this);
          if(this.options.icon) this.options.icon._marker = this;
+         // Issue #22: Convierte la propiedad a la que se conectan los datos
+         // en un descriptor de acceso.
+         const firstDot = this.options.mutable.indexOf(".");
+         const feature = firstDot === -1?this.options.mutable:
+                                         this.options.mutable.substring(0, firstDot);
+         Object.defineProperty(this, "_" + feature, {
+            value: undefined,
+            writable: true,
+            configurable: false,
+            enumerable: false
+         });
+         Object.defineProperty(this, feature, {
+            get: function() { return this["_" + feature]; },
+            set: function(value) {
+               this["_" + feature] = value;
+               this._prepare();
+            },
+            configurable: false,
+            enumerable: false
+         });
+         // Fin #Issue 22
+
       },
       setIcon: function(icon) {
          icon._marker = this;
          MarkerSetIcon.apply(this, arguments);
       },
-      prepare: function() {  // Convierte Arrays en Correctables.
+      _prepare: function() {  // Convierte Arrays en Correctables.
          const data = getProperty(this, this.options.mutable);
          if(data === undefined) return false;  // La marca no posee los datos.
          this.options.corr.prepare(data);
@@ -840,8 +862,10 @@
          func.prop = Object.assign({}, sc[name].prop);
          if(func.prop.add) func.prop.context = this;
 
+         // La resolución de issue #22, hace que esto ocurra sólo
+         // si se registra la corrección después de haber añadido la marca.
          if(!(arr = this.options.corr.isCorrectable(property, this))) {
-            this.options.corr.prepare(this.getData(), property);
+            this.options.corr._prepare(this.getData(), property);
             arr = getProperty(this.getData(), property);
          }
 
@@ -1006,7 +1030,8 @@
 
                }
                else {
-                  this.corr[name] = this.map(e => func(e, this, params));
+                  this.corr[name] = this.map((e, i) => func(i, this, params));
+                  // Si la corrección ha filtrado algún valor:
                   //this.corr[name] = new Array(this.length);
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func(this.length[i], params);
                   if(this.corr[name].some(e => e)) this._count = undefined;
