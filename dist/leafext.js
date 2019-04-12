@@ -850,8 +850,7 @@
          MarkerInitialize.apply(this, arguments);
          this.constructor.store.push(this);
          if(this.options.icon) this.options.icon._marker = this;
-         // Issue #22: Convierte la propiedad a la que se conectan los datos
-         // en un descriptor de acceso.
+         // Issue #22
          const firstDot = this.options.mutable.indexOf(".");
          const feature = firstDot === -1?this.options.mutable:
                                          this.options.mutable.substring(0, firstDot);
@@ -861,12 +860,21 @@
             configurable: false,
             enumerable: false
          });
+
+         function setFeature(value) {
+            this["_" + feature] = value;
+            this._prepare();
+            // Aplicamos a los nuevos datos las correcciones ya aplicadas
+            // a los datos de las restantes marcas de la misma clase.
+            const corr = this.options.corr;
+            for(const name in corr.getCorrections()) {
+               if(corr.getOptions(name).params) this.apply(name);
+            }
+         }
+
          Object.defineProperty(this, feature, {
             get: function() { return this["_" + feature]; },
-            set: function(value) {
-               this["_" + feature] = value;
-               this._prepare();
-            },
+            set: setFeature,
             configurable: false,
             enumerable: false
          });
@@ -1319,13 +1327,19 @@
          /**
           * Devuelve las correcciones aplicables a una propiedad.
           *
-          * @param {string} attr  Nombre de la propiedad.
+          * @param {?string} attr  Nombre de la propiedad. Si es null, devolverá
+          *    los nombres de todas las correcciones.
           *
           * @returns {?Object}  Un objeto en que cada atributo es el nombre
           * de las corrección y cada valor la función que aplica tal corrección.
           */
          CorrSys.prototype.getCorrections = function(attr) {
-            return this[attr] || null;
+            if(attr) return this[attr] || null;
+            else {
+               const res = {};
+               for(const attr in this) Object.assign(res, this[attr]);
+               return res;
+            }
          }
 
 
