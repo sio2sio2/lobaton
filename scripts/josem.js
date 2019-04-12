@@ -14,19 +14,12 @@ var g;
          marca.on("click", function(e) {
             displayInfoCentro(e.target);
          });
+         marca.on("click", function(e) {
+            const m = e.target;
+            console.log("DEBUG", m.getData().id.nom);
+            console.log("DEBUG", m.getData());
+         });
       });
-
-      /*
-      // Las correcciones pueden aplicarse de forma individual...
-      g.cluster.on("layeradd", function(e) {
-         const marca = e.layer;
-         marca.apply("bilingue", {bil: ["Inglés"]});
-         marca.apply("vt+", {});
-         marca.apply("adjpue", {puesto: ["11590107", "00590059"], inv: true});
-         // Redibujamos por si la marca ya estaba pintada.
-         marca.refresh();
-      });
-      */
 
       poblarSelectores();
       document.querySelector("select[name='especialidad']").dispatchEvent(new Event("change"));

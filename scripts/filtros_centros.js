@@ -1,10 +1,10 @@
 function aplicaCorreccion(cor, params) {
-    g.Centro.invoke("apply", cor, params);
+    g.Centro.apply(cor, params);
     g.Centro.invoke("refresh");
 }
 
 function deshaceCorreccion(cor) {
-    g.Centro.invoke("unapply", cor);
+    g.Centro.unapply(cor);
     g.Centro.invoke("refresh");
 }
 

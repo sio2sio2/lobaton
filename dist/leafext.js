@@ -104,7 +104,7 @@
     */
    function equals(o,p) {
       if(typeof o !== typeof p) return false;
-      if(typeof o !== "object") return o == p;  // Comparación laxa.
+      if(typeof o !== "object" || o === null) return o == p;  // Comparación laxa.
 
       const oprop = Object.getOwnPropertyNames(o);
       const pprop = Object.getOwnPropertyNames(p);
@@ -178,8 +178,6 @@
     *    función para realizar modificaciones sobre el aspecto preexistente
     *    del icono, en vez de escribirse para recrear el icono desde cero.
     *
-    *    TODO:: Crear una opción semejante a fast para esta función que
-    *       permita recrear siempre desde cero.
     */
    L.utils.createMutableIconClass = function(name, options) {
 
@@ -749,6 +747,8 @@
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
          Marker.register = registerCorrMarker;
+         Marker.apply = applyCorrMarker;
+         Marker.unapply = unapplyCorrMarker;
       }
       return Marker;
    }
@@ -791,6 +791,48 @@
       return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments);
    }
 
+
+   // Issue #23
+   /**
+    * Aplica una corrección a las marcas de una clase.
+    *
+    * @params {string} name   Nombre de la corrección.
+    * @prams {Object} params  Opciones de aplicacion de la corrección.
+    */
+   function applyCorrMarker(name, params) {
+      const corr = this.prototype.options.corr;
+      try {
+         // Si la correción ya está aplicada, sólo no se aplica en
+         // caso de que se aplicara con las mismas opciones.
+         if(equals(corr.getOptions(name).params, params)) return false;
+      }
+      catch(err) {  // La corrección no está registrada.
+         return false;
+      }
+
+      corr.setParams(name, params);
+      for(const marker of this.store) marker.apply(name);
+   }
+
+   /**
+    * Elimina una correccón de las marcas de una clase.
+    *
+    * @params {string} name   Nombre de la corrección.
+    */
+   function unapplyCorrMarker(name) {
+      const corr = this.prototype.options.corr;
+      try {
+         // La corrección no está aplicada.
+         if(!corr.getOptions(name).params) return false;
+      }
+      catch(err) {
+         return false;  // La corrección no está registrada.
+      }
+
+      for(const marker of this.store) marker.unapply(name);
+      corr.setParams(name, null);
+   }
+   // Fin issue #23
 
    const MarkerInitialize = L.Marker.prototype.initialize;
    const MarkerSetIcon = L.Marker.prototype.setIcon;
@@ -853,10 +895,12 @@
        *  @param {Object} params Opciones que emplea la función de corrección
        *    para realizar su tarea.
        */
-      apply: function(name, params) {
+      apply: function(name) {
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
-               func     = sc[name].bind(this);
+               // TODO:: Posponer el bind al apply de Correctable, ya que se pasa el contexto.
+               func     = sc[name].bind(this),
+               params   = sc[name].prop.params;
          let   arr;
 
          func.prop = Object.assign({}, sc[name].prop);
@@ -873,7 +917,7 @@
 
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
-         const data = icon.options.fast?{[property]: arr}:this.getData();
+         const data = {[property]: arr};
          if(icon.options.params) icon.options.params.change(icon.options.converter.run(data));
          return true;
       },
@@ -997,14 +1041,15 @@
              *    falso si no se hizo porque ya estaba aplicada.
              */
             apply: function(func, params) {
+               //TODO:: Se puede pasar name y la marca, en vez la función.
                const name = func.prop.name,
                      add  = func.prop.add,
+                     old_params = func.prop.params,
                      marker = func.prop.context;
 
-               // Si la correción ya está aplicada, sólo no se aplica en
-               // caso de que se aplicara con las mismas opciones.
                if(this.corr.hasOwnProperty(name)) {
-                  if(equals(this.corr[name].params, params)) return false;
+                  // TODO: Eliminar el if, porque ya no pinta nada.
+                  if(equals(old_params, params)) return false;
                   else this.unapply(name);  // Hay que eliminar antes la corrección
                }
 
@@ -1037,7 +1082,6 @@
                   if(this.corr[name].some(e => e)) this._count = undefined;
                }
 
-               this.corr[name].params = params;
                return true;
             },
             /**
@@ -1180,11 +1224,11 @@
        * expresión, ya que sólo es obligatoria cuando es true. Por último, la corrección está
        * definida por la función corrigeOferta cuya definición podría ser esta:
        *
-       *   function corrigeOferta(value, oferta, opts) {
-       *      return opts.inv ^ (value.tur === opts.turno || value.tur === "ambos");
+       *   function corrigeOferta(idx, oferta, opts) {
+       *      return opts.inv ^ (oferta[idx].tur === opts.turno || oferta[idx].tur === "ambos");
        *   }
        *
-       * O sea, recibe como primer argumento uno de los elementos del array, como segundo
+       * O sea, recibe como primer argumento un índice del array, como segundo
        * argumento el array mismo y como tercero las opciones que dependen de
        * cómo haya configurado la corrección el usuario interactuando con la
        * interfaz.
@@ -1206,7 +1250,7 @@
        *      add: true
        *   });
        *
-       *   function agregaVt(value, adjudicaciones, opts) {
+       *   function agregaVt(idx, adjudicaciones, opts) {
        *       const res = [];
        *       // Se añaden a res las vacantes telefónicas que se han dado al centro
        *       // y que se encontrarán entre los datos de la marca (accesible con this).
@@ -1239,12 +1283,32 @@
           *    true (el elemento se filtra) o false (el elemnento no se filtra).
           */
          CorrSys.prototype.register = function(name, obj) {
+            // Internamente el objeto tiene la forma
+            // {
+            //   prop1: {
+            //             corr1: func1,
+            //             corr2: func2
+            //          },
+            //   prop2: {
+            //             corr3: func3
+            //          }
+            // }
+            //
+            // propX son los nombres de las propiedades de los datos. Si la propiedad
+            // está anidada se usa la notación del punto.
+            // corrX es el nombre de la corrección.
+            // funcX: Es la función de corrección a la que se le añaden algunas características.
+            //       - nombre.
+            //       - si es aditiva.
+            //       - con qué parámetros se ha aplicado.
             const sc = this[obj.attr] = this[obj.attr] || {};
             if(sc.hasOwnProperty(name)) return false; // La corrección ya se ha registrado.
-            // Apuntamos en una propiedad de la función, el nombre de la corrección y si es aditiva.
+            // Apuntamos en una propiedad de la función, el nombre de la corrección,
+            // si es aditiva, y con qué opciones se ha aplicado.
             obj.func.prop = {
                name: name,
-               add: obj.add
+               add: obj.add,
+               params: null  // Issue #23.
             }
             sc[name] = obj.func;
          }
@@ -1333,6 +1397,41 @@
                if(this[prop].hasOwnProperty(name)) return prop;
             }
          }
+
+         /**
+          * @typedef  {Object} OptionsCorr
+          * @property {string}  name          Nombre de la corrección.
+          * @property {boolean} add           true, si la corrección agrega valores.
+          * @property {Object}  params        Opciones con que se ha aplicado la corrección.
+          */
+
+         // Issue #23
+         /**
+          * Devuelve las características de una corrección
+          * (nombre, si es adictiva o con qué opciones se aplicó).
+          *
+          * @param {string} name  Nombre de la corrección.
+          *
+          * @returns {OptionsCorr}
+          */
+         CorrSys.prototype.getOptions = function(name) {
+            const sc = this[this.getProp(name)];
+            if(!sc) throw new Error(`${name}: corrección no registrada`);
+            return sc[name].prop;
+         }
+
+         /**
+          * Establece unas nuevas opciones de aplicación de una determinada corrección.
+          *
+          * @params {string} name   Nombre de la corrección.
+          * @params {Object} opts   Opciones de aplicación de la corrección.
+          */
+         CorrSys.prototype.setParams = function(name, opts) {
+            const sc = this[this.getProp(name)];
+            if(!sc) throw new Error(`${name}: corrección no registrada`);
+            sc[name].prop.params = opts;
+         }
+         // Fin issue #23
 
          return CorrSys;
       })();

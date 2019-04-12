@@ -96,12 +96,12 @@ const M = function(id) {
          }
       });
 
-      // Elimina las adjudicaciones que no sean de los puestos suministrados.
+      // Conserva sólo las adjudicaciones de los puestos suministrados.
       this.register("adjpue", {
          attr: "adj",
          // opts= {puesto: ["00590059", "11590107"], inv: true}
          func: function(idx, adj, opts) {
-            return !!(opts.inv ^ (opts.puesto.indexOf(adj[i].pue) === -1));
+            return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) === -1));
          }
       });
    }

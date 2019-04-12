@@ -24,13 +24,10 @@ window.onload = function() {
    const g = M("map");
    g.fire(function() {
       console.log("Se han acabado de cargar los centros");
-      // Para aplicar del tirón algunas corrección a todas las marcas.
-      /*
-      g.Centro.invoke("apply", "bilingue", {bil: ["Inglés"]});
-      g.Centro.invoke("apply", "vt+", {});
-      g.Centro.invoke("apply", "adjpue", {puesto: ["11590107", "00590059"], inv: true});
+      g.Centro.apply("bilingue", {bil: ["Inglés"]});
+      g.Centro.apply("vt+", {});
+      g.Centro.apply("adjpue", {puesto: ["11590107", "00590059"], inv: true});
       g.Centro.invoke("refresh");
-      */
    });
 
    // A efectos de depuración
@@ -42,16 +39,6 @@ window.onload = function() {
          console.log("DEBUG - marca", e.target);
          console.log("DEBUG - datos", e.target.getData());
       });
-   });
-
-   // A cada centro añadido le aplicamos algunas correciones.
-   g.cluster.on("layeradd", function(e) {
-      const marca = e.layer;
-      marca.apply("bilingue", {bil: ["Inglés"]});
-      marca.apply("vt+", {});
-      marca.apply("adjpue", {puesto: ["11590107", "00590059"], inv: true});
-      // Redibujamos por si la marca ya estaba pintada.
-      marca.refresh();
    });
 
    poblarSelectores()
