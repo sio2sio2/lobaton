@@ -32,6 +32,10 @@ Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
 
 Uso básico
 **********
+
+.. note:: Quizás pueda servirle de ayuda a la lectura, tener a la vista desde el
+   principio :ref:`el ejemplo mínimo de aplicación <dev-map-ejmin>`.
+
 Preliminares
 ============
 
@@ -39,8 +43,12 @@ Preliminares
 
 Datos
 -----
-Los **datos** deben obtenerse de algún modo y presentar algún formato.
-Consideremos que son de tipo GeoJSON_:
+La idea es que disponemos de un conjunto de datos, que describen un conjunto de
+entidades localizables en un mapa. Por ejemplo, la entidades pueden ser centros
+educativos, de cada uno de lo cuales se conoce su situación geográfica y una
+serie de características de interes. Nuestra intención es convertir cada
+entidad en una marca dentro del mapa. Consideremos que el formato de los datos
+es GeoJSON_:
 
 .. code-block:: json
 
@@ -89,6 +97,8 @@ Consideremos que son de tipo GeoJSON_:
    a ella a través de la propiedad ``feature``. En cualquier caso, es posible
    tratar un formato cualquiera de datos, creando independientemente la marca
    y conectando a través de una propiedad el dato correspondiente a ella .
+
+
 
 Requerimientos
 --------------
@@ -176,12 +186,14 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
 
 #. La creación de una capa para el tratamiento de los datos en formato
    *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
-   previamente de algún modo. En caso de que el formato de entrada no sea
+   previamente de algún modo. Obsérvese cómo usamos la clase de marca
+   (``Centro``) e icono (``Icono``) previamente utilidazos para generar
+   cada marca asociada a cada dato. En caso de que el formato de entrada no sea
    GeoJSON_, podríamos usar simplemente `L.LayerGroup
    <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
    <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
 
-   .. seealso:: Vea cómo :ref:`tratar datos que no tenga formato GeoJSON
+   .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
       <dev-map-no-geojson>`.
 
 .. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
@@ -306,7 +318,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
       "data": {
          "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-         "oferta": ["SMR", "DAM", "BACHILLERATO"]
+         "oferta": ["SMR", "DAM", "BACHILLERATO"],
          "tipo": "normal".
       }
 
@@ -379,7 +391,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          "data": {
             "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-            "oferta": ["SMR", "DAM", "BACHILLERATO"]
+            "oferta": ["SMR", "DAM", "BACHILLERATO"],
             "mod": {
                "tipo": "normal".
             }
@@ -439,10 +451,44 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
    de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
    clase "*chupachups*".
 
+Acceso a marcas
+===============
+La inserción de los datos en la capa, genera para cada uno de ellos la marca que
+definimos en el método ``.pointToLayer()``. Ahora bien, ¿qué mecanismos tenemos
+para acceder a estas marcas?
+
+- La clase ``Centro`` dispone de un atributo ``store``, que es un *array*
+  compuesto por todas las marcas que se han creado de esa clase::
+
+      for(const c in Centro.store) console.log("Hola, soy una marca de centro", c);
+
+.. note:: ``Centro`` es el constructor de una marca de centro, en
+   consecuencia, dada una marca llamada ``centro``::
+
+      centro.constructor === Centro
+
+- Podemos acceder a las marcas a través de eventos, exactamente como a cualquier
+  marca de Leaflet_::
+
+     centro.on("click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+- Como atajo cuando se quiere aplicar un método a todas las marcas de la clase,
+  puede usar el método de clase ``.invoke``::
+
+   Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+- Tenga presente que cuando añade una marca a una capa cuya clase derive de
+  L.FeatureGroup_, como L.GeoJSON_ o L.Markercluster_, se dispara el evento
+  *layeradd*::
+
+      layer.on("layeradd", e => console.log("Acabo de ser añadida", e.target);
+
+.. _dev-map-ejmin:
+
 .. rubric:: Ejemplo de aplicación
 
 Con lo expuesto hasta ahora, seríamos capaces de construir un mapa con marcas
-que ajustas su aspecto al valor de sus datos, esto es, que son capaces de
+que ajusten su aspecto al valor de sus datos, esto es, que son capaces de
 realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
 la librería:
 
@@ -453,30 +499,103 @@ la librería:
 Correcciones
 ============
 El :dfn:`sistema de correcciones` permite alterar los datos iniciales de las
-marcas según una serie de criterios predefinidos. En el ejemplo anterior, un
-cirerio podría ser: *eliminar todas las adjudicaciones* que sean de un colectivo
-determinado. Si el colectivo fuese el de *interinos*, es claro que las
+marcas según una serie de criterios predefinidos. En el ejemplo anterior, podríamos
+desear "*eliminar todas las adjudicaciones que sean de un colectivo
+determinado*". Si el colectivo fuese el de *interinos*, es claro que las
 adjudicaciones pasarían de **4** a **3** y de **3** a **2**.
 
 .. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
    cuyo valor sea un *array*.
 
+Hay dos tipos diferentes de correcciones:
+
+a. Las correcciones que eliminan elementos del *array*. como es el caso de la
+   corrección de ejemplo que se acaba de enunciar.
+
+#. Las correcciones que añaden elementos al *array*.
+
 Definición
 ----------
+.. todo:: Sería mejor pasar el índice, en vez del valor.
+
 Para definir los criterios de corrección es preciso registrar cada criterio
 sobre la clase de la marca::
 
-   Centro.register("adjpue", {
+   Centro.register("adjcol", {
       attr: "adj",
       func: function(value, adj, opts) {
-         return !!(opts.inv ^ (opts.puesto.indexOf(value.pue) === -1));
+         return !!(opts.inv ^ (opts.colectivo.indexOf(value.pue) === -1));
       }
    });
 
-.. Hablar de prepare en onEachFeature (o en layeradd).
+El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
+propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
+elmenetos, se ejecutará la función suministrada por ``func`` para cada uno de
+los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
+eliminará el elemento y cuando devuelva ``false``, se conservará.
+
+La función usa como contexto la marca y tiene tres argumentos:
+
+``value``
+   que es el valor del elemento del array que se pretende comprobar.
+
+``adj``
+   que es el array completo. En el ejemplo, el array ``adj``.
+
+``opts``
+   que es un objeto que contiene las opciones que permiten determinar la
+   corrección y cuya obtención será tarea de la interfaz de usuario. Para el
+   caso de ejemplo, se necesita los colectivos cuya adjudicación deseamos
+   conservar (propiedad ``colectivo``) y una propiedad ``inv`` que sirve para
+   invertir el significado. 
+
+En caso de que la corrección sirva para añadir elementos, no se recorrerá el
+array elemento por elemento, sino que la función se ejecutará una v vez y deberá
+devolver un *array* con los elementos que se desean incorporar. Como ``value``
+no tiene sentido en este caso, tomará el valor de *null*.
+
+.. warning:: Aunque tenga disponible el *array*, no añada los nuevos elementos
+   en la función, limítese a devolverlos.
+
+Lo conveniente es registrar las correcciones nada más crear la clase, aunque aún
+no se hayan incorporado los datos al mapa.
+
+.. note:: Una corrección sólo puede aplicarse a una única propiedad.
 
 Aplicación
 ----------
+El registro de una corrección no provoca ningún cambio en los datos: sólo define
+la corrección. Para llevar a efecto la corrección es necesario aplicar la
+corrección, en principio, sobre una marca::
+
+   centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
+
+por ejemplo, que provocará que para el centro referido por la marca ``centro``,
+se *eliminen* del array de adjudicaciones (o sea, ``adj``), los elementos que no
+representan adjudicaciones a personal en prácticas o interino. Lo habitual, sin
+embargo, es que queramos hacer la corrección a todos los centros definidos, por
+lo que sería más apropiado::
+
+   Centro.invoke("apply", "adjcol", {col: ["Prácticas", "Interino"]});
+
+.. note:: ``.invoke()`` ejecuta el método para todas las marcas almacenadas en
+   ``Centro.store``. Por tanto, al ejecutar el método debemos asegurarnos de que
+   de todos los datos ya se ha generado la marca apropiada, o lo que es lo
+   mismo, que todos los datos han sido ya añadidos a la capa `L.GeoJSON`_.
+
+.. warning:: La aplicación de la corrección no altera automáticamente el aspecto
+   del icono. Si queremos redibujar el icono, debemos entonces refrescar la
+   marca::
+
+      centro.refresh();
+
+   o si hemos corregidos todas::
+
+      Centro.invoke("refresh");
+
+Se ha afirmado alegremente que se eliminan elementos del *array*, pero es no es
+cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
+En realidad, cuando se define una corrección
 
 Reversión
 ---------
@@ -499,8 +618,6 @@ Datos que no son GeoJSON_
 
 Barra de progreso
 =================
-
-.. todo:: Evento layeradd de FeatureGroup.
 
 Ejemplo completo
 ****************
