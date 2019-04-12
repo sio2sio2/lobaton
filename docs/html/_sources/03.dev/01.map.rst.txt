@@ -3,16 +3,59 @@
 *****************
 Creación de mapas
 *****************
-Aunque se haya usado la librería para crear un mapa concreto de
-consulta de adjudicaciones y oferta educativa, y la interfaz de usuario se haya
-confeccionado con vue.js_, ésta se presta a la creación de cualquier otro mapa
-de cualquier otra temática y con cualquier otra herramienta. La intención de
-este apartado es ilustrar cómo usarla de forma práctica para este fin.
+Bajo este epígrafe se hará una exposición didáctica de cómo aprovechar
+las ventajas de la librería :file:`leafext.js` para construir mapas.
+De hecho, el *mapa de adjudicaciones y oferta educativa* es una aplicación
+particular de su uso basada en tres niveles:
+
+- :file:`leafext.js` en el nivel más bajo y absolutamente genérico.
+- :file:`adjofer/map.js` para definir en concreto cuáles cómo son los iconos,
+  cómo se dibujan a partir de los datos y cómo varían en función de las
+  correcciones y filtros que se apliquen. Debe ser independiente de cuál sea
+  la herramienta que se use para construir la interfaz visual.
+- :file:`adjofer/visual/vue.js` que implementa una interfaz atractiva haciendo
+  uso de los dos niveles anteriores.
+
+Trataremos aquí cómo crear el segundo y el tercer nivel, aunque mezclándolos,
+ya que nuestro objetivo con la interfaz (tercer nivel) no pasa de lograr que el
+mapa se logre ver.
+
+Conceptos previos
+*****************
+Partimos de la necesidad de representar sobre un mapa una serie de entidades
+cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
+usar Leaflet_ y colocar una marca por entidad, pero en principio de los datos
+para configurar la marca sólo podremos rescatar las coordenadas, ya que el icono
+será indepeniente de cuáles sean los valores de los datos.
+
+Como nuestra intención es ligar el aspecto del icono a los datos, podemos
+distinguir los siguientes componentes del problema:
+
+**Datos**
+   Incluyen las coordinadas de la entidad y otros datos característicos de los
+   que se quiere dejar constancia, total o parcialmente, a través del aspecto
+   que adquiera la marca.
+
+**Marca**
+   Es la plasmación de la entidad y sus datos sobre el mapa.
+
+**Clase** (o **Estilo**) de marca.
+   Todas las marcas que representen una misma tipo de entidad perteneceran a una
+   misma clase de marca. Cada clase tiene, además, asociados un *sistema de
+   correcciones* y un *sistema de filtros*.
+
+**Sistema de correcciones**
+   Sistema que permite registrar, aplicar y revertir las correcciones aplicables
+   a los datos.
+
+**Sistema de filtros**
+   Sistema que permite fijar criterios para hacer desaparecer (o volver a
+   mostrar) marcas.
 
 .. _dev-map-util:
 
-¿Cuándo puede resultarme útil?
-******************************
+.. rubric:: ¿Cuándo puede resultarme útil?
+
 La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:
 

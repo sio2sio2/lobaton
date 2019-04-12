@@ -86,7 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../02.user/index.html">2. Documentación de usuario</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">3.1. Creación de mapas</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#cuando-puede-resultarme-util">3.1.1. ¿Cuándo puede resultarme útil?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conceptos-previos">3.1.1. Conceptos previos</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#uso-basico">3.1.2. Uso básico</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#preliminares">3.1.2.1. Preliminares</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#carga-basica">3.1.2.2. Carga básica</a></li>
@@ -176,13 +176,50 @@
             
   <div class="section" id="creacion-de-mapas">
 <h1>3.1. Creación de mapas<a class="headerlink" href="#creacion-de-mapas" title="Enlazar permanentemente con este título">¶</a></h1>
-<p>Aunque se haya usado la librería para crear un mapa concreto de
-consulta de adjudicaciones y oferta educativa, y la interfaz de usuario se haya
-confeccionado con <a class="reference external" href="https://vuejs.org/">vue.js</a>, ésta se presta a la creación de cualquier otro mapa
-de cualquier otra temática y con cualquier otra herramienta. La intención de
-este apartado es ilustrar cómo usarla de forma práctica para este fin.</p>
-<div class="section" id="cuando-puede-resultarme-util">
-<span id="dev-map-util"></span><h2>3.1.1. ¿Cuándo puede resultarme útil?<a class="headerlink" href="#cuando-puede-resultarme-util" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Bajo este epígrafe se hará una exposición didáctica de cómo aprovechar
+las ventajas de la librería <code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> para construir mapas.
+De hecho, el <em>mapa de adjudicaciones y oferta educativa</em> es una aplicación
+particular de su uso basada en tres niveles:</p>
+<ul class="simple">
+<li><code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> en el nivel más bajo y absolutamente genérico.</li>
+<li><code class="file docutils literal notranslate"><span class="pre">adjofer/map.js</span></code> para definir en concreto cuáles cómo son los iconos,
+cómo se dibujan a partir de los datos y cómo varían en función de las
+correcciones y filtros que se apliquen. Debe ser independiente de cuál sea
+la herramienta que se use para construir la interfaz visual.</li>
+<li><code class="file docutils literal notranslate"><span class="pre">adjofer/visual/vue.js</span></code> que implementa una interfaz atractiva haciendo
+uso de los dos niveles anteriores.</li>
+</ul>
+<p>Trataremos aquí cómo crear el segundo y el tercer nivel, aunque mezclándolos,
+ya que nuestro objetivo con la interfaz (tercer nivel) no pasa de lograr que el
+mapa se logre ver.</p>
+<div class="section" id="conceptos-previos">
+<h2>3.1.1. Conceptos previos<a class="headerlink" href="#conceptos-previos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Partimos de la necesidad de representar sobre un mapa una serie de entidades
+cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
+usar <a class="reference external" href="https://leafletjs.com/">Leaflet</a> y colocar una marca por entidad, pero en principio de los datos
+para configurar la marca sólo podremos rescatar las coordenadas, ya que el icono
+será indepeniente de cuáles sean los valores de los datos.</p>
+<p>Como nuestra intención es ligar el aspecto del icono a los datos, podemos
+distinguir los siguientes componentes del problema:</p>
+<dl class="docutils">
+<dt><strong>Datos</strong></dt>
+<dd>Incluyen las coordinadas de la entidad y otros datos característicos de los
+que se quiere dejar constancia, total o parcialmente, a través del aspecto
+que adquiera la marca.</dd>
+<dt><strong>Marca</strong></dt>
+<dd>Es la plasmación de la entidad y sus datos sobre el mapa.</dd>
+<dt><strong>Clase</strong> (o <strong>Estilo</strong>) de marca.</dt>
+<dd>Todas las marcas que representen una misma tipo de entidad perteneceran a una
+misma clase de marca. Cada clase tiene, además, asociados un <em>sistema de
+correcciones</em> y un <em>sistema de filtros</em>.</dd>
+<dt><strong>Sistema de correcciones</strong></dt>
+<dd>Sistema que permite registrar, aplicar y revertir las correcciones aplicables
+a los datos.</dd>
+<dt><strong>Sistema de filtros</strong></dt>
+<dd>Sistema que permite fijar criterios para hacer desaparecer (o volver a
+mostrar) marcas.</dd>
+</dl>
+<p class="rubric">¿Cuándo puede resultarme útil?</p>
 <p>La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:</p>
 <ol class="arabic simple">
@@ -666,7 +703,7 @@ puede usar el método de clase <code class="docutils literal notranslate"><span 
 </div>
 </li>
 </ul>
-<p class="rubric">Ejemplo de aplicación</p>
+<p class="rubric" id="dev-map-ejmin">Ejemplo de aplicación</p>
 <p>Con lo expuesto hasta ahora, seríamos capaces de construir un mapa con marcas
 que ajusten su aspecto al valor de sus datos, esto es, que son capaces de
 realizar <a class="reference internal" href="#dev-map-util"><span class="std std-ref">el primer punto con que expusimos la utilidad</span></a> de
