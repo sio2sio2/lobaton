@@ -548,7 +548,7 @@ realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
 la librería:
 
 * Consulte `en línea el resultado del ejemplo
-  <https://sio2sio2.github.io/lobaton/examples/demo.minima.html>`_.
+  <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
 * Descargue el :download:`ejemplo completo en formato zip <files/demo.minima.zip>`.
 
 Correcciones
@@ -619,7 +619,7 @@ El registro de una corrección no provoca ningún cambio en los datos: sólo def
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
 corrección::
 
-   Centro.apply("adjcol", {colectivo: ["Prácticas", "Interino"]});
+   Centro.do("adjcol", {colectivo: ["Prácticas", "Interino"]});
 
 que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
 todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
@@ -673,7 +673,7 @@ Reversión
 ---------
 Para revertir una corrección, basta con pasar su nombre::
 
-   Centro.unapply("adjcol");
+   Centro.undo("adjcol");
 
 .. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
    tanto,  si quiere trasladar el cambio al aspecto de los iconos::
@@ -687,7 +687,7 @@ Filtros
 .. rubric:: Ejemplo de aplicación
 
 * Consulte `en línea la variante del ejemplo anterior que añade una
-  corrección <https://sio2sio2.github.io/lobaton/examples/demo.corr.html>`_.
+  corrección <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_.
 
 Variantes
 *********
