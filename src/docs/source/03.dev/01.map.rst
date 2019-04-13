@@ -1,0 +1,946 @@
+.. highlight:: js
+
+*****************
+Creación de mapas
+*****************
+Bajo este epígrafe se hará una exposición didáctica de cómo aprovechar
+las ventajas de la librería :file:`leafext.js` para construir mapas.
+De hecho, el *mapa de adjudicaciones y oferta educativa* es una aplicación
+particular de su uso basada en tres niveles:
+
+- :file:`leafext.js` en el nivel más bajo y absolutamente genérico.
+- :file:`adjofer/map.js` para definir en concreto cuáles cómo son los iconos,
+  cómo se dibujan a partir de los datos y cómo varían en función de las
+  correcciones y filtros que se apliquen. Debe ser independiente de cuál sea
+  la herramienta que se use para construir la interfaz visual.
+- :file:`adjofer/visual/vue.js` que implementa una interfaz atractiva haciendo
+  uso de los dos niveles anteriores.
+
+Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
+tendremos que introducir algún aspecto básico propio del tercero ya que, al
+menos, el mapa se tendrá que ver.
+
+Conceptos previos
+*****************
+Partimos de la necesidad de representar sobre un mapa una serie de entidades
+cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
+usar Leaflet_ y colocar una marca por entidad, pero en principio de los datos
+para configurar la marca sólo podremos rescatar las coordenadas, ya que el icono
+será indepeniente de cuáles sean los valores de los datos.
+
+Como nuestra intención es ligar el aspecto del icono a los datos, podemos
+distinguir los siguientes componentes del problema:
+
+**Datos**
+   Incluyen las coordinadas de la entidad y otros datos característicos de los
+   que se quiere dejar constancia, total o parcialmente, a través del aspecto
+   que adquiera la marca.
+
+**Marca**
+   Es la plasmación de la entidad y sus datos sobre el mapa.
+
+**Clase** (o **Estilo**) de marca.
+   Todas las marcas que representen una misma tipo de entidad perteneceran a una
+   misma clase de marca. Cada clase tiene, además, asociados un *sistema de
+   correcciones* y un *sistema de filtros*.
+
+**Sistema de correcciones**
+   Sistema que permite registrar, aplicar y revertir las correcciones aplicables
+   a los datos.
+
+**Sistema de filtros**
+   Sistema que permite fijar criterios para hacer desaparecer (o volver a
+   mostrar) marcas.
+
+.. _dev-map-util:
+
+.. rubric:: ¿Cuándo puede resultarme útil?
+
+La librería se torna útil cuando, dado un conjunto de datos a representar sobre
+un mapa:
+
+#. Los iconos que representan los datos se quiere que no sean exactamente
+   iguales, sino que sufran alteraciones dependiendo del valor que adquiera el
+   dato para cada uno de ellos en concreto. Por ejemplo, que el color dependa de
+   lo grande que sea la magnitud del valor correspondiente.
+
+#. Los datos puede sufrir correcciones por la interacción del usuario, lo cual
+   por supuesto se reflejará en el aspecto del icono que adoptará aquel que
+   refleje su nuevo valor.
+
+#. Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
+   decisiones del usuario.
+
+Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
+
+Uso básico
+**********
+
+.. note:: Quizás pueda servirle de ayuda a la lectura, tener a la vista desde el
+   principio :ref:`el ejemplo mínimo de aplicación <dev-map-ejmin>`.
+
+Preliminares
+============
+
+.. _dev-map-data:
+
+Datos
+-----
+La idea es que disponemos de un conjunto de datos, que describen un conjunto de
+entidades localizables en un mapa. Por ejemplo, la entidades pueden ser centros
+educativos, de cada uno de lo cuales se conoce su situación geográfica y una
+serie de características de interes. Nuestra intención es convertir cada
+entidad en una marca dentro del mapa. Consideremos que el formato de los datos
+es GeoJSON_:
+
+.. code-block:: json
+
+   {
+      "type": "FeatureCollection",
+      "features": [
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-5.9526, 37.275475]
+            },
+            "properties": {
+               "name": "Centro 1",
+               "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+               "oferta": ["SMR", "DAM", "BACHILLERATO"],
+               "tipo": "normal"
+            }
+         },
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-4.6389, 37.58434]
+            },
+            "properties": {
+               "name": "Centro 2",
+               "adj": ["Concursillo", "Expectativa", "Interino"],
+               "oferta": ["SMR", "ASIR"],
+               "tipo": "dificil"
+            }
+         }
+      ]
+   }
+
+.. note:: No es requisito que los datos tengan este formato, pero es un
+   estándar y Leaflet_ dispone de `un tipo de capa
+   <https://leafletjs.com/reference-1.4.0.html#geojson>`_ que es capaz de
+   interpretarlos directamente generando una marca y conectando los datos
+   a ella a través de la propiedad ``feature``. En cualquier caso, es posible
+   tratar un formato cualquiera de datos, creando independientemente la marca
+   y conectando a través de una propiedad el dato correspondiente a ella .
+
+
+Requerimientos
+--------------
+Como es obvio, el uso de la librería exige la carga previa de Leaflet_:
+
+.. code-block:: html
+
+   <!-- Leaflet -->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+         integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin="">
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+           integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+           crossorigin=""></script>
+
+A lo que podríamos añadir nuestros *plugins* favoritos de Leaflet_, y la carga de
+nuestra librería y el *script* donde desarrollaremos la creación del mapa.
+
+.. code-block:: html
+
+   <!-- Extensión para el soporte de iconos mutables -->
+   <script src="../dist/leafext.js"></script>
+
+   <!-- Script particular para este mapa -->
+   <script src="scripts/demo.js"></script>
+
+Las pautas para escribir este último *script* (:file:`scripts/demo.js`) (y el
+propio duocumento |HTML| claro está) son el propósito de este documento.
+
+También, por supuesto, deberíamos incluir en el |HTML| un elemento en el que
+incrustar el mapa. Típicamente:
+
+.. code-block:: html
+
+   <div id="map"></div>
+
+Carga básica
+============
+Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
+
+   const Icono = crearIcono();
+
+   const Centro = L.Marker.extend({
+      options: {mutable: "feature.properties"}
+   });   
+
+   map = L.map("map").setView([37.07, -6.27], 9);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       maxZoom: 18
+   }).addTo(map);
+
+   // Y una capa GeoJSON para crear las marcas y conectarles los datos.
+   const layer =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name,
+      })
+   }).addTo(map);
+
+#. La creación del icono, que hemos incluido dentro de la función
+   ``crearIcono()``, a lo que dedicaremos el próximo apartado.
+
+#. La creación de la marca apropiada que requiere obligatoriamente la inclusión
+   de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
+   se guardarán los datos asociados a la marca. Dado que usamos como origen de
+   los datos un objeto GeoJSON_ y los añadimos al mapa mediante una capa
+   `L.GeoJSON`_ , éstos apareceran dentro de ``feature.properties``, así que es
+   ahí donde indicamos que se deben buscar los datos. Resumiendo:
+
+   * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
+     precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
+     la marca será un `L.Marker
+     <https://leafletjs.com/reference-1.4.0.html#marker>`_ común y corriente de
+     LeafLet_.
+
+   * El valor de de la propiedad se tomará como los datos asociados a la marca
+     y de hecho, tal valor será el que devuelva el método de marca ``.getData()``.
+
+     .. warning:: Si en algún momento requiere consultar los datos y estos
+        han sufrido alguna corrección, tenga presente que :ref:`las propiedades
+        que sean *arrays* susceptibles de corrección deben consultarse de un
+        modo particular <dev-map-correctable>`.
+
+   * Si no usa el formato GeoJSON_ y crear la amrca y añade artesanalmente los
+     datos, asegúrese de colocar los datos en la propiedad que ha señalado con
+     ``mutable``.
+
+#. La creación del mapa, que es la habitual con Leaflet_.
+
+#. La creación de una capa para el tratamiento de los datos en formato
+   *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
+   previamente de algún modo. Obsérvese cómo usamos la clase de marca
+   (``Centro``) e icono (``Icono``) previamente utilidazos para generar
+   cada marca asociada a cada dato. En caso de que el formato de entrada no sea
+   GeoJSON_, podríamos usar simplemente `L.LayerGroup
+   <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
+   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
+
+   .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
+      <dev-map-no-geojson>`.
+
+.. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
+   también, es imprescindible usar la extensión `L.MarkerCluster
+   <https://github.com/Leaflet/Leaflet.markercluster>`_ para agrupar las
+   marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
+   que aumentamos la escala. Consulte :ref:`el uso de esta capa de clusters más
+   adelante <dev-map-cluster>`.
+
+.. _crear-icono:
+
+Definición del icono
+====================
+La definición del icono es la parte más engorrosa de toda la programación, en la medida
+en que al ser un icono cuyo aspecto cambia según los datos particulares
+asociados a cada marca o según las correcciones que el usuario imponga a estos
+datos, hay que definir cuáles son las reglas de cambio. En un icono normal,
+además de propiedades adicionales como el tamaño o el punto de anclaje, la propiedad
+fundamental es aquella que define cuál es el icono: ``iconUrl`` para iconos que
+se definen como imágenes, y ``html`` para iconos `L.DivIcon
+<https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
+diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
+en detalles visuales del icono.
+
+En nuestra explicación usemos este sencillo, parecido a un *Chupa Chups*:
+
+.. image:: files/chupachups.png
+
+El icono tiene dos detalles que depende de los datos asociados: el número que
+representa el número de adjudicaciones; y el fondo del círculo que es un color
+que depende del tipo de centro.
+
+Ingredientes
+------------
+Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icono son las siguientes:
+
+``html`` (o bien, ``url``)
+   Define la plantilla que se usará para crear el icono. Sobre esa plantilla se
+   realizarán variaciones determinadas por los valores concretos de los datos. Si
+   se proporciona ``url`` se entiende que es un fichero donde se ha almacenado
+   la definición. Un típico caso, sería pasar la |URL| a un |SVG|::
+
+      const url = "images/centro.svg";
+
+   ``html``, en cambio, debe usarse cuado la definición de la plantilla se hace:
+
+   * A través de una cadena::
+
+      const html = '<div class="content"><span></span></div><div class="arrow"></div>'
+
+   * A través de un DocumentFragment_ que sería el objeto que obtendríamos
+     si hubiéramos incluido la definición a través de un `<template>`_ |HTML|:
+
+     .. code-block:: html
+
+        <template id="icono">
+            <div class="content"><span></span></div>
+            <div class="arrow"></div>
+        </template>
+
+     que permitiría hacer en el código *Javascript* esta definición::
+
+        const html = document.getElementById("icono").content;
+
+   * Directamente a través de un HTMLElement_\ [#]_::
+
+      const html = document.createElement("div");
+      const content = document.createElement("div");
+      content.className = "content";
+      html.appendChild(content);
+      const arrow = document.createElement("div");
+      arrow.className = "arrow";
+      html.appendChild(arrow);
+      content.appendChild("span");
+
+.. _dev-map-css:
+
+``css``
+   Cuando el icono se define a través de elementos |HTML| (o sea, todos los
+   ejemplos anteriores, excepto el icono |SVG|), es preciso indicar las reglas
+   |CSS| que permiten generar el icono::
+
+      const css = "images/chupachups.css";
+
+   El fichero podría ser algo así\ [#]_:
+
+   .. code-block:: css
+
+      .chupachups .content {
+         position: relative;
+         box-sizing: border-box;
+         height: 70%;
+         margin: 0; padding: 3px;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border: solid 3px #888;
+         font-weight: bold;
+      }
+
+      .chupachups .arrow {
+         position: relative;
+         margin: 0; padding: 0;
+         width: 10%; height: 30%;
+         left: 45%;
+         background-color: #444;
+      }
+
+      .chupachups .normal {
+         background-color: #ddd;
+      }
+
+      .chupachups .compensatoria {
+         background-color: #7be;
+      }
+
+      .chupachups .dificil {
+         background-color: #ebb;
+      }
+
+   que provoca que el icono adquiera la forma de un *chupachups* y en el que se
+   pretende notar dos características: la cantidad de adjudicaciones (como
+   contenido del elemento ``<span>``) y el tipo de centro como color de fondo.
+
+``converter``
+   El aspecto del icono depende de los datos asociados, pero es bastante
+   probable que no dependa de todos, sino sólo de una parte. En nuestro ejemplo,
+   los datos son::
+
+      "data": {
+         "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+         "oferta": ["SMR", "DAM", "BACHILLERATO"],
+         "tipo": "normal".
+      }
+
+   o sea, las adjudicaciones, la oferta y el tipo de centro. Sin embargo, el
+   icono se representa tomando el número de adjudicaciones y el tipo de centro;
+   la oferta no contribuye al aspecto en obsoluto. Por tanto, las **opciones de
+   dibujo** deberían ser::
+
+      opts = {
+         numadj: 4,
+         tipo: "normal"
+      }
+
+   .. _dev-map-converter-adj:
+
+   Para definir cómo transformar ``data`` en ``opts``, la librería provee de una
+   clase ``L.utils.Converter``::
+
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => a.length)
+                           .define("tipo");
+
+   Aunque hayamos definido todo en una sola orden, hemos realizado tres tareas:
+
+   #. Crear el objeto::
+
+         const converter = new L.utils.Converter(["numadj", "tipo"]);
+
+      que permite especificar cuáles son las opciones de dibujo de las que
+      dependerán los detalles visuales del icono: "*numadj*" y ""*tipo*".
+      
+   #. Definir cómo obtener ``numadj`` a partir de los datos::
+
+         converter.define("numadj", "adj", a => a.length);
+
+      qye significa: para obtener ``nmumadj`` (primer argumento) debemos
+      basarnos en el valor de ``adj`` (segundo argumento) y obtener la longitud
+      de su valor (que es el significado de la función que se ha usado en tercer
+      lugar).
+
+   #. Definir cómo obtener ``tipo``, para lo cual se ha hecho esta simple
+      definición::
+
+         converter.define("tipo");
+
+      lo cual es posible, ya que si no especifica el nombre de la propiedad de
+      los datos, éste coincide con el de la opción de dibujo; y, si no se
+      especifica la función conversora, el valor no se transforma en absoluto.
+      Por tanto, lo anterior es equivalente a::
+
+         converter.define("tipo", "tipo", t => t);
+
+   Como el método ``.define()`` devuelve el objeto mismo, es posible hacer
+   encadenamiento y convertir las tres instrucciones en una sola.
+
+   Hay, no obstante, dos puntualizaciones que hacer:
+
+   #. Cuando la opción de dibujo depende de dos o más propiedades, puede usarse
+      un array. Por ejemplo, supongamos que una opción de dibujo fuera
+      ``adjofer`` que es la suma del número de adjudicaciones y el número de
+      enseñanzas. En ese caso, la definición podría haber sido::
+
+         converter.define("adjofer", ["adj", "oferta"], (a, o) => a.length + o.length);
+
+      Téngase en cuenta que los argumentos de la función conversora siguen el
+      orden definido en el array. Por tanto, ``a`` representa al array de
+      adjudicaciones y ``o`` al de oferta.
+
+   #. Cuando la propiedad está anidada dentro de los datos puede usarse la
+      notaciión de punto. Por ejemplo, supongamos que la definición de los datos
+      hubiera sido así::
+
+         "data": {
+            "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+            "oferta": ["SMR", "DAM", "BACHILLERATO"],
+            "mod": {
+               "tipo": "normal".
+            }
+         }
+
+      En ese caso la definición de ``tipo`` podría haberse hecho del siguiente
+      modo::
+
+         converter.define("tipo", "mod.tipo");
+         
+   .. warning:: Si se desean aplicar correcciones sobre los datos, los valores
+      de las propiedaes que son arrays susceptibles de sufrir correcciones,
+      deben consultarse teniéndolo en cuenta. Vea más adelante :ref:`cómo
+      hacerlo <dev-map-correctable>`.
+
+
+``updater``
+   Define la función que traslada los valores de las opciones de dibujo al
+   dibujo en sí::
+
+      function updater(o) {
+         const content = this.querySelector(".content");
+         if(o.tipo) content.className = "content " + o.tipo;
+         if(o.numadj !== undefined) content.firstElementChild.textContent = o.numadj;
+         return this;
+      }
+
+   El contexto de la función es el elemento |HTML| que representa al icono en la
+   página\ [#]_, y ``o`` es el objeto que contiene las opciones de dibujo.
+
+   .. warning:: Para la mejora del rendimiento, no se pasan todos los parámetros
+      sino sólo aquellos que han cambiado desde la última vez que se dibujó el
+      icono. Por ese motivo, debe definir la función teniendo en cuenta esto.
+      En la función de ejemplo, si no se pasa el *tipo*, no se modifica la clase
+      de "*content*", y si no se pasa *numadj*, no se modifica el número
+      contenido en el elemento ``<span>``. Esto es así, porque no pasar la
+      opción significa que su valor no ha cambiado y, en consecuencia, ese
+      aspecto del dibujo debe permanecer igual.
+
+Definición
+----------
+Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
+
+   function crearIcono() {
+      // Definiciones de html, css, converter, updater, fast.
+
+      return L.utils.createMutableIconClass("chupachups", {
+         iconSize: [25, 34],
+         iconAnchor: [12.5, 34],
+         css: css,
+         html: html,
+         converter: converter,
+         updater: updater
+      });
+   }
+
+.. note:: Por supuesto, podemos seguir añadiendo opciones definidas para la
+   clase `L.Icon <https://leafletjs.com/reference-1.4.0.html#icon>`_ como es el
+   caso de ``className``, ``iconSize`` o ``iconAnchor``. En el caso de esta primera
+   opción no se ha definido valor alguno, pero cuando eso ocurre, la función
+   añade un nombre de clase igual al del nombre que se le da al icono ("*chupachups*"),
+   de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
+   clase "*chupachups*".
+
+Acceso a marcas
+===============
+La inserción de los datos en la capa, genera para cada uno de ellos la marca que
+definimos en el método ``.pointToLayer()``. Ahora bien, ¿qué mecanismos tenemos
+para acceder a estas marcas?
+
+- La clase ``Centro`` dispone de un atributo ``store``, que es un *array*
+  compuesto por todas las marcas que se han creado de esa clase::
+
+      for(const c in Centro.store) console.log("Hola, soy una marca de centro", c);
+
+.. note:: ``Centro`` es el constructor de una marca de centro, en
+   consecuencia, dada una marca llamada ``centro``::
+
+      centro.constructor === Centro
+
+- Podemos acceder a las marcas a través de eventos, exactamente como a cualquier
+  marca de Leaflet_::
+
+     centro.on("click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+- Como atajo cuando se quiere aplicar un método a todas las marcas de la clase,
+  puede usar el método de clase ``.invoke``::
+
+   Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+- Tenga presente que cuando añade una marca a una capa cuya clase derive de
+  L.FeatureGroup_, como L.GeoJSON_ o L.Markercluster_, se dispara el evento
+  *layeradd*::
+
+      layer.on("layeradd", e => console.log("Acabo de ser añadida", e.target);
+
+.. _dev-map-ejmin:
+
+.. rubric:: Ejemplo de aplicación
+
+Con lo expuesto hasta ahora, seríamos capaces de construir un mapa con marcas
+que ajusten su aspecto al valor de sus datos, esto es, que son capaces de
+realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
+la librería:
+
+* Consulte `en línea el resultado del ejemplo
+  <https://sio2sio2.github.io/lobaton/examples/demo.minima.html>`_.
+* Descargue el :download:`ejemplo completo en formato zip <files/demo.minima.zip>`.
+
+Correcciones
+============
+El :dfn:`sistema de correcciones` permite alterar los datos iniciales de las
+marcas según una serie de criterios establecidos por el usuario al interaccionar
+con la interfaz visual. En el ejemplo anterior, podríamos desear "*eliminar
+todas las adjudicaciones que sean de un colectivo determinado*". Si el colectivo
+fuese el de *interinos*, es claro que las adjudicaciones pasarían de **4** a
+**3** y de **3** a **2**.
+
+.. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
+   cuyo valor sea un *array*.
+
+Hay dos tipos diferentes de correcciones:
+
+a. Las correcciones que eliminan elementos del *array*. como es el caso de la
+   corrección de ejemplo que se acaba de enunciar.
+
+#. Las correcciones que añaden elementos al *array*.
+
+Definición
+----------
+Para definir los criterios de corrección es preciso registrar cada criterio
+sobre la clase de la marca::
+
+   Centro.register("adjcol", {
+      attr: "adj",
+      func: function(idx, adj, opts) {
+         return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
+      }
+   });
+
+.. note:: Una corrección sólo puede aplicarse a una única propiedad.
+
+El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
+propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
+elmenetos, se ejecutará la función suministrada por ``func`` para cada uno de
+los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
+eliminará el elemento y cuando devuelva ``false``, se conservará.
+
+La función usa como contexto la marca y tiene tres argumentos:
+
+``idx``
+   El índice correspondiente al valor que comprueba la función.
+
+``adj``
+   que es el array completo. En el ejemplo, el array ``adj``.
+
+``opts``
+   que es un objeto que contiene las opciones que permiten determinar la
+   corrección y cuya obtención será tarea de la interfaz de usuario. Para el
+   caso de ejemplo, se necesita los colectivos cuya adjudicación deseamos
+   conservar (propiedad ``colectivo``) y una propiedad ``inv`` que sirve para
+   invertir el significado. 
+
+En caso de que la corrección sirva para añadir elementos, no se recorrerá el
+array elemento por elemento, sino que la función se ejecutará una v vez y deberá
+devolver un *array* con los elementos que se desean incorporar. Como ``idx``
+no tiene sentido en este caso, tomará el valor de *null*.
+
+.. warning:: Aunque tenga disponible el *array*, no añada los nuevos elementos
+   en la función, limítese a devolverlos.
+
+Aplicación
+----------
+El registro de una corrección no provoca ningún cambio en los datos: sólo define
+la corrección. Para llevar a efecto la corrección es necesario aplicar la
+corrección::
+
+   Centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
+
+que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
+todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
+los elementos que no representan adjudicaciones a personal en prácticas o
+interino.
+
+.. warning:: La aplicación de la corrección no altera automáticamente el aspecto
+   de las marcas. Para hacerlo, debe aplicarse el método ``.refresh()`` sobre
+   las marcas::
+
+      Centro.invoke("refresh");
+
+.. note:: Si con posterioridad a la aplicación, se crea una nueva marca de tipo
+   ``Centro``, las correcciones aplicadas, se aplicarán también a la marca en
+   cuanto se conecten a ella los datos en don hallamos determinado a través de
+   ``mutable``.
+
+.. _dev-map-correctable:
+
+Se ha afirmado alegremente que se eliminan elementos del *array*, pero no es
+cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
+En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
+nuevos si hubo correcciones que los añadieron. Para consultar un *array* con
+correcciones debe usarse:
+
+``.total``
+   Que es una propiedad que devuelve el número total de elementos, descontados
+   los eliminados. Por tanto, la :ref:`conversión de adj en numadj
+   <dev-map-converter-adj>` debimos haberla hecho así::
+   
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => a.total)
+                           .define("tipo");
+
+``.walk()``
+   Que es un método generador que en cada iteración devuelve un
+   objeto en cuya propiedad ``value`` se encuentra el valor de elemento o
+   ``null`` si el elemento se eliminó, y en cuya propiedad filters se almacenan
+   en un array los nombres de las correcciones que eliminaron el elemento.
+   Por tanto, la definición anterior también podríamos haberla hecho así::
+
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => Array.from(a.walk()).filter(e => e === null).length)
+                           .define("tipo");
+
+   Es obvio que es preferible, la solución anterior; pero ``.walk()`` se vuelve
+   útil cuando necesitáramos saber qué elementos no se han filtrado y no
+   simplemente cuántos.
+
+Reversión
+---------
+Para revertir una corrección, basta con pasar su nombre::
+
+   Centro.unapply("adjcol");
+
+.. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
+   tanto,  si quiere trasladar el cambio al aspecto de los iconos::
+
+      Centro.invoke("refresh");
+
+Filtros
+=======
+
+
+.. rubric:: Ejemplo de aplicación
+
+Variantes
+*********
+Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
+ilustrado.
+
+.. _dev-map-cluster:
+
+Uso de Leaflet.markercluster_
+=============================
+Cuando las marcas son numerosas, es indispensable usar esta extensión que
+permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
+:file:`leafext.js` es compatible con una capa L.MarkerCluster_, aunque
+convendría tener claro cómo manejar datos en formato GeoJSON_ con ella. Lo más
+sencillo es usar una capa L.GeoJSON_ intermedia, que se encargue de interpretar
+los datos::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Obsérvese que no la añadimos al mapa.
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      })
+   });
+
+   //Pasamos las marcas individuales a la capa de clústers
+   layer.addLayer(interm);
+
+   interm.clearLayers();
+
+Tenga presente que la marca intermedia no se añade a la capa L.MarkerCluster_,
+sino las marcas individuales que se encuentran en ella. Por ese motivo, una vez
+pasadas las marcas, eliminamos las marcas de la capa L.GeoJSON_ para poder
+seguir utilizándola como intermediaria.
+
+Obsérvese que utilizando el código susodicho, se construyen todas las marcas
+mientras se introducen en la capa intermedia y, ya creadas todas, se añaden del
+tirón a la capa final. Una variante, quizás más interesante, es añadirlas a la
+capa final, según las van creando la intermedia::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Obsérvese que no la añadimos al mapa.
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      }),
+      onEachFeature: (f, l) => layer.addLayer(l)
+   });
+
+   interm.clearLayers();
+
+La ventaja de este código sobre el anterior es que cada vez que creamos y
+añadimos de modo efectivo una marca al mapa (o sea a la capa L.MarkerCluster_)
+podemos lanzar un disparador con::
+
+   layer.on("layeradd", e => console.log(`Creado y añadido el centro ${e.layer,getData().name}`));
+
+Con el primer codigo, en cambio, las marcas se creaban todas antes de añadirse
+la primera al mapa.
+
+.. _dev-map-no-geojson:
+
+Datos que no son GeoJSON_
+=========================
+Cuando los datos no están en formato GeoJSON_, la capa L.GeoJSON_ nos sirve de
+poco y debemos de ser nosotros los que creemos la marca y añadamos a ella los
+datos. Supongamos que los datos son estos:
+
+.. code-block:: json
+
+   {
+      "centros": [
+         {
+            "name": "Centro 1",
+            "lng": -5.9526,
+            "lat": 37.275475,
+            "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+            "oferta": ["SMR", "DAM", "BACHILLERATO"],
+            "tipo": "normal"
+         },
+         {
+            "name": "Centro 2",
+            "lng": -4.6389,
+            "lat": 37.58434,
+            "adj": ["Concursillo", "Expectativa", "Interino"],
+            "oferta": ["SMR", "ASIR"],
+            "tipo": "dificil"
+         }
+      ]
+   }
+
+o sea, los mismos datos de antes, pero sin el formato GeoJSON_. En ese caso,
+podríamos escribir un función que para cada centro creara su marca
+correspondiente y la añadiera a la capa::
+
+   const Icono = crearIcono();
+
+   const Centro = L.Marker.extend({
+      options: {mutable: "data"}
+   });   
+
+   map = L.map("map").setView([37.07, -6.27], 9);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       maxZoom: 18
+   }).addTo(map);
+
+   const layer = L.featureGroup();  // También podria ser L.markerCluster.
+
+   funcion CrearMarca(d) {
+      const m = new Centro([d.lat, data.lng]{
+         icon: new Icon();
+         title: d.name;
+      });
+      delete d.lat;
+      delete d.lng;
+      m.data = d;  // En consonancia con el valor de mutable.
+
+      return m;
+   }
+
+   for(const d of datos) layer.addLayer(crearMarca(d));
+
+
+Barra de progreso
+=================
+Los ejemplos que acompañan a Leaflet.Markercluster_ incluyen `alguno con una
+sencilla barra de progreso
+<http://leaflet.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html>`_
+que informa de cómo va el procesamiento de datos y su adición al mapa en forma
+de marca\ [#]_. Se basa en la las opciones ``chuckedLoading`` y
+``chuckProgress`` de `L.MarkerCluster`_, que son útiles cuando se añaden de una
+sola vez muchos datos a la capa, como es el caso del primer ejemplo incluido en
+el :ref:`apartado dedicado a discutir sobre este tipo de capa
+<dev-map-cluster>`. Sin embargo, si usamos otro tipo de capa o si utilizamos
+ésta, pero añadiendo una a una las marcas., tal solución se vuelve
+impracticable. Con todo, podemos construirnos nuestra propia solución con ayuda
+del evento *layeradd*. Necesitamos un |HTML| como este:
+
+.. code-block:: html
+
+   <div id="progress"><div id="progress-bar"></div></div>
+   <div id="map"></div>
+
+Un |CSS| para la barra que tomamos del ejemplo original:
+
+.. code-block:: css
+
+   #progress {
+       display: none;
+       position: absolute;
+       z-index: 1000;
+       top: calc(50% - 10px);
+       left: calc(50% - 100px);
+       width: 200px;
+       height: 20px;
+       margin-top: -20px;
+       margin-left: -100px;
+       background-color: #fff;
+       background-color: rgba(255, 255, 255, 0.7);
+       border-radius: 4px;
+       padding: 2px;
+   }
+
+   #progress-bar {
+       width: 0;
+       height: 100%;
+       background-color: #76A6FC;
+       border-radius: 4px;
+   }
+
+Y añadir algo de *javascript* a las soluciones anteriores::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Barra de progreso.
+   (function() {
+      const progress = document.getElementById('progress'),
+            progressBar = document.getElementById('progress-bar'),
+            total = datos.length,
+            incr = 2;      // Cada qué % se actualiza la barra.
+
+      let i = 0;
+
+      progressBar.style.width = "0";
+
+      const start = Date.now(),
+            step  = Math.max(Math.round(total/100/incr), 1);
+
+      function progressB(e) {
+         i++;
+         if(i%step === 0 && (Date.now() - start) > 1000) {
+            progress.style.display = "block";
+            progressBar.style.width = Math.round(i*100/total) + "%";
+         }
+         if(i === total) {
+            progress.style.display = "none";
+            layer.off("layeradd", progressB);
+         }
+      }
+
+      layer.on("layeradd", progressB);
+   })();
+
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      }),
+      onEachFeature: (f, l) => layer.addLayer(l)
+   });
+
+   interm.clearLayers();
+
+.. rubric:: Notas al pie
+
+.. [#] O sea, una clase de icono a partir de la cual se crearán los iconos
+   particulares de cada marca.
+.. [#] Estamos reproduciendo la definición anterior, pero en este caso debemos
+   añadir un contenedor ``<div>`` extra.
+.. [#] El por qué se usa la clase "*.chupachups*" en este trozo de |CSS| se
+   descubrirá más adelante.
+.. [#] Tenga presente que Leaflet_ envuelve la definición que con ``html`` o
+   ``url`` hayamos hecho en un elemento ``<div>``, y es este elemento el que
+   representa ``this``.
+.. [#] Lo que no se incluye es el tiempo de descarga del fichero de datos que es
+   anterior a todo el proceso.
+
+.. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
+.. |HTML| replace:: :abbr:`HTML (HyperText Markup Language)`
+.. |SVG| replace:: :abbr:`SVG (Scalable Vector Graphics)`
+.. |CSS| replace:: :abbr:`CSS (Cascading Style Sheets)`
+
+.. _vue.js: https://vuejs.org/
+.. _leaflet: https://leafletjs.com/
+.. _leaflet.markercluster: https://github.com/Leaflet/Leaflet.markercluster
+.. _GeoJSON: http://geojson.org/
+.. _<template>: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template
+.. _documentfragment: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+.. _HTMLElement: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+.. _L.GeoJSON: https://leafletjs.com/reference-1.4.0.html#geojson

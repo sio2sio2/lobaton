@@ -4,19 +4,20 @@
    L.utils = {};
 
    /**
-    * Realiza peticiones AJAX. Uso:
+    * Realiza peticiones AJAX.
+    * @example
     *
-    *    load({
-    *       url: 'image/centro.svg',
-    *       params: {
-    *          a: 1,
-    *          b: 2
-    *       },
-    *       method: "GET",
-    *       context: objeto,
-    *       callback: funcion(xhr) { console.log("Éxito"); },
-    *       failback: function(xhr) { console.log("Error"); },
-    *    });
+    * load({
+    *    url: 'image/centro.svg',
+    *    params: {
+    *       a: 1,
+    *       b: 2
+    *    },
+    *    method: "GET",
+    *    context: objeto,
+    *    callback: funcion(xhr) { console.log("Éxito"); },
+    *    failback: function(xhr) { console.log("Error"); },
+    * });
     *
     * Si no se especifica el método, se usará GET cuando no haya parámetros
     * y POST cuando sí los haya.
@@ -100,7 +101,7 @@
     * @param {Object} o  Un objeto.
     * @param {Object} p  El otro.
     *
-    * @returns {boolean]
+    * @returns {boolean}
     */
    function equals(o,p) {
       if(typeof o !== typeof p) return false;
@@ -118,9 +119,9 @@
       return true;
    }
 
-   // Issue #2
    /**
-    * Facilita la construcción de clases de iconos.
+    * Facilita la construcción de clases de iconos. Cada clase está asociada
+    * a un estilo de icono distinto.
     *
     * @param {string} name          Nombre identificativo para la clase de icono.
     * @param {Object} optiones      Opciones de construcción de la clase.

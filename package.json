@@ -1,0 +1,39 @@
+{
+  "name": "lobaton",
+  "version": "0.1.0",
+  "description": "Aplicación web para la consulta de centros educativos dependientes de la Junta de Andalucía",
+  "main": "src/index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sio2sio2/lobaton.git"
+  },
+  "keywords": [
+    "gis",
+    "leaflet",
+    "openstreetmap",
+    "openrouteservice",
+    "javascript",
+    "ceja",
+    "andalucia",
+    "educación"
+  ],
+  "author": "José Miguel Sánchez Alés/José Manuel Bermudo Ancio",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/sio2sio2/lobaton/issues"
+  },
+  "homepage": "https://github.com/sio2sio2/lobaton#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "jsdoc": "^3.5.5"
+  }
+}

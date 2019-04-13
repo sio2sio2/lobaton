@@ -1,0 +1,32 @@
+.chupachups .content {
+   position: relative;
+   box-sizing: border-box;
+   height: 70%;
+   margin: 0; padding: 3px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border: solid 3px #888;
+   font-weight: bold;
+}
+
+.chupachups .arrow {
+   position: relative;
+   margin: 0; padding: 0;
+   width: 10%; height: 30%;
+   left: 45%;
+   background-color: #444;
+}
+
+.chupachups .normal {
+   background-color: #ddd;
+}
+
+.chupachups .compensatoria {
+   background-color: #7be;
+}
+
+.chupachups .dificil {
+   background-color: #ebb;
+}
