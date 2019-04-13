@@ -127,8 +127,8 @@ const M = function(id) {
 
       // Los boliches tienen mucha miga...
       const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar"])
-                                 .define("tipo", "mod.tipo", t => t || "normal")
-                                 .define("numvac", "adj", a => a.total !== undefined?a.total:a.length)
+                                 .define("tipo", "mod.dif", t => t || "normal")
+                                 .define("numvac", "adj", a => a.total)
                                  .define("ofervar", "mod.cam", c => c || 0);
 
       // Para calcular la cantidad de oferta se considera
@@ -266,9 +266,14 @@ const M = function(id) {
 
             if(o.tipo !== undefined) {
                e = content.querySelector(".tipo");
-               if(o.tipo === null) if(e) defs.appendChild(e);
+               if(o.tipo === "normal") {
+                  if(e) defs.appendChild(e);
+               }
                else {
-                  if(!e) content.appendChild(defs.querySelector(".tipo"));
+                  if(!e) {
+                     e = defs.querySelector(".tipo");
+                     content.appendChild(e);
+                  }
                   if(o.tipo === "dificil") e.setAttribute("fill", "#c13");
                   else e.setAttribute("fill", "#13b"); 
                }
