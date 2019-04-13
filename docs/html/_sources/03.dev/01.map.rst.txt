@@ -105,14 +105,11 @@ es GeoJSON_:
                "coordinates": [-5.9526, 37.275475]
             },
             "properties": {
-               "data": {
-                  "name": "Centro 1",
-                  "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-                  "oferta": ["SMR", "DAM", "BACHILLERATO"],
-                  "tipo": "normal"
-               }
+               "name": "Centro 1",
+               "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+               "oferta": ["SMR", "DAM", "BACHILLERATO"],
+               "tipo": "normal"
             }
-
          },
          {
             "type": "Feature",
@@ -121,14 +118,11 @@ es GeoJSON_:
                "coordinates": [-4.6389, 37.58434]
             },
             "properties": {
-               "data": {
-                  "name": "Centro 2",
-                  "adj": ["Concursillo", "Expectativa", "Interino"],
-                  "oferta": ["SMR", "ASIR"],
-                  "tipo": "dificil"
-               }
+               "name": "Centro 2",
+               "adj": ["Concursillo", "Expectativa", "Interino"],
+               "oferta": ["SMR", "ASIR"],
+               "tipo": "dificil"
             }
-
          }
       ]
    }
@@ -196,7 +190,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    const layer =  L.geoJSON(datos, {
       pointToLayer: (f, p) => new Centro(p, {
          icon: new Icono(),
-         title: f.properties.name
+         title: f.properties.name,
       })
    }).addTo(map);
 
@@ -263,6 +257,14 @@ se definen como imágenes, y ``html`` para iconos `L.DivIcon
 <https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
 diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
 en detalles visuales del icono.
+
+En nuestra explicación usemos este sencillo, parecido a un *Chupa Chups*:
+
+.. image:: files/chupachups.png
+
+El icono tiene dos detalles que depende de los datos asociados: el número que
+representa el número de adjudicaciones; y el fondo del círculo que es un color
+que depende del tipo de centro.
 
 Ingredientes
 ------------
@@ -683,22 +685,232 @@ Filtros
 
 Variantes
 *********
+Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
+ilustrado.
 
 .. _dev-map-cluster:
 
 Uso de Leaflet.markercluster_
 =============================
+Cuando las marcas son numerosas, es indispensable usar esta extensión que
+permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
+:file:`leafext.js` es compatible con una capa L.MarkerCluster_, aunque
+convendría tener claro cómo manejar datos en formato GeoJSON_ con ella. Lo más
+sencillo es usar una capa L.GeoJSON_ intermedia, que se encargue de interpretar
+los datos::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Obsérvese que no la añadimos al mapa.
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      })
+   });
+
+   //Pasamos las marcas individuales a la capa de clústers
+   layer.addLayer(interm);
+
+   interm.clearLayers();
+
+Tenga presente que la marca intermedia no se añade a la capa L.MarkerCluster_,
+sino las marcas individuales que se encuentran en ella. Por ese motivo, una vez
+pasadas las marcas, eliminamos las marcas de la capa L.GeoJSON_ para poder
+seguir utilizándola como intermediaria.
+
+Obsérvese que utilizando el código susodicho, se construyen todas las marcas
+mientras se introducen en la capa intermedia y, ya creadas todas, se añaden del
+tirón a la capa final. Una variante, quizás más interesante, es añadirlas a la
+capa final, según las van creando la intermedia::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Obsérvese que no la añadimos al mapa.
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      }),
+      onEachFeature: (f, l) => layer.addLayer(l)
+   });
+
+   interm.clearLayers();
+
+La ventaja de este código sobre el anterior es que cada vez que creamos y
+añadimos de modo efectivo una marca al mapa (o sea a la capa L.MarkerCluster_)
+podemos lanzar un disparador con::
+
+   layer.on("layeradd", e => console.log(`Creado y añadido el centro ${e.layer,getData().name}`));
+
+Con el primer codigo, en cambio, las marcas se creaban todas antes de añadirse
+la primera al mapa.
 
 .. _dev-map-no-geojson:
 
 Datos que no son GeoJSON_
 =========================
+Cuando los datos no están en formato GeoJSON_, la capa L.GeoJSON_ nos sirve de
+poco y debemos de ser nosotros los que creemos la marca y añadamos a ella los
+datos. Supongamos que los datos son estos::
+
+   {
+      "centros": [
+         {
+            "name": "Centro 1",
+            "lng": -5.9526,
+            "lat": 37.275475,
+            "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+            "oferta": ["SMR", "DAM", "BACHILLERATO"],
+            "tipo": "normal"
+         },
+         {
+            "name": "Centro 2",
+            "lng": -4.6389,
+            "lat": 37.58434,
+            "adj": ["Concursillo", "Expectativa", "Interino"],
+            "oferta": ["SMR", "ASIR"],
+            "tipo": "dificil"
+         }
+      ]
+   }
+
+o sea, los mismos datos de antes, pero sin el formato GeoJSON_. En ese caso,
+podríamos escribir un función que para cada centro creara su marca
+correspondiente y la añadiera a la capa::
+
+   const Icono = crearIcono();
+
+   const Centro = L.Marker.extend({
+      options: {mutable: "data"}
+   });   
+
+   map = L.map("map").setView([37.07, -6.27], 9);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       maxZoom: 18
+   }).addTo(map);
+
+   const layer = L.featureGroup();  // También podria ser L.markerCluster.
+
+   funcion CrearMarca(d) {
+      const m = new Centro([d.lat, data.lng]{
+         icon: new Icon();
+         title: d.name;
+      });
+      delete d.lat;
+      delete d.lng;
+      m.data = d;  // En consonancia con el valor de mutable.
+
+      return m;
+   }
+
+   for(const d of datos) layer.addLayer(crearMarca(d));
+
 
 Barra de progreso
 =================
+Los ejemplos que acompañan a Leaflet.Markercluster_ incluyen `alguno con una
+sencilla barra de progreso
+<http://leaflet.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html>`_
+que informa de cómo va el procesamiento de datos y su adición al mapa en forma
+de marca\ [#]_. Se basa en la las opciones ``chuckedLoading`` y
+``chuckProgress`` de `L.MarkerCluster`_, que son útiles cuando se añaden de una
+sola vez muchos datos a la capa, como es el caso del primer ejemplo incluido en
+el :ref:`apartado dedicado a discutir sobre este tipo de capa
+<dev-map-cluster>`. Sin embargo, si usamos otro tipo de capa o si utilizamos
+ésta, pero añadiendo una a una las marcas., tal solución se vuelve
+impracticable. Con todo, podemos construirnos nuestra propia solución con ayuda
+del evento *layeradd*. Necesitamos un |HTML| como este:
 
-Ejemplo completo
-****************
+.. code-block:: html
+
+   <div id="progress"><div id="progress-bar"></div></div>
+   <div id="map"></div>
+
+Un |CSS| para la barra que tomamos del ejemplo original:
+
+.. code-block:: css
+
+   #progress {
+       display: none;
+       position: absolute;
+       z-index: 1000;
+       top: calc(50% - 10px);
+       left: calc(50% - 100px);
+       width: 200px;
+       height: 20px;
+       margin-top: -20px;
+       margin-left: -100px;
+       background-color: #fff;
+       background-color: rgba(255, 255, 255, 0.7);
+       border-radius: 4px;
+       padding: 2px;
+   }
+
+   #progress-bar {
+       width: 0;
+       height: 100%;
+       background-color: #76A6FC;
+       border-radius: 4px;
+   }
+
+Y añadir algo de *javascript* a las soluciones anteriores::
+
+   const layer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      // Al llegar a nivel 14 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 14,
+      spiderfyOnMaxZoom: false
+   }).addTo(map);
+
+   // Barra de progreso.
+   (function() {
+      const progress = document.getElementById('progress'),
+            progressBar = document.getElementById('progress-bar'),
+            total = datos.length,
+            incr = 2;      // Cada qué % se actualiza la barra.
+
+      let i = 0;
+
+      progressBar.style.width = "0";
+
+      const start = Date.now(),
+            step  = Math.max(Math.round(total/100/incr), 1);
+
+      function progressB(e) {
+         i++;
+         if(i%step === 0 && (Date.now() - start) > 1000) {
+            progress.style.display = "block";
+            progressBar.style.width = Math.round(i*100/total) + "%";
+         }
+         if(i === total) {
+            progress.style.display = "none";
+            layer.off("layeradd", progressB);
+         }
+      }
+
+      layer.on("layeradd", progressB);
+   })();
+
+   const interm =  L.geoJSON(datos, {
+      pointToLayer: (f, p) => new Centro(p, {
+         icon: new Icono(),
+         title: f.properties.name
+      }),
+      onEachFeature: (f, l) => layer.addLayer(l)
+   });
+
+   interm.clearLayers();
 
 .. rubric:: Notas al pie
 
@@ -711,6 +923,8 @@ Ejemplo completo
 .. [#] Tenga presente que Leaflet_ envuelve la definición que con ``html`` o
    ``url`` hayamos hecho en un elemento ``<div>``, y es este elemento el que
    representa ``this``.
+.. [#] Lo que no se incluye es el tiempo de descarga del fichero de datos que es
+   anterior a todo el proceso.
 
 .. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
 .. |HTML| replace:: :abbr:`HTML (HyperText Markup Language)`

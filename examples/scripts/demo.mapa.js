@@ -48,10 +48,10 @@ const M = function(id) {
          pointToLayer: (f, p) => new g.Centro(p, {
             icon: new Icono(),
             title: f.properties.name
-         })
+         }),
+         onEachFeature: (f, l) => g.cluster.addLayer(l)
       });
 
-      g.cluster.addLayer(layer);
       events.forEach(func => func());
    }
 
