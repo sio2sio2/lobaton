@@ -748,8 +748,8 @@
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
          Marker.register = registerCorrMarker;
-         Marker.apply = applyCorrMarker;
-         Marker.unapply = unapplyCorrMarker;
+         Marker.do = doCorrMarker;
+         Marker.undo = undoCorrMarker;
       }
       return Marker;
    }
@@ -800,7 +800,7 @@
     * @params {string} name   Nombre de la corrección.
     * @prams {Object} params  Opciones de aplicacion de la corrección.
     */
-   function applyCorrMarker(name, params) {
+   function doCorrMarker(name, params) {
       const corr = this.prototype.options.corr;
       try {
          // Si la correción ya está aplicada, sólo no se aplica en
@@ -820,7 +820,7 @@
     *
     * @params {string} name   Nombre de la corrección.
     */
-   function unapplyCorrMarker(name) {
+   function undoCorrMarker(name) {
       const corr = this.prototype.options.corr;
       try {
          // La corrección no está aplicada.
@@ -1070,7 +1070,7 @@
 
                      const func = this._sc[n];
                      const params = marker.options.corr.getOptions(n).params;
-                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, this[i], this, params);
+                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, i, this, params);
                   }
 
                }

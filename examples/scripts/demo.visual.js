@@ -24,13 +24,13 @@ window.onload = function() {
    const g = M("map");
    // En este punto, los centros no se añadido a la capa,
    // así que no hay ni que refrescar.
-   g.Centro.apply("bilingue", {bil: ["Inglés"]});
-   g.Centro.apply("adjpue", {puesto: ["11590107", "00590059"]});
+   g.Centro.do("bilingue", {bil: ["Inglés"]});
+   g.Centro.do("adjpue", {puesto: ["11590107", "00590059"]});
    console.log("DEBUG", `Centro añadidos: ${g.Centro.store.length}`);
    g.fire(function() {
       console.log("Se han acabado de cargar los centros");
       //Ahora sí hay centros, asi que sí debemos refrescar
-      g.Centro.apply("vt+", {});
+      g.Centro.do("vt+", {});
       g.Centro.invoke("refresh");
    });
 

@@ -65,7 +65,7 @@
                   return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
                }
          });
-         Centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
+         Centro.do("adjcol", {colectivo: ["Prácticas", "Interino"]});
          // No es necesario hacer refresh, porque aún no se ha añadido ninguna marca.
 
          map = L.map("map").setView([37.07, -6.27], 9);

@@ -619,7 +619,7 @@ El registro de una corrección no provoca ningún cambio en los datos: sólo def
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
 corrección::
 
-   Centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
+   Centro.apply("adjcol", {colectivo: ["Prácticas", "Interino"]});
 
 que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
 todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
@@ -683,6 +683,12 @@ Para revertir una corrección, basta con pasar su nombre::
 Filtros
 =======
 
+
+.. rubric:: Ejemplo de aplicación
+
+* Consulte `en línea la variante del ejemplo anterior que añade una
+  corrección <https://sio2sio2.github.io/lobaton/examples/demo.corr.html>`_.
+
 Variantes
 *********
 Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
@@ -690,8 +696,8 @@ ilustrado.
 
 .. _dev-map-cluster:
 
-Uso de Leaflet.markercluster_
-=============================
+Leaflet.markercluster_
+======================
 Cuando las marcas son numerosas, es indispensable usar esta extensión que
 permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
 :file:`leafext.js` es compatible con una capa L.MarkerCluster_, aunque

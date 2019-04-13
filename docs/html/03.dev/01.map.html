@@ -97,7 +97,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#variantes">3.1.3. Variantes</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#uso-de-leaflet-markercluster">3.1.3.1. Uso de Leaflet.markercluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#leaflet-markercluster">3.1.3.1. Leaflet.markercluster</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#datos-que-no-son-geojson">3.1.3.2. Datos que no son GeoJSON</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#barra-de-progreso">3.1.3.3. Barra de progreso</a></li>
 </ul>
@@ -790,7 +790,7 @@ en la función, limítese a devolverlos.</p>
 <p>El registro de una corrección no provoca ningún cambio en los datos: sólo define
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
 corrección:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">col</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivo</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
 </pre></div>
 </div>
 <p>que sutirá efecto en todas las marcas de la clase <code class="docutils literal notranslate"><span class="pre">Centro</span></code>. En este caso, en
@@ -863,14 +863,19 @@ tanto,  si quiere trasladar el cambio al aspecto de los iconos:</p>
 </div>
 <div class="section" id="filtros">
 <h3>3.1.2.6. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h3>
+<p class="rubric">Ejemplo de aplicación</p>
+<ul class="simple">
+<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/examples/demo.corr.html">en línea la variante del ejemplo anterior que añade una
+corrección</a>.</li>
+</ul>
 </div>
 </div>
 <div class="section" id="variantes">
 <h2>3.1.3. Variantes<a class="headerlink" href="#variantes" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
 ilustrado.</p>
-<div class="section" id="uso-de-leaflet-markercluster">
-<span id="dev-map-cluster"></span><h3>3.1.3.1. Uso de <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.markercluster</a><a class="headerlink" href="#uso-de-leaflet-markercluster" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="leaflet-markercluster">
+<span id="dev-map-cluster"></span><h3>3.1.3.1. <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.markercluster</a><a class="headerlink" href="#leaflet-markercluster" title="Enlazar permanentemente con este título">¶</a></h3>
 <p>Cuando las marcas son numerosas, es indispensable usar esta extensión que
 permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
 <code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> es compatible con una capa <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a>, aunque
