@@ -939,23 +939,23 @@ la primera al mapa.</p>
 <p>Cuando los datos no están en formato <a class="reference external" href="http://geojson.org/">GeoJSON</a>, la capa <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> nos sirve de
 poco y debemos de ser nosotros los que creemos la marca y añadamos a ella los
 datos. Supongamos que los datos son estos:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-   <span class="s2">&quot;centros&quot;</span><span class="o">:</span> <span class="p">[</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="nt">&quot;centros&quot;</span><span class="p">:</span> <span class="p">[</span>
       <span class="p">{</span>
-         <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;Centro 1&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;lng&quot;</span><span class="o">:</span> <span class="o">-</span><span class="mf">5.9526</span><span class="p">,</span>
-         <span class="s2">&quot;lat&quot;</span><span class="o">:</span> <span class="mf">37.275475</span><span class="p">,</span>
-         <span class="s2">&quot;adj&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
-         <span class="s2">&quot;oferta&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">],</span>
-         <span class="s2">&quot;tipo&quot;</span><span class="o">:</span> <span class="s2">&quot;normal&quot;</span>
+         <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 1&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;lng&quot;</span><span class="p">:</span> <span class="mf">-5.9526</span><span class="p">,</span>
+         <span class="nt">&quot;lat&quot;</span><span class="p">:</span> <span class="mf">37.275475</span><span class="p">,</span>
+         <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+         <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">],</span>
+         <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
       <span class="p">},</span>
       <span class="p">{</span>
-         <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;Centro 2&quot;</span><span class="p">,</span>
-         <span class="s2">&quot;lng&quot;</span><span class="o">:</span> <span class="o">-</span><span class="mf">4.6389</span><span class="p">,</span>
-         <span class="s2">&quot;lat&quot;</span><span class="o">:</span> <span class="mf">37.58434</span><span class="p">,</span>
-         <span class="s2">&quot;adj&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Expectativa&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
-         <span class="s2">&quot;oferta&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;ASIR&quot;</span><span class="p">],</span>
-         <span class="s2">&quot;tipo&quot;</span><span class="o">:</span> <span class="s2">&quot;dificil&quot;</span>
+         <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 2&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;lng&quot;</span><span class="p">:</span> <span class="mf">-4.6389</span><span class="p">,</span>
+         <span class="nt">&quot;lat&quot;</span><span class="p">:</span> <span class="mf">37.58434</span><span class="p">,</span>
+         <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Expectativa&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
+         <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;ASIR&quot;</span><span class="p">],</span>
+         <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;dificil&quot;</span>
       <span class="p">}</span>
    <span class="p">]</span>
 <span class="p">}</span>

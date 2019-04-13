@@ -683,6 +683,9 @@ Para revertir una corrección, basta con pasar su nombre::
 Filtros
 =======
 
+
+.. rubric:: Ejemplo de aplicación
+
 Variantes
 *********
 Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
@@ -762,7 +765,9 @@ Datos que no son GeoJSON_
 =========================
 Cuando los datos no están en formato GeoJSON_, la capa L.GeoJSON_ nos sirve de
 poco y debemos de ser nosotros los que creemos la marca y añadamos a ella los
-datos. Supongamos que los datos son estos::
+datos. Supongamos que los datos son estos:
+
+.. code-block:: json
 
    {
       "centros": [
