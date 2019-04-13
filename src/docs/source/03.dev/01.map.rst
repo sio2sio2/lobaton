@@ -16,9 +16,9 @@ particular de su uso basada en tres niveles:
 - :file:`adjofer/visual/vue.js` que implementa una interfaz atractiva haciendo
   uso de los dos niveles anteriores.
 
-Trataremos aquí cómo crear el segundo y el tercer nivel, aunque mezclándolos,
-ya que nuestro objetivo con la interfaz (tercer nivel) no pasa de lograr que el
-mapa se logre ver.
+Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
+tendremos que introducir algún aspecto básico propio del tercero ya que, al
+menos, el mapa se tendrá que ver.
 
 Conceptos previos
 *****************
@@ -105,8 +105,8 @@ es GeoJSON_:
                "coordinates": [-5.9526, 37.275475]
             },
             "properties": {
-               "name": "Centro 1",
                "data": {
+                  "name": "Centro 1",
                   "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
                   "oferta": ["SMR", "DAM", "BACHILLERATO"],
                   "tipo": "normal"
@@ -121,8 +121,8 @@ es GeoJSON_:
                "coordinates": [-4.6389, 37.58434]
             },
             "properties": {
-               "name": "Centro 2",
                "data": {
+                  "name": "Centro 2",
                   "adj": ["Concursillo", "Expectativa", "Interino"],
                   "oferta": ["SMR", "ASIR"],
                   "tipo": "dificil"
@@ -140,7 +140,6 @@ es GeoJSON_:
    a ella a través de la propiedad ``feature``. En cualquier caso, es posible
    tratar un formato cualquiera de datos, creando independientemente la marca
    y conectando a través de una propiedad el dato correspondiente a ella .
-
 
 
 Requerimientos
@@ -185,7 +184,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    const Icono = crearIcono();
 
    const Centro = L.Marker.extend({
-      options: {mutable: "feature.properties.data"}
+      options: {mutable: "feature.properties"}
    });   
 
    map = L.map("map").setView([37.07, -6.27], 9);
@@ -208,11 +207,8 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
    se guardarán los datos asociados a la marca. Dado que usamos como origen de
    los datos un objeto GeoJSON_ y los añadimos al mapa mediante una capa
-   `L.GeoJSON`_ , éstos apareceran dentro de ``feature.properties``. En
-   :ref:`nuestro caso <dev-map-data>`, hemos supuesto que los datos que nos
-   interesan se encuentran en ``feature.properties.data``, aunque podríamos
-   haber pasado como valor de ``mutable`` también ``feature.properties``. Lo
-   importante es tener presente que:
+   `L.GeoJSON`_ , éstos apareceran dentro de ``feature.properties``, así que es
+   ahí donde indicamos que se deben buscar los datos. Resumiendo:
 
    * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
      precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
@@ -223,7 +219,14 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    * El valor de de la propiedad se tomará como los datos asociados a la marca
      y de hecho, tal valor será el que devuelva el método de marca ``.getData()``.
 
-     .. todo:: Convertir esto en un enlace al método.
+     .. warning:: Si en algún momento requiere consultar los datos y estos
+        han sufrido alguna corrección, tenga presente que :ref:`las propiedades
+        que sean *arrays* susceptibles de corrección deben consultarse de un
+        modo particular <dev-map-correctable>`.
+
+   * Si no usa el formato GeoJSON_ y crear la amrca y añade artesanalmente los
+     datos, asegúrese de colocar los datos en la propiedad que ha señalado con
+     ``mutable``.
 
 #. La creación del mapa, que es la habitual con Leaflet_.
 
@@ -260,6 +263,8 @@ se definen como imágenes, y ``html`` para iconos `L.DivIcon
 <https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
 diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
 en detalles visuales del icono.
+
+.. todo:: Incluir un chupachups y explicar esto a partir del dibujo.
 
 Ingredientes
 ------------
@@ -375,6 +380,8 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
          tipo: "normal"
       }
 
+   .. _dev-map-converter-adj:
+
    Para definir cómo transformar ``data`` en ``opts``, la librería provee de una
    clase ``L.utils.Converter``::
 
@@ -445,6 +452,11 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          converter.define("tipo", "mod.tipo");
          
+   .. warning:: Si se desean aplicar correcciones sobre los datos, los valores
+      de las propiedaes que son arrays susceptibles de sufrir correcciones,
+      deben consultarse teniéndolo en cuenta. Vea más adelante :ref:`cómo
+      hacerlo <dev-map-correctable>`.
+
 
 ``updater``
    Define la función que traslada los valores de las opciones de dibujo al
@@ -542,10 +554,11 @@ la librería:
 Correcciones
 ============
 El :dfn:`sistema de correcciones` permite alterar los datos iniciales de las
-marcas según una serie de criterios predefinidos. En el ejemplo anterior, podríamos
-desear "*eliminar todas las adjudicaciones que sean de un colectivo
-determinado*". Si el colectivo fuese el de *interinos*, es claro que las
-adjudicaciones pasarían de **4** a **3** y de **3** a **2**.
+marcas según una serie de criterios establecidos por el usuario al interaccionar
+con la interfaz visual. En el ejemplo anterior, podríamos desear "*eliminar
+todas las adjudicaciones que sean de un colectivo determinado*". Si el colectivo
+fuese el de *interinos*, es claro que las adjudicaciones pasarían de **4** a
+**3** y de **3** a **2**.
 
 .. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
    cuyo valor sea un *array*.
@@ -559,17 +572,17 @@ a. Las correcciones que eliminan elementos del *array*. como es el caso de la
 
 Definición
 ----------
-.. todo:: Sería mejor pasar el índice, en vez del valor.
-
 Para definir los criterios de corrección es preciso registrar cada criterio
 sobre la clase de la marca::
 
    Centro.register("adjcol", {
       attr: "adj",
-      func: function(value, adj, opts) {
-         return !!(opts.inv ^ (opts.colectivo.indexOf(value.pue) === -1));
+      func: function(idx, adj, opts) {
+         return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
       }
    });
+
+.. note:: Una corrección sólo puede aplicarse a una única propiedad.
 
 El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
 propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
@@ -579,8 +592,8 @@ eliminará el elemento y cuando devuelva ``false``, se conservará.
 
 La función usa como contexto la marca y tiene tres argumentos:
 
-``value``
-   que es el valor del elemento del array que se pretende comprobar.
+``idx``
+   El índice correspondiente al valor que comprueba la función.
 
 ``adj``
    que es el array completo. En el ejemplo, el array ``adj``.
@@ -594,54 +607,78 @@ La función usa como contexto la marca y tiene tres argumentos:
 
 En caso de que la corrección sirva para añadir elementos, no se recorrerá el
 array elemento por elemento, sino que la función se ejecutará una v vez y deberá
-devolver un *array* con los elementos que se desean incorporar. Como ``value``
+devolver un *array* con los elementos que se desean incorporar. Como ``idx``
 no tiene sentido en este caso, tomará el valor de *null*.
 
 .. warning:: Aunque tenga disponible el *array*, no añada los nuevos elementos
    en la función, limítese a devolverlos.
 
-Lo conveniente es registrar las correcciones nada más crear la clase, aunque aún
-no se hayan incorporado los datos al mapa.
-
-.. note:: Una corrección sólo puede aplicarse a una única propiedad.
-
 Aplicación
 ----------
 El registro de una corrección no provoca ningún cambio en los datos: sólo define
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
-corrección, en principio, sobre una marca::
+corrección::
 
-   centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
+   Centro.apply("adjcol", {col: ["Prácticas", "Interino"]});
 
-por ejemplo, que provocará que para el centro referido por la marca ``centro``,
-se *eliminen* del array de adjudicaciones (o sea, ``adj``), los elementos que no
-representan adjudicaciones a personal en prácticas o interino. Lo habitual, sin
-embargo, es que queramos hacer la corrección a todos los centros definidos, por
-lo que sería más apropiado::
-
-   Centro.invoke("apply", "adjcol", {col: ["Prácticas", "Interino"]});
-
-.. note:: ``.invoke()`` ejecuta el método para todas las marcas almacenadas en
-   ``Centro.store``. Por tanto, al ejecutar el método debemos asegurarnos de que
-   de todos los datos ya se ha generado la marca apropiada, o lo que es lo
-   mismo, que todos los datos han sido ya añadidos a la capa `L.GeoJSON`_.
+que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
+todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
+los elementos que no representan adjudicaciones a personal en prácticas o
+interino.
 
 .. warning:: La aplicación de la corrección no altera automáticamente el aspecto
-   del icono. Si queremos redibujar el icono, debemos entonces refrescar la
-   marca::
-
-      centro.refresh();
-
-   o si hemos corregidos todas::
+   de las marcas. Para hacerlo, debe aplicarse el método ``.refresh()`` sobre
+   las marcas::
 
       Centro.invoke("refresh");
 
-Se ha afirmado alegremente que se eliminan elementos del *array*, pero es no es
+.. note:: Si con posterioridad a la aplicación, se crea una nueva marca de tipo
+   ``Centro``, las correcciones aplicadas, se aplicarán también a la marca en
+   cuanto se conecten a ella los datos en don hallamos determinado a través de
+   ``mutable``.
+
+.. _dev-map-correctable:
+
+Se ha afirmado alegremente que se eliminan elementos del *array*, pero no es
 cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
-En realidad, cuando se define una corrección
+En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
+nuevos si hubo correcciones que los añadieron. Para consultar un *array* con
+correcciones debe usarse:
+
+``.total``
+   Que es una propiedad que devuelve el número total de elementos, descontados
+   los eliminados. Por tanto, la :ref:`conversión de adj en numadj
+   <dev-map-converter-adj>` debimos haberla hecho así::
+   
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => a.total)
+                           .define("tipo");
+
+``.walk()``
+   Que es un método generador que en cada iteración devuelve un
+   objeto en cuya propiedad ``value`` se encuentra el valor de elemento o
+   ``null`` si el elemento se eliminó, y en cuya propiedad filters se almacenan
+   en un array los nombres de las correcciones que eliminaron el elemento.
+   Por tanto, la definición anterior también podríamos haberla hecho así::
+
+      const converter = new L.utils.Converter(["numadj", "tipo"])
+                           .define("numadj", "adj", a => Array.from(a.walk()).filter(e => e === null).length)
+                           .define("tipo");
+
+   Es obvio que es preferible, la solución anterior; pero ``.walk()`` se vuelve
+   útil cuando necesitáramos saber qué elementos no se han filtrado y no
+   simplemente cuántos.
 
 Reversión
 ---------
+Para revertir una corrección, basta con pasar su nombre::
+
+   Centro.unapply("adjcol");
+
+.. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
+   tanto,  si quiere trasladar el cambio al aspecto de los iconos::
+
+      Centro.invoke("refresh");
 
 Filtros
 =======

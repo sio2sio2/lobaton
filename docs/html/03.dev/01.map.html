@@ -189,9 +189,9 @@ la herramienta que se use para construir la interfaz visual.</li>
 <li><code class="file docutils literal notranslate"><span class="pre">adjofer/visual/vue.js</span></code> que implementa una interfaz atractiva haciendo
 uso de los dos niveles anteriores.</li>
 </ul>
-<p>Trataremos aquí cómo crear el segundo y el tercer nivel, aunque mezclándolos,
-ya que nuestro objetivo con la interfaz (tercer nivel) no pasa de lograr que el
-mapa se logre ver.</p>
+<p>Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
+tendremos que introducir algún aspecto básico propio del tercero ya que, al
+menos, el mapa se tendrá que ver.</p>
 <div class="section" id="conceptos-previos">
 <h2>3.1.1. Conceptos previos<a class="headerlink" href="#conceptos-previos" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Partimos de la necesidad de representar sobre un mapa una serie de entidades
@@ -262,8 +262,8 @@ es <a class="reference external" href="http://geojson.org/">GeoJSON</a>:</p>
             <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">-5.9526</span><span class="p">,</span> <span class="mf">37.275475</span><span class="p">]</span>
          <span class="p">},</span>
          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 1&quot;</span><span class="p">,</span>
             <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 1&quot;</span><span class="p">,</span>
                <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Suprimido&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
                <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;DAM&quot;</span><span class="p">,</span> <span class="s2">&quot;BACHILLERATO&quot;</span><span class="p">],</span>
                <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
@@ -278,8 +278,8 @@ es <a class="reference external" href="http://geojson.org/">GeoJSON</a>:</p>
             <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">-4.6389</span><span class="p">,</span> <span class="mf">37.58434</span><span class="p">]</span>
          <span class="p">},</span>
          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 2&quot;</span><span class="p">,</span>
             <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Centro 2&quot;</span><span class="p">,</span>
                <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Concursillo&quot;</span><span class="p">,</span> <span class="s2">&quot;Expectativa&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">],</span>
                <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">,</span> <span class="s2">&quot;ASIR&quot;</span><span class="p">],</span>
                <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;dificil&quot;</span>
@@ -337,7 +337,7 @@ incrustar el mapa. Típicamente:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">crearIcono</span><span class="p">();</span>
 
 <span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
-   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span><span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties.data&quot;</span><span class="p">}</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span><span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">}</span>
 <span class="p">});</span>
 
 <span class="nx">map</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="s2">&quot;map&quot;</span><span class="p">).</span><span class="nx">setView</span><span class="p">([</span><span class="mf">37.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.27</span><span class="p">],</span> <span class="mi">9</span><span class="p">);</span>
@@ -362,11 +362,8 @@ incrustar el mapa. Típicamente:</p>
 de la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code>, cuyo valor debe ser la propiedad de la marca donde
 se guardarán los datos asociados a la marca. Dado que usamos como origen de
 los datos un objeto <a class="reference external" href="http://geojson.org/">GeoJSON</a> y los añadimos al mapa mediante una capa
-<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> , éstos apareceran dentro de <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>. En
-<a class="reference internal" href="#dev-map-data"><span class="std std-ref">nuestro caso</span></a>, hemos supuesto que los datos que nos
-interesan se encuentran en <code class="docutils literal notranslate"><span class="pre">feature.properties.data</span></code>, aunque podríamos
-haber pasado como valor de <code class="docutils literal notranslate"><span class="pre">mutable</span></code> también <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>. Lo
-importante es tener presente que:</p>
+<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> , éstos apareceran dentro de <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>, así que es
+ahí donde indicamos que se deben buscar los datos. Resumiendo:</p>
 <ul>
 <li><p class="first">Al pasar la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code> la marca añadirá los métodos y propiedades
 precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
@@ -375,10 +372,17 @@ la marca será un <a class="reference external" href="https://leafletjs.com/refe
 </li>
 <li><p class="first">El valor de de la propiedad se tomará como los datos asociados a la marca
 y de hecho, tal valor será el que devuelva el método de marca <code class="docutils literal notranslate"><span class="pre">.getData()</span></code>.</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Por hacer</p>
-<p class="last">Convertir esto en un enlace al método.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Si en algún momento requiere consultar los datos y estos
+han sufrido alguna corrección, tenga presente que <a class="reference internal" href="#dev-map-correctable"><span class="std std-ref">las propiedades
+que sean *arrays* susceptibles de corrección deben consultarse de un
+modo particular</span></a>.</p>
 </div>
+</li>
+<li><p class="first">Si no usa el formato <a class="reference external" href="http://geojson.org/">GeoJSON</a> y crear la amrca y añade artesanalmente los
+datos, asegúrese de colocar los datos en la propiedad que ha señalado con
+<code class="docutils literal notranslate"><span class="pre">mutable</span></code>.</p>
 </li>
 </ul>
 </li>
@@ -531,7 +535,7 @@ dibujo</strong> deberían ser:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Para definir cómo transformar <code class="docutils literal notranslate"><span class="pre">data</span></code> en <code class="docutils literal notranslate"><span class="pre">opts</span></code>, la librería provee de una
+<p id="dev-map-converter-adj">Para definir cómo transformar <code class="docutils literal notranslate"><span class="pre">data</span></code> en <code class="docutils literal notranslate"><span class="pre">opts</span></code>, la librería provee de una
 clase <code class="docutils literal notranslate"><span class="pre">L.utils.Converter</span></code>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
                      <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span>
@@ -573,7 +577,7 @@ Por tanto, lo anterior es equivalente a:</p>
 <p>Como el método <code class="docutils literal notranslate"><span class="pre">.define()</span></code> devuelve el objeto mismo, es posible hacer
 encadenamiento y convertir las tres instrucciones en una sola.</p>
 <p>Hay, no obstante, dos puntualizaciones que hacer:</p>
-<ol class="last arabic">
+<ol class="arabic">
 <li><p class="first">Cuando la opción de dibujo depende de dos o más propiedades, puede usarse
 un array. Por ejemplo, supongamos que una opción de dibujo fuera
 <code class="docutils literal notranslate"><span class="pre">adjofer</span></code> que es la suma del número de adjudicaciones y el número de
@@ -604,6 +608,13 @@ modo:</p>
 </div>
 </li>
 </ol>
+<div class="last admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Si se desean aplicar correcciones sobre los datos, los valores
+de las propiedaes que son arrays susceptibles de sufrir correcciones,
+deben consultarse teniéndolo en cuenta. Vea más adelante <a class="reference internal" href="#dev-map-correctable"><span class="std std-ref">cómo
+hacerlo</span></a>.</p>
+</div>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">updater</span></code></dt>
 <dd><p class="first">Define la función que traslada los valores de las opciones de dibujo al
@@ -716,10 +727,11 @@ la librería:</p>
 <div class="section" id="correcciones">
 <h3>3.1.2.5. Correcciones<a class="headerlink" href="#correcciones" title="Enlazar permanentemente con este título">¶</a></h3>
 <p>El <em class="dfn">sistema de correcciones</em> permite alterar los datos iniciales de las
-marcas según una serie de criterios predefinidos. En el ejemplo anterior, podríamos
-desear «<em>eliminar todas las adjudicaciones que sean de un colectivo
-determinado</em>». Si el colectivo fuese el de <em>interinos</em>, es claro que las
-adjudicaciones pasarían de <strong>4</strong> a <strong>3</strong> y de <strong>3</strong> a <strong>2</strong>.</p>
+marcas según una serie de criterios establecidos por el usuario al interaccionar
+con la interfaz visual. En el ejemplo anterior, podríamos desear «<em>eliminar
+todas las adjudicaciones que sean de un colectivo determinado</em>». Si el colectivo
+fuese el de <em>interinos</em>, es claro que las adjudicaciones pasarían de <strong>4</strong> a
+<strong>3</strong> y de <strong>3</strong> a <strong>2</strong>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>
 <p class="last">Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
@@ -733,19 +745,19 @@ corrección de ejemplo que se acaba de enunciar.</li>
 </ol>
 <div class="section" id="id5">
 <h4>3.1.2.5.1. Definición<a class="headerlink" href="#id5" title="Enlazar permanentemente con este título">¶</a></h4>
-<div class="admonition-todo admonition" id="index-1">
-<p class="first admonition-title">Por hacer</p>
-<p class="last">Sería mejor pasar el índice, en vez del valor.</p>
-</div>
 <p>Para definir los criterios de corrección es preciso registrar cada criterio
 sobre la clase de la marca:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span>
    <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
-   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">value</span><span class="p">.</span><span class="nx">pue</span><span class="p">)</span> <span class="o">===</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">adj</span><span class="p">[</span><span class="nx">idx</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
    <span class="p">}</span>
 <span class="p">});</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Una corrección sólo puede aplicarse a una única propiedad.</p>
 </div>
 <p>El código crea un corrección de nombre «<em>adjpue</em>» que se aplica sobre la
 propiedad de los datos <code class="docutils literal notranslate"><span class="pre">adj</span></code>. Como es una corrección que pretende eliminar
@@ -754,8 +766,8 @@ los elementos del <em>array</em> <code class="docutils literal notranslate"><spa
 eliminará el elemento y cuando devuelva <code class="docutils literal notranslate"><span class="pre">false</span></code>, se conservará.</p>
 <p>La función usa como contexto la marca y tiene tres argumentos:</p>
 <dl class="docutils">
-<dt><code class="docutils literal notranslate"><span class="pre">value</span></code></dt>
-<dd>que es el valor del elemento del array que se pretende comprobar.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">idx</span></code></dt>
+<dd>El índice correspondiente al valor que comprueba la función.</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">adj</span></code></dt>
 <dd>que es el array completo. En el ejemplo, el array <code class="docutils literal notranslate"><span class="pre">adj</span></code>.</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">opts</span></code></dt>
@@ -767,62 +779,88 @@ invertir el significado.</dd>
 </dl>
 <p>En caso de que la corrección sirva para añadir elementos, no se recorrerá el
 array elemento por elemento, sino que la función se ejecutará una v vez y deberá
-devolver un <em>array</em> con los elementos que se desean incorporar. Como <code class="docutils literal notranslate"><span class="pre">value</span></code>
+devolver un <em>array</em> con los elementos que se desean incorporar. Como <code class="docutils literal notranslate"><span class="pre">idx</span></code>
 no tiene sentido en este caso, tomará el valor de <em>null</em>.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Advertencia</p>
 <p class="last">Aunque tenga disponible el <em>array</em>, no añada los nuevos elementos
 en la función, limítese a devolverlos.</p>
 </div>
-<p>Lo conveniente es registrar las correcciones nada más crear la clase, aunque aún
-no se hayan incorporado los datos al mapa.</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">Una corrección sólo puede aplicarse a una única propiedad.</p>
-</div>
 </div>
 <div class="section" id="aplicacion">
 <h4>3.1.2.5.2. Aplicación<a class="headerlink" href="#aplicacion" title="Enlazar permanentemente con este título">¶</a></h4>
 <p>El registro de una corrección no provoca ningún cambio en los datos: sólo define
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
-corrección, en principio, sobre una marca:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">centro</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">col</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
+corrección:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">col</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
 </pre></div>
 </div>
-<p>por ejemplo, que provocará que para el centro referido por la marca <code class="docutils literal notranslate"><span class="pre">centro</span></code>,
-se <em>eliminen</em> del array de adjudicaciones (o sea, <code class="docutils literal notranslate"><span class="pre">adj</span></code>), los elementos que no
-representan adjudicaciones a personal en prácticas o interino. Lo habitual, sin
-embargo, es que queramos hacer la corrección a todos los centros definidos, por
-lo que sería más apropiado:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;apply&quot;</span><span class="p">,</span> <span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">col</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last"><code class="docutils literal notranslate"><span class="pre">.invoke()</span></code> ejecuta el método para todas las marcas almacenadas en
-<code class="docutils literal notranslate"><span class="pre">Centro.store</span></code>. Por tanto, al ejecutar el método debemos asegurarnos de que
-de todos los datos ya se ha generado la marca apropiada, o lo que es lo
-mismo, que todos los datos han sido ya añadidos a la capa <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a>.</p>
-</div>
+<p>que sutirá efecto en todas las marcas de la clase <code class="docutils literal notranslate"><span class="pre">Centro</span></code>. En este caso, en
+todas estas márcas  se <em>eliminará</em> del array de adjudicaciones (o sea, <code class="docutils literal notranslate"><span class="pre">adj</span></code>),
+los elementos que no representan adjudicaciones a personal en prácticas o
+interino.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Advertencia</p>
 <p>La aplicación de la corrección no altera automáticamente el aspecto
-del icono. Si queremos redibujar el icono, debemos entonces refrescar la
-marca:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">centro</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
-</pre></div>
-</div>
-<p>o si hemos corregidos todas:</p>
+de las marcas. Para hacerlo, debe aplicarse el método <code class="docutils literal notranslate"><span class="pre">.refresh()</span></code> sobre
+las marcas:</p>
 <div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;refresh&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
-<p>Se ha afirmado alegremente que se eliminan elementos del <em>array</em>, pero es no es
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Si con posterioridad a la aplicación, se crea una nueva marca de tipo
+<code class="docutils literal notranslate"><span class="pre">Centro</span></code>, las correcciones aplicadas, se aplicarán también a la marca en
+cuanto se conecten a ella los datos en don hallamos determinado a través de
+<code class="docutils literal notranslate"><span class="pre">mutable</span></code>.</p>
+</div>
+<p id="dev-map-correctable">Se ha afirmado alegremente que se eliminan elementos del <em>array</em>, pero no es
 cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
-En realidad, cuando se define una corrección</p>
+En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
+nuevos si hubo correcciones que los añadieron. Para consultar un <em>array</em> con
+correcciones debe usarse:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">.total</span></code></dt>
+<dd><p class="first">Que es una propiedad que devuelve el número total de elementos, descontados
+los eliminados. Por tanto, la <a class="reference internal" href="#dev-map-converter-adj"><span class="std std-ref">conversión de adj en numadj</span></a> debimos haberla hecho así:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">.walk()</span></code></dt>
+<dd><p class="first">Que es un método generador que en cada iteración devuelve un
+objeto en cuya propiedad <code class="docutils literal notranslate"><span class="pre">value</span></code> se encuentra el valor de elemento o
+<code class="docutils literal notranslate"><span class="pre">null</span></code> si el elemento se eliminó, y en cuya propiedad filters se almacenan
+en un array los nombres de las correcciones que eliminaron el elemento.
+Por tanto, la definición anterior también podríamos haberla hecho así:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">walk</span><span class="p">()).</span><span class="nx">filter</span><span class="p">(</span><span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">e</span> <span class="o">===</span> <span class="kc">null</span><span class="p">).</span><span class="nx">length</span><span class="p">)</span>
+                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="last">Es obvio que es preferible, la solución anterior; pero <code class="docutils literal notranslate"><span class="pre">.walk()</span></code> se vuelve
+útil cuando necesitáramos saber qué elementos no se han filtrado y no
+simplemente cuántos.</p>
+</dd>
+</dl>
 </div>
 <div class="section" id="reversion">
 <h4>3.1.2.5.3. Reversión<a class="headerlink" href="#reversion" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Para revertir una corrección, basta con pasar su nombre:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">unapply</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p>Tampoco en este caso se refresca el aspecto de las marcas. Por
+tanto,  si quiere trasladar el cambio al aspecto de los iconos:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;refresh&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="section" id="filtros">
