@@ -714,13 +714,16 @@
             this.options.params.reset();
          }
 
-         return createDivIcon.call(this, arguments);
+         const div = createDivIcon.call(this, arguments);
+         // TODO: Aquí se puede aplicar el filtro, si la marca está filtrada.
+         return div
       },
       /**
        * Refresca el icono, en caso de que hayan cambiado las opciones de dibujo.
        * El método modifica directamente el HTML sobre el documento.
        */
       refresh: function() {
+         // TODO: Filtrado
          if(!this.options.params || this.options.params.updated) return false;
          this.options.updater.call(this._marker.getElement(), this.options.params.modified);
          this.options.params.reset();
@@ -738,7 +741,6 @@
       const options = Marker.prototype.options;
       if(options.mutable) {
          options.corr = new CorrSys();
-         options.filter = new FilterSys(); // Issue #5
          Object.assign(Marker.prototype, prototypeExtra);
          Object.defineProperty(Marker, "store", {
             value: [],
@@ -752,9 +754,13 @@
          Marker.do = doCorrMarker;
          Marker.undo = undoCorrMarker;
          // Issue #5
-         Marker.registerF = registerFilterMarker;
-         Marker.filter = filterMarker;
-         Marker.unfilter = unfilterMarker;
+         if(options.filter) {
+            Object.assign(Marker.prototype, prototypeExtraFilter);
+            options.filter = new FilterSys(options.filter);
+            Marker.registerF = registerFilterMarker;
+            Marker.filter = filterMarker;
+            Marker.unfilter = unfilterMarker;
+         }
          // Fin issue #5
       }
       return Marker;
@@ -910,7 +916,7 @@
             // Aplicamos a los nuevos datos los filtros ya aplicadas
             // a los datos de las restantes marcas de la misma clase.
             const filter = this.options.filter;
-            for(const name of filter.getFilters()) this.applyF(name);
+            if(filter) for(const name of filter.getFilters()) this.applyF(name);
             // Fin issue #5
             // Y los mismo con las correcciones
             const corr = this.options.corr;
@@ -975,8 +981,8 @@
          if(!arr.apply(this, name)) return false;
 
          // Issue #5
-         const filters = this.options.filter.getFilters(property);
-         for(const f of filters) this.applyF(f);
+         const filter = this.options.filter;
+         if(filter) for(const f of filter.getFilters(property)) this.applyF(f);
          // Fin issue #5
 
          // Cambia las opciones de dibujo en función de los datos corregidos
@@ -1001,15 +1007,18 @@
          if(!arr.unapply(name)) return false;
 
          // Issue #5
-         const filters = this.options.filter.getFilters(property);
-         for(const f of filters) this.unapplyF(f);
+         const filter = this.options.filter;
+         if(filter) for(const f of filter.getFilters(property)) this.unapplyF(f);
          // Fin issue #5
 
          const icon = this.options.icon;
          if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
          return true;
-      },
-      // Issue #5
+      }
+   }
+
+   // Issue #5
+   const prototypeExtraFilter = {
       /**
        * Informa de si la marca está filtrada.
        */
@@ -1039,8 +1048,8 @@
          if(idx !== -1) this._filtered.splice(idx, 1);
          return idx !== 1;
       }
-      // Fin issue #5
    }
+   // Fin issue #5
 
 
    // Sistema de correcciones
@@ -1555,7 +1564,34 @@
     */
    const FilterSys = (function() {
       
-      function FilterSys() {}
+      /**
+       * Constructor de la clase
+       *
+       * @param {function|L.LayerGroup} func  Función que define cómo se ve la marca filtrada.
+       *    Si es una capa, la acción es hacerla desaperecer de esa capa.
+       */
+      function FilterSys(func) {
+         Object.defineProperties(this, {
+            transform: {
+               get: function() { return this._transform; },
+               set: function(value) { this._transform = value; },
+               configurable: false,
+               enumerable: false
+            },
+            _transform: {
+               value: func,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            }
+         });
+      }
+
+      Object.defineProperty(FilterSys.prototype, "visible", {
+         get: function() { return typeof this.transform === "function"; },
+         configurable: false,
+         enumerable: false
+      });
 
       /**
        * Registra una corrección

@@ -41,7 +41,10 @@ const M = function(id) {
 
    function definirMarca() {
       g.Centro = L.Marker.extend({
-         options: {mutable: "feature.properties.data"}
+         options: {
+            mutable: "feature.properties.data",
+            filter: g.cluster
+         }
       });
       definirCorrecciones.call(g.Centro);
       definirFiltros.call(g.Centro);
