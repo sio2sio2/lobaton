@@ -715,7 +715,13 @@
          }
 
          const div = createDivIcon.call(this, arguments);
-         // TODO: Aquí se puede aplicar el filtro, si la marca está filtrada.
+         // Issue #5
+         const filter = this._marker.options.filter;
+         if(filter && this._marker.filtered) {
+            if(filter.hideable) console.error("Si está filtrado y es ocultable, no debería estar aquí");
+            else filter.transform.call(div, true);
+         }
+         // Fin issue #5
          return div
       },
       /**
@@ -756,6 +762,13 @@
          // Issue #5
          if(options.filter) {
             Object.assign(Marker.prototype, prototypeExtraFilter);
+            // No puede definirse en prototypeExtraFilter:
+            // https://stackoverflow.com/questions/40211725/object-assign-getters-and-setters-in-constructor
+            Object.defineProperty(Marker.prototype, "filtered", {
+               get: function() { return this._filtered.length > 0; },
+               configurable: false,
+               enumerable: false
+            });
             options.filter = new FilterSys(options.filter);
             Marker.registerF = registerFilterMarker;
             Marker.filter = filterMarker;
@@ -891,7 +904,28 @@
     */
    const prototypeExtra = {
       refresh: function() {
-         if(!this.getElement()) return false;  // La marca no está en el mapa.
+         let div = this.getElement();
+         // Issue #5
+         const filter = this.options.filter;
+         if(filter) {
+            if(filter.hideable) {
+               if(this.filtered) {
+                  // Puede estar en la capa, aunque no se encuentre en el map
+                  // si la capa es MarkerClusterGroup.
+                  filter.transform.removeLayer(this);
+                  div = undefined;
+               }
+               else {
+                  if(!div) {
+                     filter.transform.addLayer(this);
+                     div = this.getElement();
+                  }
+               }
+            }
+            else if(div) filter.transform.call(div, this.filtered);
+         }
+         // Fin issue #5
+         if(!div) return false;  // La marca no está en el mapa.
          this.options.icon.refresh();
       },
       initialize: function() {
@@ -1019,14 +1053,6 @@
 
    // Issue #5
    const prototypeExtraFilter = {
-      /**
-       * Informa de si la marca está filtrada.
-       */
-      filtered: {
-         get: function() { return this._filtered > 0; },
-         configurable: false,
-         enumerable: false
-      },
       /**
        * Aplica un filtro a la marca.
        */
@@ -1564,6 +1590,9 @@
     */
    const FilterSys = (function() {
       
+      function ejectFiltered() {
+      }
+
       /**
        * Constructor de la clase
        *
@@ -1574,24 +1603,33 @@
          Object.defineProperties(this, {
             transform: {
                get: function() { return this._transform; },
-               set: function(value) { this._transform = value; },
+               set: function(value) { 
+                  if(this.transform && this.hideable) this.transform.off("layeradd", this.ejectFiltered);
+                  this._transform = value; 
+                  if(this.hideable) this.transform.on("layeradd", this.ejectFiltered);
+               },
                configurable: false,
                enumerable: false
             },
             _transform: {
-               value: func,
                writable: true,
                enumerable: false,
                configurable: false
             }
          });
+         this.transform = func;
       }
 
-      Object.defineProperty(FilterSys.prototype, "visible", {
-         get: function() { return typeof this.transform === "function"; },
+      Object.defineProperty(FilterSys.prototype, "hideable", {
+         get: function() { return typeof this.transform !== "function"; },
          configurable: false,
          enumerable: false
       });
+
+      /**
+       * Expulsa automáticamente de la capa las marcas filtradas.
+       */
+      FilterSys.prototype.ejectFiltered = e => e.layer.refresh();
 
       /**
        * Registra una corrección

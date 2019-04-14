@@ -46,10 +46,12 @@ window.onload = function() {
          console.log("DEBUG - ident", e.target.feature.properties.name);
          console.log("DEBUG - marca", e.target);
          console.log("DEBUG - datos", e.target.getData());
+         console.log("DEBUG - filtrado", e.target.filtered);
       });
    });
 
    poblarSelectores()
    document.querySelector("select[name='especialidad']").dispatchEvent(new Event("change"));
 
+   x = g;
 }
