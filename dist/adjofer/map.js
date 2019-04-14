@@ -44,6 +44,7 @@ const M = function(id) {
          options: {mutable: "feature.properties.data"}
       });
       definirCorrecciones.call(g.Centro);
+      definirFiltros.call(g.Centro);
    }
 
    function agregarCentros(Icono, datos) {
@@ -106,6 +107,24 @@ const M = function(id) {
       });
    }
 
+   function definirFiltros() {
+      // Filtra según cantidad de adjudicaciones.
+      this.registerF("adj", {
+         attrs: "adj",
+         // opts= {min: 0}
+         func: function(opts) {
+             return this.getData().adj.total < opts.min;
+         }
+      });
+      // Filtra según número de enseñanzas.
+      this.registerF("oferta", {
+         attrs: "oferta",
+         // opts= {min: 0}
+         func: function(opts) {
+             return this.getData().oferta.total < opts.min;
+         }
+      });
+   }
 
    // Definición de los distintos estilos para iconos.
    function crearIconos() {

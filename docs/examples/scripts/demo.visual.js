@@ -26,9 +26,8 @@ window.onload = function() {
    // así que no hay ni que refrescar.
    g.Centro.do("bilingue", {bil: ["Inglés"]});
    g.Centro.do("adjpue", {puesto: ["11590107", "00590059"]});
-   // Registramos y aplicamos filtros.
-   g.Centro.registerF("adj", "adj", function() { return this.getData().adj.total === 0; }).filter("adj");
-   g.Centro.registerF("oferta", "oferta", function() { return this.getData().oferta.total === 0; }).filter("oferta");
+   g.Centro.filter("adj", {min: 1});
+   g.Centro.filter("oferta", {min: 1});
 
    console.log("DEBUG", `Centro añadidos: ${g.Centro.store.length}`);
 

@@ -854,11 +854,12 @@
     * Habilita un filtro para las marcas de una clase
     *
     * @param {string} name    Nombre del filtro.
+    * @param {Object} params  Opciones para el filtrado.
     */
-   function filterMarker(name) {
-      const filter = this.prototype.options.filter.enable(name);
-      if(!filter) return false;  //El filtro no existe o ya está habilitado
-      console.log("TODO", "Aplicar el filtro a todas las marcas de la clase");
+   function filterMarker(name, params) {
+      const filter = this.prototype.options.filter.setParams(name, params, true);
+      if(!filter) return false;  //El filtro no existe o ya estaba habilitado con los mismo parámetros.
+      for(const marker of this.store) marker.applyF(name);
       return this;
    }
 
@@ -870,7 +871,7 @@
    function unfilterMarker(name) {
       const filter = this.prototype.options.filter.disable(name);
       if(!filter) return false;  // El filtro no existe o está deshabilitado.
-      console.log("TODO", "Eliminar el filtro a todas las marcas de la clase");
+      for(const marker of this.store) marker.unapplyF(name);
       return this;
    }
    // Fin issue #5
@@ -905,8 +906,13 @@
          function setFeature(value) {
             this["_" + feature] = value;
             this._prepare();
-            // Aplicamos a los nuevos datos las correcciones ya aplicadas
+            // Issue #5
+            // Aplicamos a los nuevos datos los filtros ya aplicadas
             // a los datos de las restantes marcas de la misma clase.
+            const filter = this.options.filter;
+            for(const name of filter.getFilters()) this.applyF(name);
+            // Fin issue #5
+            // Y los mismo con las correcciones
             const corr = this.options.corr;
             for(const name in corr.getCorrections()) {
                if(corr.getOptions(name).params) this.apply(name);
@@ -919,8 +925,16 @@
             configurable: false,
             enumerable: false
          });
-         // Fin #Issue 22
+         // Fin issue #22
 
+         // Issue #5
+         Object.defineProperty(this, "_filtered", {
+            value: [],
+            writable: true,
+            configurable: false,
+            enumerable: false
+         });
+         // Fin Issue #5
       },
       setIcon: function(icon) {
          icon._marker = this;
@@ -962,7 +976,7 @@
 
          // Issue #5
          const filters = this.options.filter.getFilters(property);
-         if(filters.length>0) console.log("TODO", `Aplicar a ${this.getData().id.nom} los filtros`, filters);
+         for(const f of filters) this.applyF(f);
          // Fin issue #5
 
          // Cambia las opciones de dibujo en función de los datos corregidos
@@ -988,13 +1002,44 @@
 
          // Issue #5
          const filters = this.options.filter.getFilters(property);
-         if(filters.length>0) console.log("TODO", `Aplicar a ${this.getData().id.nom} los filtros`, filters);
+         for(const f of filters) this.unapplyF(f);
          // Fin issue #5
 
          const icon = this.options.icon;
          if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
          return true;
+      },
+      // Issue #5
+      /**
+       * Informa de si la marca está filtrada.
+       */
+      filtered: {
+         get: function() { return this._filtered > 0; },
+         configurable: false,
+         enumerable: false
+      },
+      /**
+       * Aplica un filtro a la marca.
+       */
+      applyF: function(name) {
+         const filter = this.options.filter;
+         const res = filter[name].call(this, filter.getParams(name));
+         if(res) {
+           if(this._filtered.indexOf(name) === -1) this._filtered.push(name) 
+         }
+         else this.unapplyF(name);
+         return res;
+      },
+      /**
+       * Lo elimina.
+       */
+      unapplyF: function(name) {
+         const filter = this.options.filter;
+         const idx = this._filtered.indexOf(name)
+         if(idx !== -1) this._filtered.splice(idx, 1);
+         return idx !== 1;
       }
+      // Fin issue #5
    }
 
 
@@ -1493,6 +1538,7 @@
             const sc = this[this.getProp(name)];
             if(!sc) throw new Error(`${name}: corrección no registrada`);
             sc[name].prop.params = opts;
+            return this;
          }
          // Fin issue #23
 
@@ -1522,15 +1568,18 @@
        * @param {function}       func  Función que filtra. Debe devolver
        *    true (sí filtra) o false.
        */
-      FilterSys.prototype.register = function(name, attrs, func) {
+      FilterSys.prototype.register = function(name, obj) {
          if(this[name]) {
             console.warn(`${name}: El filtro ya está registrado`);
             return false;
          }
-         if(!(attrs instanceof Array)) attrs = [attrs];
-         func.depends = attrs
-         func.enabled = false;
-         this[name] = func;
+         if(!(obj.attrs instanceof Array)) obj.attrs = [obj.attrs];
+         obj.func.prop = {
+            depends: obj.attrs,
+            enabled: false,
+            params: undefined
+         }
+         this[name] = obj.func;
          return this;
       }
 
@@ -1540,13 +1589,19 @@
        *
        * @method getFilters
        *
-       * @param {string} attr Nombre del propiedad.
+       * @param {string} attr Nombre del propiedad. Si no se facilita, devuelve
+       *    todos los filtros habilitados.
        *
        * @retuns  {Array<string>}   Los nombres de los filtros.
        */
       FilterSys.prototype.getFilters = function(attr) {
-         return Object.keys(this).filter(filter => this[filter].enabled
-                                                && this[filter].depends.indexOf(attr) !== -1);
+         return Object.keys(this).filter(filter => 
+            this[filter].prop.enabled
+         && (
+               !attr
+               || this[filter].prop.depends.indexOf(attr) !== -1
+            )
+         );
       }
 
       /**
@@ -1555,8 +1610,8 @@
        * @param {string} name  El nombre del filtro que se quiere habilitar.
        */
       FilterSys.prototype.enable = function(name) {
-         if(!this.hasOwnProperty(name) || this[name].enabled) return false;
-         this[name].enabled = true;
+         if(!this.hasOwnProperty(name) || this[name].prop.enabled) return false;
+         this[name].prop.enabled = true;
          return this;
       }
 
@@ -1566,13 +1621,42 @@
        * @param {string} name  El nombre del filtro que se quiere deshabilitar.
        */
       FilterSys.prototype.disable = function(name) {
-         if(!this.hasOwnProperty(name) || !this[name].enabled) return false;
-         this[name].enabled = false;
+         if(!this.hasOwnProperty(name) || !this[name].prop.enabled) return false;
+         this[name].prop.enabled = false;
+         this[name].prop.params = undefined;
          return this;
       }
 
-      return FilterSys;
+      /**
+       * Establece unas nuevas opciones de aplicación para el filtro.
+       *
+       * @params {string} name   Nombre del filtro.
+       * @params {Object} opts   Opciones de aplicación del filtro.
+       * @params {boolean} enable   Fuerza a habilitar el filtro.
+       *
+       * @returns {boolean|FilterSys} false en caso de que el filtro no exista,
+       *    esté deshabilitado, o estuviera habilitado, pero con las mismas opciones.
+       */
+      FilterSys.prototype.setParams = function(name, opts, enable) {
+         if(!this.hasOwnProperty(name)) return false;
+         if(!enable && !this[name].prop.enabled) return false;  // No se fuerza la habilitación y no está habilitado.
+         else this[name].prop.enabled = true;
+         if(equals(this[name].prop.params, opts)) return false;
+         this[name].prop.params = opts;
+         return this;
+      }
 
+      /**
+       * Obtiene las opción de filrado de un determinado filtro.
+       *
+       * @param {string} name    El nombre del filtro.
+       */
+      FilterSys.prototype.getParams = function(name) {
+         if(!this.hasOwnProperty(name)) throw new Error(`${name}: filtro no registrado`);
+         return this[name].prop.params;
+      }
+
+      return FilterSys;
    })();
    // Fin issue #5
 
