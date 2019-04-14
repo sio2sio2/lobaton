@@ -738,6 +738,7 @@
       const options = Marker.prototype.options;
       if(options.mutable) {
          options.corr = new CorrSys();
+         options.filter = new FilterSys(); // Issue #5
          Object.assign(Marker.prototype, prototypeExtra);
          Object.defineProperty(Marker, "store", {
             value: [],
@@ -750,10 +751,14 @@
          Marker.register = registerCorrMarker;
          Marker.do = doCorrMarker;
          Marker.undo = undoCorrMarker;
+         // Issue #5
+         Marker.registerF = registerFilterMarker;
+         Marker.filter = filterMarker;
+         Marker.unfilter = unfilterMarker;
+         // Fin issue #5
       }
       return Marker;
    }
-
 
    /**
     * Elimina una marca del almacén donde se guardan
@@ -834,6 +839,41 @@
       corr.setParams(name, null);
    }
    // Fin issue #23
+
+   // Issue #5
+   /**
+    * Registra para una clase de marcas un filtro.
+    *
+    * @seealso {@link FilterSys.prototype.register} para saber cuáles son sus parámetros.
+    */
+   function registerFilterMarker() {
+      return FilterSys.prototype.register.apply(this.prototype.options.filter, arguments) && this;
+   }
+
+   /**
+    * Habilita un filtro para las marcas de una clase
+    *
+    * @param {string} name    Nombre del filtro.
+    */
+   function filterMarker(name) {
+      const filter = this.prototype.options.filter.enable(name);
+      if(!filter) return false;  //El filtro no existe o ya está habilitado
+      console.log("TODO", "Aplicar el filtro a todas las marcas de la clase");
+      return this;
+   }
+
+   /**
+    * Deshabilita un filtro para las marcas de una clase
+    *
+    * @param {string} name    Nombre del filtro.
+    */
+   function unfilterMarker(name) {
+      const filter = this.prototype.options.filter.disable(name);
+      if(!filter) return false;  // El filtro no existe o está deshabilitado.
+      console.log("TODO", "Eliminar el filtro a todas las marcas de la clase");
+      return this;
+   }
+   // Fin issue #5
 
    const MarkerInitialize = L.Marker.prototype.initialize;
    const MarkerSetIcon = L.Marker.prototype.setIcon;
@@ -920,6 +960,11 @@
 
          if(!arr.apply(this, name)) return false;
 
+         // Issue #5
+         const filters = this.options.filter.getFilters(property);
+         if(filters.length>0) console.log("TODO", `Aplicar a ${this.getData().id.nom} los filtros`, filters);
+         // Fin issue #5
+
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
          const data = {[property]: arr};
@@ -940,6 +985,11 @@
                arr      = getProperty(this.getData(), property);
 
          if(!arr.unapply(name)) return false;
+
+         // Issue #5
+         const filters = this.options.filter.getFilters(property);
+         if(filters.length>0) console.log("TODO", `Aplicar a ${this.getData().id.nom} los filtros`, filters);
+         // Fin issue #5
 
          const icon = this.options.icon;
          if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
@@ -1031,7 +1081,7 @@
              * @param {Object} params  Objeto que se pasa a la función
              *    con valores que ésta usa en su funcionamiento.
              *
-             * @returns {boolean}  Verdadero si se aplicó la correción y
+             * @returns {boolean}  Verdadero si provocó correcciones
              *    falso si no se hizo porque ya estaba aplicada.
              */
             apply: function(marker, name) {
@@ -1045,11 +1095,12 @@
                if(add) {
                   const values = func.call(marker, null, this, params);
                   let num = values.length;
+                  if(num === 0) return false;
                   this.push.apply(this, values);
 
                   this.corr[name] = new Array(this.length);
                   for(let i=this.length-num; i<this.length; i++) this.corr[name][i] = null;
-                  if(num>0) this._count = undefined;
+                  this._count = undefined;
 
                   // Las correcciones que eliminan valores,
                   // pueden eliminar los valores añadidos.
@@ -1069,6 +1120,7 @@
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func.call(marker, this.length[i], params);
                   // Si la corrección ha filtrado algún valor:
                   if(this.corr[name].some(e => e)) this._count = undefined;
+                  else return false;
                }
 
                return true;
@@ -1078,14 +1130,15 @@
              *
              * @param {string} name: Nombre de la corrección.
              *
-             * @returns {boolean}  Verdadero si se desaplicó u false si no se hizo
-             *    porque no estaba aplicada.
+             * @returns {boolean}  Verdadero si se desaplicó y provocó cambios, y
+             *    false si no se hizo porque no estaba aplicada.
              */
             unapply: function(name) {
                if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
 
                if(this._sc[name].prop.add) {
                   const arr = this.corr[name];
+                  delete this.corr[name];
                   let a, b;
                   for(let i=0; i<arr.length; i++) {
                      if(arr[i] === null) {
@@ -1096,17 +1149,18 @@
                         break;
                      }
                   }
-                  if(a === undefined) return true;
+                  if(a === undefined) return false;
                   if(b === undefined) b = arr.length;
                   this._count = undefined;
-                  delete this.corr[name];
                   // Eliminamos los valores al array añadidos por esta corrección
                   this.splice(a, b-a);
                   for(const name in this.corr) this.corr[name].splice(a, b-a);
                }
                else {
-                  if(this.corr[name].some(e => e)) this._count = undefined;
+                  const arr = this.corr[name];
                   delete this.corr[name];
+                  if(arr.some(e => e)) this._count = undefined;
+                  else return false;
                }
 
                return true;
@@ -1301,7 +1355,10 @@
             //       - si es aditiva.
             //       - con qué parámetros se ha aplicado.
             const sc = this[obj.attr] = this[obj.attr] || {};
-            if(sc.hasOwnProperty(name)) return false; // La corrección ya se ha registrado.
+            if(sc.hasOwnProperty(name)) {
+               console.warn(`${name}: La corrección ya está registrada`);
+               return false;
+            }
             // Apuntamos en una propiedad de la función, el nombre de la corrección,
             // si es aditiva, y con qué opciones se ha aplicado.
             obj.func.prop = {
@@ -1310,6 +1367,7 @@
                params: null  // Issue #23.
             }
             sc[name] = obj.func;
+            return this;
          }
 
          /**
@@ -1413,7 +1471,7 @@
          // Issue #23
          /**
           * Devuelve las características de una corrección
-          * (nombre, si es adictiva o con qué opciones se aplicó).
+          * (nombre, si es adictiva, y con qué opciones se aplicó).
           *
           * @param {string} name  Nombre de la corrección.
           *
@@ -1443,5 +1501,79 @@
 
       return CorrSys;
    })();
+
+   
+   // Issue #5
+   /**
+    * Sistema de filtros
+    */
+   const FilterSys = (function() {
+      
+      function FilterSys() {}
+
+      /**
+       * Registra una corrección
+       *
+       * @method register
+       *
+       * @param {string}         name  Nombre del filtro.
+       * @param {Array<string>}  attrs Nombre de las propiedades de los datos
+       *    cuyos valores afecta al filtro.
+       * @param {function}       func  Función que filtra. Debe devolver
+       *    true (sí filtra) o false.
+       */
+      FilterSys.prototype.register = function(name, attrs, func) {
+         if(this[name]) {
+            console.warn(`${name}: El filtro ya está registrado`);
+            return false;
+         }
+         if(!(attrs instanceof Array)) attrs = [attrs];
+         func.depends = attrs
+         func.enabled = false;
+         this[name] = func;
+         return this;
+      }
+
+      /**
+       * Devuelve los filtros habilitados cuyo resultados depende de
+       * la propiedad cuyo nombre se suministra
+       *
+       * @method getFilters
+       *
+       * @param {string} attr Nombre del propiedad.
+       *
+       * @retuns  {Array<string>}   Los nombres de los filtros.
+       */
+      FilterSys.prototype.getFilters = function(attr) {
+         return Object.keys(this).filter(filter => this[filter].enabled
+                                                && this[filter].depends.indexOf(attr) !== -1);
+      }
+
+      /**
+       * Habilita un filtro
+       *
+       * @param {string} name  El nombre del filtro que se quiere habilitar.
+       */
+      FilterSys.prototype.enable = function(name) {
+         if(!this.hasOwnProperty(name) || this[name].enabled) return false;
+         this[name].enabled = true;
+         return this;
+      }
+
+      /**
+       * Deshabilita un filtro
+       *
+       * @param {string} name  El nombre del filtro que se quiere deshabilitar.
+       */
+      FilterSys.prototype.disable = function(name) {
+         if(!this.hasOwnProperty(name) || !this[name].enabled) return false;
+         this[name].enabled = false;
+         return this;
+      }
+
+      return FilterSys;
+
+   })();
+   // Fin issue #5
 
 })();

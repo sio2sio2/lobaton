@@ -26,7 +26,12 @@ window.onload = function() {
    // así que no hay ni que refrescar.
    g.Centro.do("bilingue", {bil: ["Inglés"]});
    g.Centro.do("adjpue", {puesto: ["11590107", "00590059"]});
+   // Registramos y aplicamos filtros.
+   g.Centro.registerF("adj", "adj", function() { return this.getData().adj.total === 0; }).filter("adj");
+   g.Centro.registerF("oferta", "oferta", function() { return this.getData().oferta.total === 0; }).filter("oferta");
+
    console.log("DEBUG", `Centro añadidos: ${g.Centro.store.length}`);
+
    g.fire(function() {
       console.log("Se han acabado de cargar los centros");
       //Ahora sí hay centros, asi que sí debemos refrescar

@@ -287,7 +287,7 @@ const M = function(id) {
          piolin: L.utils.createMutableIconClass("piolin", {
             iconSize: null,
             iconAnchor: [12.5, 34],
-            css:  "../dist/adjofer/icons/piolin.css",
+            css:  "/dist/adjofer/icons/piolin.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -295,7 +295,7 @@ const M = function(id) {
          chupachups: L.utils.createMutableIconClass("chupachups", {
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
-            css:  "../dist/adjofer/icons/chupachups.css",
+            css:  "/dist/adjofer/icons/chupachups.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -303,7 +303,7 @@ const M = function(id) {
          solicitud: L.utils.createMutableIconClass("solicitud", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  "../dist/adjofer/icons/solicitud.svg",
+            url:  "/dist/adjofer/icons/solicitud.svg",
             converter: converterSol,
             updater: function(o) {
                var text = this.querySelector("text");
@@ -318,7 +318,7 @@ const M = function(id) {
          boliche: L.utils.createMutableIconClass("boliche", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  "../dist/adjofer/icons/boliche.svg",
+            url:  "/dist/adjofer/icons/boliche.svg",
             converter: converterBol,
             updater: updaterBoliche,
          }),
