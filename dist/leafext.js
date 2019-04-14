@@ -995,17 +995,6 @@
                return Object.keys(this.corr).filter(n => this.corr[n][idx]);
             },
             /**
-             * Devuelve el valor del elemento idx
-             *
-             * @method get
-             *
-             * @param {int} idx: Índice del elemento que se quiere consultar.
-             * @returns {} El valor del elemento o null si alguna correción lo eliminó.
-             */
-            get: function(idx) {
-               return this.filters(idx).length>0?null:this[i];
-            },
-            /**
              * @typedef {Object} CorrValue
              * @property {} value   El valor del elemento o null, si alguna corrección lo eliminó.
              * @property {string[]} filters  Los nombres de las correcciones que eliminan el elemento.
@@ -1134,52 +1123,64 @@
          }
 
          // Total de elementos excluyendo los eliminados por correcciones.
-         const total = {
-            get: function() {
-               if(this._count !== undefined) return this._count;
-               this._count = 0;
-               for(let i=0; i<this.length; i++) {
-                  if(this.filters(i).length === 0) this._count++;
-               }
-               return this._count;
-            },
-            enumerable: false,
-            configurable: false
+         function total() {
+            if(this._count !== undefined) return this._count;
+            this._count = 0;
+            for(let i=0; i<this.length; i++) {
+               if(this.filters(i).length === 0) this._count++;
+            }
+            return this._count;
+         }
+
+         // El iterador excluye los valores eliminados por las correcciones.
+         function* iterator() {
+            for(const e of this.walk()) {
+               if(e.value !== null) yield e.value;
+            }
          }
 
          function Correctable(arr, sc) {
             if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
-            Object.assign(arr, Prototype);  // Evitamos hacer una subclase de array porque es menos eficiente.
-            /**
-             * Parte del sistema de correcciones que se aplica sobre el array.
-             */
-            Object.defineProperty(arr, "_sc", {
-               value: sc,
-               writable: false,
-               enumerable: false,
-               configurable: false
+            const obj = Object.assign(Object.create(arr), Prototype);
+            Object.defineProperties(obj, {
+               // Sistema parcial de correcciones (sólo las correcciones que se aplican sobre el array).,
+               "_sc": {
+                  value: sc,
+                  writable: false,
+                  enumerable: false,
+                  configurable: false
+               },
+               /**
+                * Objeto que almacena las correcciones del array.
+                * Cada clave es el nombre de la corrección y cada valor
+                * un array 
+                */
+               "corr": {
+                  value: {},
+                  writable: false,
+                  enumerable: false,
+                  configurable: false,
+               },
+               // Pre-almacena el número de elementos para mejorar el rendimiento.
+               "_count": {
+                  value: arr.length,
+                  writable: true,
+                  configurable: false,
+                  enumerable: false
+               },
+               /**
+                * Longitud del array corregido, descontados los valores anulados.
+                */
+               "total": {
+                  get: total,
+                  enumerable: false,
+                  configurable: false
+               },
             });
-            /**
-             * Objeto que almacena las correcciones del array.
-             * Cada clave es el nombre de la corrección y cada valor
-             * un array 
-             */
-            Object.defineProperty(arr, "corr", {
-               value: {},
-               writable: false,
-               enumerable: false,
-               configurable: false,
-            });
-            // Pre-almacena el número de elementos para mejorar el rendimiento.
-            Object.defineProperty(arr, "_count", {
-               value: arr.length,
-               writable: true,
-               configurable: false,
-               enumerable: false
-            });
-            Object.defineProperty(arr, "total", total);
 
-            return arr;
+            obj[Symbol.iterator] = iterator;
+
+            return obj;
          }
 
          return Correctable;
