@@ -5,7 +5,8 @@ window.onload = function() {
 
       selectEstilo.addEventListener("change", function(e) {
          const Icono = g.Iconos[this.value];
-         Icono.onready(() => g.cluster.eachLayer(m => m.setIcon(new Icono())));
+         //Icono.onready(() => g.cluster.eachLayer(m => m.setIcon(new Icono())));
+         Icono.onready(() => g.Centro.store.forEach(m => m.setIcon(new Icono())));
       });
 
       selectEsp.addEventListener("change", function(e) {
