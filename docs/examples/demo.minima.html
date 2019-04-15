@@ -54,22 +54,24 @@
       function init() {
          const Icono = crearIcono();
 
-         const Centro = L.Marker.extend({
-            options: {mutable: "feature.properties.data"}
-         });   
-
          map = L.map("map").setView([37.07, -6.27], 9);
          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
              maxZoom: 18
          }).addTo(map);
 
          // Y una capa GeoJSON para crear las marcas y conectarles los datos.
-         const layer =  L.geoJSON(datos, {
+         const layer =  L.geoJSON(null, {
             pointToLayer: (f, p) => new Centro(p, {
                icon: new Icono(),
                title: f.properties.name
             })
          }).addTo(map);
+
+         const Centro = L.Marker.extend({
+            options: {mutable: "feature.properties.data"}
+         });   
+
+         layer.addData(datos);
       }
 
       function crearIcono() {
@@ -88,7 +90,7 @@
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
             html: document.querySelector("template").content,
-            css: "icons/chupachups.css",
+            css: "../../dist/adjofer/icons/chupachups.css",
             converter: converter,
             updater: updater
          });

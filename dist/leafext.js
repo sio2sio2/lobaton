@@ -850,7 +850,7 @@
     * @seealso {@link CorrSys.prototype.register} para saber cuáles son sus parámetros.
     */
    function registerCorrMarker() {
-      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments);
+      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments) && this;
    }
 
 
@@ -874,6 +874,7 @@
 
       corr.setParams(name, params);
       for(const marker of this.store) marker.apply(name);
+      return this;
    }
 
    /**
@@ -893,6 +894,7 @@
 
       for(const marker of this.store) marker.unapply(name);
       corr.setParams(name, null);
+      return this;
    }
    // Fin issue #23
 

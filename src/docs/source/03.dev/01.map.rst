@@ -183,7 +183,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    }).addTo(map);
 
    // Y una capa GeoJSON para crear las marcas y conectarles los datos.
-   const layer =  L.geoJSON(datos, {
+   const layer =  L.geoJSON(null, {
       pointToLayer: (f, p) => new Centro(p, {
          icon: new Icono(),
          title: f.properties.name,
@@ -193,6 +193,8 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    const Centro = L.Marker.extend({
       options: {mutable: "feature.properties"}
    });   
+
+   layer.addData(datos);
 
 #. La creación del icono, que hemos incluido dentro de la función
    ``crearIcono()``, a lo que dedicaremos el próximo apartado.
