@@ -34,7 +34,8 @@ const M = function(id) {
          showCoverageOnHover: false,
          // Al llegar a nivel 14 de zoom se ven todas las marcas.
          disableClusteringAtZoom: 14,
-         spiderfyOnMaxZoom: false
+         spiderfyOnMaxZoom: false,
+         iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(g.map);
    }
 
@@ -44,6 +45,8 @@ const M = function(id) {
          options: {
             mutable: "feature.properties.data",
             filter: g.cluster
+            //filter: "filtered"
+            //filter: L.utils.grayFilter
          }
       });
       definirCorrecciones.call(g.Centro);

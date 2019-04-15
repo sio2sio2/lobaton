@@ -74,52 +74,6 @@
    L.utils.load = load;
 
    /**
-    * Devuelve el valor de la propiedad "anidada" de un objeto.
-    *
-    * @example
-    *
-    * o = {a:1, b: {c:2, d:3}}
-    * geProperty(o, "b.c") === o.b.c  // true
-    *
-    * No obstante, comprueba antes que la propiedad no sea "anidada".
-    *
-    * @example
-    *
-    * o = {a:1, "b.c": 2, "b.d": 3}
-    * geProperty(o, "b.c") === o["b.c"]  // true
-    *
-    * @param {Object}  obj  El objeto del que se busca la propiedad.
-    * @param {string}  name El nombre de la propiedad anidada.
-    */
-   const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
-
-
-   /**
-    * Comprueba si dos objetos son iguales a efectos de lo requerido
-    * en este código.
-    *
-    * @param {Object} o  Un objeto.
-    * @param {Object} p  El otro.
-    *
-    * @returns {boolean}
-    */
-   function equals(o,p) {
-      if(typeof o !== typeof p) return false;
-      if(typeof o !== "object" || o === null) return o == p;  // Comparación laxa.
-
-      const oprop = Object.getOwnPropertyNames(o);
-      const pprop = Object.getOwnPropertyNames(p);
-
-      if(oprop.length !== pprop.length) return false;
-
-      for(let i=0; i<oprop.length; i++) {
-         const name = oprop[i];
-         if(!equals(o[name], p[name])) return false;
-      }
-      return true;
-   }
-
-   /**
     * Facilita la construcción de clases de iconos. Cada clase está asociada
     * a un estilo de icono distinto.
     *
@@ -198,6 +152,42 @@
       return L.DivIcon.extend({options: options});
    }
    // Fin issue #2
+
+   // Issue #5
+   /**
+    * Pone en escala de grises un icono filtrado o elimina
+    * tal escala si ya no lo está. Debe pasársele como contexto
+    * el div del icono.
+    *
+    * @param {boolean} filtered  Si el icono está filtrado o no.
+    */
+   L.utils.grayFilter = function(filtered) {
+      if(filtered) this.style.filter = "grayscale(100%)";
+      else this.style.removeProperty("filter");
+   }
+   
+   /**
+    * Redefine un iconCreateFunction basado en el predeterminado de
+    * L.MarkerClusterGroup para que el número del clúster sólo incluya
+    * los centros no filtrados.
+    */
+   L.utils.noFilteredIconCluster = function(cluster) {
+		const childCount = cluster.getChildCount(),
+            noFilteredChildCount = cluster.getAllChildMarkers().filter(e => !e.filtered).length;
+
+		let c = ' marker-cluster-';
+		if (childCount < 10) {
+			c += 'small';
+		} else if (childCount < 100) {
+			c += 'medium';
+		} else {
+			c += 'large';
+		}
+
+		return new L.DivIcon({ html: '<div><span>' + noFilteredChildCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+   }
+
+   // Fin issue #5
 
    // Issue #21
    /**
@@ -436,6 +426,52 @@
       return Converter;
    })();
    // Fin issue #21
+
+   /**
+    * Devuelve el valor de la propiedad "anidada" de un objeto.
+    *
+    * @example
+    *
+    * o = {a:1, b: {c:2, d:3}}
+    * geProperty(o, "b.c") === o.b.c  // true
+    *
+    * No obstante, comprueba antes que la propiedad no sea "anidada".
+    *
+    * @example
+    *
+    * o = {a:1, "b.c": 2, "b.d": 3}
+    * geProperty(o, "b.c") === o["b.c"]  // true
+    *
+    * @param {Object}  obj  El objeto del que se busca la propiedad.
+    * @param {string}  name El nombre de la propiedad anidada.
+    */
+   const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
+
+   /**
+    * Comprueba si dos objetos son iguales a efectos de lo requerido
+    * en este código.
+    *
+    * @param {Object} o  Un objeto.
+    * @param {Object} p  El otro.
+    *
+    * @returns {boolean}
+    */
+   function equals(o,p) {
+      if(typeof o !== typeof p) return false;
+      if(typeof o !== "object" || o === null) return o == p;  // Comparación laxa.
+
+      const oprop = Object.getOwnPropertyNames(o);
+      const pprop = Object.getOwnPropertyNames(p);
+
+      if(oprop.length !== pprop.length) return false;
+
+      for(let i=0; i<oprop.length; i++) {
+         const name = oprop[i];
+         if(!equals(o[name], p[name])) return false;
+      }
+      return true;
+   }
+
 
    /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
@@ -754,6 +790,7 @@
             enumerable: false,
             writable: false
          }); 
+         Marker.reset = function() { this.store.length = 0; }
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
          Marker.register = registerCorrMarker;
@@ -773,6 +810,7 @@
             Marker.registerF = registerFilterMarker;
             Marker.filter = filterMarker;
             Marker.unfilter = unfilterMarker;
+            Marker.setFilterStyle = setFilterStyleMarker;
          }
          // Fin issue #5
       }
@@ -893,6 +931,15 @@
       for(const marker of this.store) marker.unapplyF(name);
       return this;
    }
+
+   /**
+    * Cambia el estilo de filtro.
+    *
+    * @param {func|string|L.LayerGroup}  style     Estilo del filtro.
+    */
+   function setFilterStyleMarker(style) {
+      this.prototype.options.filter.setStyle(style, this);
+   }
    // Fin issue #5
 
    const MarkerInitialize = L.Marker.prototype.initialize;
@@ -910,7 +957,7 @@
          if(filter) {
             if(filter.hideable) {
                if(this.filtered) {
-                  // Puede estar en la capa, aunque no se encuentre en el map
+                  // Puede estar en la capa, aunque no se encuentre en el map,
                   // si la capa es MarkerClusterGroup.
                   filter.transform.removeLayer(this);
                   div = undefined;
@@ -922,7 +969,9 @@
                   }
                }
             }
-            else if(div) filter.transform.call(div, this.filtered);
+            else {
+               if(div) filter.transform.call(div, this.filtered);
+            }
          }
          // Fin issue #5
          if(!div) return false;  // La marca no está en el mapa.
@@ -1590,23 +1639,34 @@
     */
    const FilterSys = (function() {
       
-      function ejectFiltered() {
-      }
-
       /**
        * Constructor de la clase
        *
-       * @param {function|L.LayerGroup} func  Función que define cómo se ve la marca filtrada.
-       *    Si es una capa, la acción es hacerla desaperecer de esa capa.
+       * @param {function|L.LayerGroup|string} style  Estilo de filtrado.
+       *    Puede ser:
+       *    
+       *    * La capa a la que se agregan las marcas, en cuyo caso se entenderá
+       *      que se quiere sacar/meter la marca al filtrar/dejar de filtrar.
+       *    * Un nombre, en cuyo caso se entenderá que se quiere meter la
+       *      marca dentro de una clase con tal nombre.
+       *    * Una función que manipula el elemento HTML que representa la marca.
        */
-      function FilterSys(func) {
+      function FilterSys(style) {
          Object.defineProperties(this, {
             transform: {
                get: function() { return this._transform; },
                set: function(value) { 
-                  if(this.transform && this.hideable) this.transform.off("layeradd", this.ejectFiltered);
-                  this._transform = value; 
-                  if(this.hideable) this.transform.on("layeradd", this.ejectFiltered);
+                  if(this.hideable) this.transform.off("layeradd", this.ejectFiltered);
+                  if(typeof value === "string") {
+                     this._transform = function(filtered) {
+                        if(filtered) this.classList.add(value);
+                        else this.classList.remove(value);
+                     }
+                  }
+                  else {
+                     this._transform = value; 
+                     if(this.hideable) this.transform.on("layeradd", this.ejectFiltered);
+                  }
                },
                configurable: false,
                enumerable: false
@@ -1617,11 +1677,11 @@
                configurable: false
             }
          });
-         this.transform = func;
+         this.transform = style;
       }
 
       Object.defineProperty(FilterSys.prototype, "hideable", {
-         get: function() { return typeof this.transform !== "function"; },
+         get: function() { return this.transform instanceof L.LayerGroup; },
          configurable: false,
          enumerable: false
       });
@@ -1728,6 +1788,28 @@
       FilterSys.prototype.getParams = function(name) {
          if(!this.hasOwnProperty(name)) throw new Error(`${name}: filtro no registrado`);
          return this[name].prop.params;
+      }
+
+      /**
+       * Modifica el estilo de filtrado.
+       *
+       * @param {func|L.LayerGroup|string} style  Estilo de filtrado.
+       * @param {L.Marker} markerClass    Clase de marca a la que pertenecen
+       *    todas las marcas que usan este objeto de filtrado.
+       */
+      FilterSys.prototype.setStyle = function(style, markerClass) {
+         const old = this.transform;
+         this.transform = style;
+
+         // Si antes se ocultaban las marcas filtradas y ahora no,
+         // hay que añadirlas a la capa antes, porque refresh no lo hará.
+         if(old instanceof L.LayerGroup && !this.hideable) { 
+            for(const m of markerClass.store) {
+               if(m.filtered) old.addLayer(m);
+               m.refresh();
+            }
+         }
+         else markerClass.invoke("refresh");
       }
 
       return FilterSys;

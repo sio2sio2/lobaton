@@ -10,6 +10,7 @@ window.onload = function() {
 
       selectEsp.addEventListener("change", function(e) {
          g.cluster.clearLayers();
+         g.Centro.reset();
          const Icono = g.Iconos[selectEstilo.value];
          L.utils.load({
             url: this.value,
