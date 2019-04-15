@@ -22,7 +22,7 @@ window.onload = function() {
       });
    }
 
-   const g = M("map");
+   const g = M("map", "../..");
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
    g.Centro.correct("bilingue", {bil: ["Inglés"]});

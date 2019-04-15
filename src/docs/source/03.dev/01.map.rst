@@ -177,10 +177,6 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
 
    const Icono = crearIcono();
 
-   const Centro = L.Marker.extend({
-      options: {mutable: "feature.properties"}
-   });   
-
    map = L.map("map").setView([37.07, -6.27], 9);
    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
        maxZoom: 18
@@ -194,8 +190,26 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
       })
    }).addTo(map);
 
+   const Centro = L.Marker.extend({
+      options: {mutable: "feature.properties"}
+   });   
+
 #. La creación del icono, que hemos incluido dentro de la función
    ``crearIcono()``, a lo que dedicaremos el próximo apartado.
+
+#. La creación del mapa, que es la habitual con Leaflet_.
+
+#. La creación de una capa para el tratamiento de los datos en formato
+   *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
+   previamente de algún modo. Obsérvese cómo usamos la clase de marca
+   (``Centro``) e icono (``Icono``) previamente utilidazos para generar
+   cada marca asociada a cada dato. En caso de que el formato de entrada no sea
+   GeoJSON_, podríamos usar simplemente `L.LayerGroup
+   <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
+   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
+
+   .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
+      <dev-map-no-geojson>`.
 
 #. La creación de la marca apropiada que requiere obligatoriamente la inclusión
    de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
@@ -222,22 +236,8 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
      datos, asegúrese de colocar los datos en la propiedad que ha señalado con
      ``mutable``.
 
-#. La creación del mapa, que es la habitual con Leaflet_.
-
-#. La creación de una capa para el tratamiento de los datos en formato
-   *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
-   previamente de algún modo. Obsérvese cómo usamos la clase de marca
-   (``Centro``) e icono (``Icono``) previamente utilidazos para generar
-   cada marca asociada a cada dato. En caso de que el formato de entrada no sea
-   GeoJSON_, podríamos usar simplemente `L.LayerGroup
-   <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
-   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
-
-   .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
-      <dev-map-no-geojson>`.
-
 .. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
-   también, es imprescindible usar la extensión `L.MarkerCluster
+   también, es imprescindible usar la extensión `L.MarkerClusterGroup
    <https://github.com/Leaflet/Leaflet.markercluster>`_ para agrupar las
    marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
    que aumentamos la escala. Consulte :ref:`el uso de esta capa de clusters más
@@ -533,7 +533,7 @@ para acceder a estas marcas?
    Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
 
 - Tenga presente que cuando añade una marca a una capa cuya clase derive de
-  L.FeatureGroup_, como L.GeoJSON_ o L.Markercluster_, se dispara el evento
+  L.FeatureGroup_, como L.GeoJSON_ o L.MarkerClusterGroup_, se dispara el evento
   *layeradd*::
 
       layer.on("layeradd", e => console.log("Acabo de ser añadida", e.target);
@@ -586,11 +586,12 @@ sobre la clase de la marca::
 
 El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
 propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
-elmenetos, se ejecutará la función suministrada por ``func`` para cada uno de
+elementos, se ejecutará la función suministrada por ``func`` para cada uno de
 los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
 eliminará el elemento y cuando devuelva ``false``, se conservará.
 
-La función usa como contexto la marca y tiene tres argumentos:
+La función usa como contexto la marca sobre la que opera la corrección
+y tiene tres argumentos:
 
 ``idx``
    El índice correspondiente al valor que comprueba la función.
@@ -600,18 +601,30 @@ La función usa como contexto la marca y tiene tres argumentos:
 
 ``opts``
    que es un objeto que contiene las opciones que permiten determinar la
-   corrección y cuya obtención será tarea de la interfaz de usuario. Para el
-   caso de ejemplo, se necesita los colectivos cuya adjudicación deseamos
+   corrección y cuya obtención será tarea de la interfaz de usuario. Para la
+   definición de ejemplo, se necesitan los colectivos cuya adjudicación deseamos
    conservar (propiedad ``colectivo``) y una propiedad ``inv`` que sirve para
    invertir el significado. 
 
-En caso de que la corrección sirva para añadir elementos, no se recorrerá el
-array elemento por elemento, sino que la función se ejecutará una v vez y deberá
-devolver un *array* con los elementos que se desean incorporar. Como ``idx``
-no tiene sentido en este caso, tomará el valor de *null*.
+En caso de que la corrección sirva para añadir elementos, es necesario añadir la
+propiedad ``add`` con valor ``true`` en la definición, y durante la aplicación
+no se recorrerá el array elemento por elemento, sino que la función se ejecutará
+una vez y deberá devolver un *array* con los elementos que se desean incorporar.
+Como ``idx`` no tiene sentido en este caso, tomará el valor de *null*::
 
-.. warning:: Aunque tenga disponible el *array*, no añada los nuevos elementos
-   en la función, limítese a devolverlos.
+   Centro.register("vt+", {
+      attr: "adj",
+      add: true
+      func: function(idx, adj, opts) {
+         const data = this.getData();
+         // Como nuestros datos son muy simples y no hay información alguna,
+         // nos inventamos que en todos ha habido dos vacantes telefónicas
+         return ["Interino", "Interino"];
+      }
+   });
+
+.. warning:: Aunque tenga disponible el *array* dentro de la función, no añada
+   los nuevos elementos; limítese a devolverlos.
 
 Aplicación
 ----------
@@ -619,7 +632,7 @@ El registro de una corrección no provoca ningún cambio en los datos: sólo def
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
 corrección::
 
-   Centro.do("adjcol", {colectivo: ["Prácticas", "Interino"]});
+   Centro.ccrrect("adjcol", {colectivo: ["Prácticas", "Interino"]});
 
 que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
 todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
@@ -633,9 +646,8 @@ interino.
       Centro.invoke("refresh");
 
 .. note:: Si con posterioridad a la aplicación, se crea una nueva marca de tipo
-   ``Centro``, las correcciones aplicadas, se aplicarán también a la marca en
-   cuanto se conecten a ella los datos en don hallamos determinado a través de
-   ``mutable``.
+   ``Centro``, las correcciones aplicadas a la clase, se aplicarán sobre a la marca
+   en cuanto se conecten a ella los datos.
 
 .. _dev-map-correctable:
 
@@ -643,37 +655,41 @@ Se ha afirmado alegremente que se eliminan elementos del *array*, pero no es
 cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
 En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
 nuevos si hubo correcciones que los añadieron. Para consultar un *array* con
-correcciones debe usarse:
+correcciones debe tenerse en cuenta lo siguiente
+
+``.length``
+   Devuelve la cantidad total de elementos: los preexistentes y los añadidos,
+   se hayan eliminado o no. En general, todas las funciones que se aplican al
+   *array* elemento por elemento (`.forEach()`_, `.map()`_, etc.) actúan de
+   esta forma. En consecuenta, recorrerán todos los elementos, pero no se podrá
+   conocer de ellos si está eliminado o no.
+
+``for .. of``
+   Este modo de recorrer el *array* es la única excepción: devuelve en cada
+   iteración todos los elementos no eliminados.
 
 ``.total``
-   Que es una propiedad que devuelve el número total de elementos, descontados
-   los eliminados. Por tanto, la :ref:`conversión de adj en numadj
-   <dev-map-converter-adj>` debimos haberla hecho así::
+   Devuelve el número total de elementos, descontados los eliminados. Por tanto,
+   la :ref:`conversión de adj en numadj <dev-map-converter-adj>` debimos haberla
+   hecho así::
    
       const converter = new L.utils.Converter(["numadj", "tipo"])
-                           .define("numadj", "adj", a => a.total)
-                           .define("tipo");
+                              .define("numadj", "adj", a => a.total)
+                              .define("tipo");
 
 ``.walk()``
    Que es un método generador que en cada iteración devuelve un
-   objeto en cuya propiedad ``value`` se encuentra el valor de elemento o
-   ``null`` si el elemento se eliminó, y en cuya propiedad filters se almacenan
-   en un array los nombres de las correcciones que eliminaron el elemento.
-   Por tanto, la definición anterior también podríamos haberla hecho así::
-
-      const converter = new L.utils.Converter(["numadj", "tipo"])
-                           .define("numadj", "adj", a => Array.from(a.walk()).filter(e => e === null).length)
-                           .define("tipo");
-
-   Es obvio que es preferible, la solución anterior; pero ``.walk()`` se vuelve
-   útil cuando necesitáramos saber qué elementos no se han filtrado y no
-   simplemente cuántos.
+   objeto en cuya propiedad ``value`` se encuentra el valor del elemento o
+   ``null`` si el elemento se eliminó, y en cuya propiedad ``filters`` se
+   almacenan en un array los nombres de las correcciones que eliminaron el
+   elemento. El método es útil, si queremos mostrar una listado de los elementos
+   del array y queremos dar información también de los filtrados.
 
 Reversión
 ---------
 Para revertir una corrección, basta con pasar su nombre::
 
-   Centro.undo("adjcol");
+   Centro.uncorrect("adjcol");
 
 .. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
    tanto,  si quiere trasladar el cambio al aspecto de los iconos::
@@ -682,7 +698,140 @@ Para revertir una corrección, basta con pasar su nombre::
 
 Filtros
 =======
+El :dfn:`sistema de filtros` posibilita eliminar entidades que cumplan con los
+criterios que establezcamos. Para habilitar el sistema de filtros es necesario
+añadir la opción ``filter`` al crear la clase de marca::
 
+   const Centro = L.Marker.extend({
+      options: {
+         mutable: "feature.properties",
+         filter: layer
+      }
+   });   
+
+En principio, añadiremos la capa en la que se insertarán las marcas (que
+habíamos llamado ``layer``), aunque pueden facilitarse otros valores (véase
+:ref:`estilos de filtros <dev-map-style-filter>`). Obrando así, el efecto del
+filtrado es que desaparecerán totalmente del mapa las marcas filtradas.
+
+Definición
+----------
+De manera análoga a como se obra con las correcciones, antes de poder aplicar
+filtros es necesario registrarlos. Este sería el filtro para filtrar cectros
+que tengan menos de un número mínimo de adjudicaciones::
+
+   Centro.registerF("adjmin", {
+      attrs: "adj",
+      func: function(opts) {
+         return this.getData().adj.total < opts.min;
+      }
+   });
+
+Para el registro del filtro es necesario un nombre (*adj* en el código de
+ejemplo) y un objeto con dos propiedades:
+
+``attrs``
+   Es la lista de propiedades de los datos involucradas en el cálculo. Debe ser
+   un *array*, pero si es una propiedad sola, podemos ahorramos el *array* y
+   escribir directamente el nombre de la propiedad.
+
+``func``
+   Función que define si el centro se filtra (devuelve ``true``) o no (devuelve
+   ``false``). Su contexto es la propia marca que se desea comprobar.
+
+Aplicación
+----------
+Para aplicar un filtro registrado, basta con pasar su nombre y cuáles son las
+opciones de filtro. En el caso de ejemplo, si quisiéramos eliminar los centros
+sin adjudicaciones, deberíamos aplicar el filtro "*adj*" del siguiente modo::
+
+   Centro.filter("adjmin", {min: 1});
+
+La aplicación del filtro afecta a las marcas que en ese momento se hayan creado,
+afectará a las futuras y se recalculará cada vez que se aplique una corrección
+que modifique alguna de las propiedades que listamos en ``attrs``. Ahora bien,
+como en el caso de las correcciones, los cambios sólo se trasladarán al dibujo
+cuando refresquemos las marcas::
+
+   Centro.invoke("refresh");
+
+Reversión
+---------
+Para eliminar un filtro, basto con su nombre::
+
+   Centro.unfilter("adjmin");
+
+aunque deberemos refrescar para trasladar el efecto del filtro al dibujo.
+
+.. _dev-map-style-filter:
+
+Estilos
+-------
+Hasta el momento, el comportamiento de las marcas filtradas es desaparecer del
+mapa y esto es debido a que dimos a la opción ``filter`` como valor la capa en
+la que se agregan las marcas. Sin embargo, existe la alternativa de no hacer
+desaparecer la marca, sino cambiar su aspecto para notar que está filtrada. para
+ello podemos usar dos valores alternativos para la opción:
+
+* Un nombre de clase, que hará que el elemento |HTML| que representa la marca
+  filtrada se incluya en esta clase |CSS|::
+
+   const Centro = L.Marker.extend({
+      options: {
+         mutable: "feature.properties",
+         filter: "filtrado"
+      }
+   });   
+
+  Y en el |CSS|::
+
+   .filtrado {
+      filter: grayscale(100%);
+   }
+
+  El efecto es que las marcas filtradas aparecerán en gris, y no en color.
+
+* Una función que toma como contexto el elemento |HTML| y lo modifica a
+  voluntad::
+
+   const Centro = L.Marker.extend({
+      options: {
+         mutable: "feature.properties",
+         filter: function(filtered) {
+            if(filtered) this.style.filter = "grayscale(100%)";
+            else this.style.removeProperty("filter");
+         }
+      }
+   });   
+   
+ que tiene el mismo efecto que el código anterior. En concreto, para este
+ efecto, la librería ya tiene definida una función que puede usarse
+ directamente::
+
+   const Centro = L.Marker.extend({
+      options: {
+         mutable: "feature.properties",
+         filter: L.utils.grayFilter
+      }
+   });   
+   
+Una vez definida la clase, es posible modificar el estilo posteriormente::
+
+   Centro.setFilter(L.utils.grayFilter);
+
+En este caso, a diferencia de cuando se aplican filtros y correcciones, el
+redibujado de marca se hace automáticamente.
+
+.. note:: Cuando el estilo de filtro no elimina las marcas del mapa y se usa
+   una capa :ref:`MarkerClusterGroup <dev-map-cluster>`, el número del cluster
+   incluirá las marcas filtradas, ya que estas siguen en el mapa. Para evitarlo
+   y que sólo represente las marcas no filtradas puede cambiarse la función que
+   crea los iconos para los clusters y pasarla a través de la función
+   ``iconCreateFunction``. La librería trae ya una hecha con este fin::
+
+      const layer = L.markerClusterGroup({
+         iconFunctionCreate: L.utils.noFilteredIconCluster
+      }).addTo(map);
 
 .. rubric:: Ejemplo de aplicación
 
@@ -700,7 +849,7 @@ Leaflet.markercluster_
 ======================
 Cuando las marcas son numerosas, es indispensable usar esta extensión que
 permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
-:file:`leafext.js` es compatible con una capa L.MarkerCluster_, aunque
+:file:`leafext.js` es compatible con una capa L.MarkerClusterGroup_, aunque
 convendría tener claro cómo manejar datos en formato GeoJSON_ con ella. Lo más
 sencillo es usar una capa L.GeoJSON_ intermedia, que se encargue de interpretar
 los datos::
@@ -725,7 +874,8 @@ los datos::
 
    interm.clearLayers();
 
-Tenga presente que la marca intermedia no se añade a la capa L.MarkerCluster_,
+Tenga presente que la marca intermedia no se añade a la capa
+L.MarkerClusterGroup_,
 sino las marcas individuales que se encuentran en ella. Por ese motivo, una vez
 pasadas las marcas, eliminamos las marcas de la capa L.GeoJSON_ para poder
 seguir utilizándola como intermediaria.
@@ -754,7 +904,8 @@ capa final, según las van creando la intermedia::
    interm.clearLayers();
 
 La ventaja de este código sobre el anterior es que cada vez que creamos y
-añadimos de modo efectivo una marca al mapa (o sea a la capa L.MarkerCluster_)
+añadimos de modo efectivo una marca al mapa (o sea a la capa
+L.MarkerClusterGroup_)
 podemos lanzar un disparador con::
 
    layer.on("layeradd", e => console.log(`Creado y añadido el centro ${e.layer,getData().name}`));
@@ -827,12 +978,16 @@ correspondiente y la añadiera a la capa::
 
 Barra de progreso
 =================
+
+.. todo:: Corregir esto, porque se queda suspendido el navegador hasta ue acaba
+   la carga.
+
 Los ejemplos que acompañan a Leaflet.Markercluster_ incluyen `alguno con una
 sencilla barra de progreso
 <http://leaflet.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html>`_
 que informa de cómo va el procesamiento de datos y su adición al mapa en forma
 de marca\ [#]_. Se basa en la las opciones ``chuckedLoading`` y
-``chuckProgress`` de `L.MarkerCluster`_, que son útiles cuando se añaden de una
+``chuckProgress`` de `L.MarkerClusterGroup`_, que son útiles cuando se añaden de una
 sola vez muchos datos a la capa, como es el caso del primer ejemplo incluido en
 el :ref:`apartado dedicado a discutir sobre este tipo de capa
 <dev-map-cluster>`. Sin embargo, si usamos otro tipo de capa o si utilizamos
@@ -947,3 +1102,5 @@ Y añadir algo de *javascript* a las soluciones anteriores::
 .. _documentfragment: https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
 .. _HTMLElement: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
 .. _L.GeoJSON: https://leafletjs.com/reference-1.4.0.html#geojson
+.. _.map(): https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/map
+.. _.forEach(): https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/forEach

@@ -329,10 +329,6 @@ incrustar el mapa. Típicamente:</p>
 <p>Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">crearIcono</span><span class="p">();</span>
 
-<span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
-   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span><span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">}</span>
-<span class="p">});</span>
-
 <span class="nx">map</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="s2">&quot;map&quot;</span><span class="p">).</span><span class="nx">setView</span><span class="p">([</span><span class="mf">37.07</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.27</span><span class="p">],</span> <span class="mi">9</span><span class="p">);</span>
 <span class="nx">L</span><span class="p">.</span><span class="nx">tileLayer</span><span class="p">(</span><span class="s1">&#39;https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png&#39;</span><span class="p">,</span> <span class="p">{</span>
     <span class="nx">maxZoom</span><span class="o">:</span> <span class="mi">18</span>
@@ -345,11 +341,28 @@ incrustar el mapa. Típicamente:</p>
       <span class="nx">title</span><span class="o">:</span> <span class="nx">f</span><span class="p">.</span><span class="nx">properties</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
    <span class="p">})</span>
 <span class="p">}).</span><span class="nx">addTo</span><span class="p">(</span><span class="nx">map</span><span class="p">);</span>
+
+<span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span><span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">}</span>
+<span class="p">});</span>
 </pre></div>
 </div>
 <ol class="arabic">
 <li><p class="first">La creación del icono, que hemos incluido dentro de la función
 <code class="docutils literal notranslate"><span class="pre">crearIcono()</span></code>, a lo que dedicaremos el próximo apartado.</p>
+</li>
+<li><p class="first">La creación del mapa, que es la habitual con <a class="reference external" href="https://leafletjs.com/">Leaflet</a>.</p>
+</li>
+<li><p class="first">La creación de una capa para el tratamiento de los datos en formato
+<em>GeoJSON</em>. En este caso se ha supuesto que los datos se obtuvieron
+previamente de algún modo. Obsérvese cómo usamos la clase de marca
+(<code class="docutils literal notranslate"><span class="pre">Centro</span></code>) e icono (<code class="docutils literal notranslate"><span class="pre">Icono</span></code>) previamente utilidazos para generar
+cada marca asociada a cada dato. En caso de que el formato de entrada no sea
+<a class="reference external" href="http://geojson.org/">GeoJSON</a>, podríamos usar simplemente <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#layergroup">L.LayerGroup</a> o <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Vea cómo <a class="reference internal" href="#dev-map-no-geojson"><span class="std std-ref">tratar datos que no tengan formato GeoJSON</span></a>.</p>
+</div>
 </li>
 <li><p class="first">La creación de la marca apropiada que requiere obligatoriamente la inclusión
 de la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code>, cuyo valor debe ser la propiedad de la marca donde
@@ -379,24 +392,11 @@ datos, asegúrese de colocar los datos en la propiedad que ha señalado con
 </li>
 </ul>
 </li>
-<li><p class="first">La creación del mapa, que es la habitual con <a class="reference external" href="https://leafletjs.com/">Leaflet</a>.</p>
-</li>
-<li><p class="first">La creación de una capa para el tratamiento de los datos en formato
-<em>GeoJSON</em>. En este caso se ha supuesto que los datos se obtuvieron
-previamente de algún modo. Obsérvese cómo usamos la clase de marca
-(<code class="docutils literal notranslate"><span class="pre">Centro</span></code>) e icono (<code class="docutils literal notranslate"><span class="pre">Icono</span></code>) previamente utilidazos para generar
-cada marca asociada a cada dato. En caso de que el formato de entrada no sea
-<a class="reference external" href="http://geojson.org/">GeoJSON</a>, podríamos usar simplemente <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#layergroup">L.LayerGroup</a> o <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>.</p>
-<div class="admonition seealso">
-<p class="first admonition-title">Ver también</p>
-<p class="last">Vea cómo <a class="reference internal" href="#dev-map-no-geojson"><span class="std std-ref">tratar datos que no tengan formato GeoJSON</span></a>.</p>
-</div>
-</li>
 </ol>
 <div class="admonition seealso">
 <p class="first admonition-title">Ver también</p>
 <p class="last">Cuando los datos son numerosos y, en consecuencia, las marcas
-también, es imprescindible usar la extensión <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a> para agrupar las
+también, es imprescindible usar la extensión <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a> para agrupar las
 marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
 que aumentamos la escala. Consulte <a class="reference internal" href="#dev-map-cluster"><span class="std std-ref">el uso de esta capa de clusters más
 adelante</span></a>.</p>
@@ -420,7 +420,7 @@ representa el número de adjudicaciones; y el fondo del círculo que es un color
 que depende del tipo de centro.</p>
 <div class="section" id="ingredientes">
 <h4>3.1.2.3.1. Ingredientes<a class="headerlink" href="#ingredientes" title="Enlazar permanentemente con este título">¶</a></h4>
-<p>Las opciones que debemos proporcionar en la creación de un estilo<a class="footnote-reference" href="#id7" id="id1">[1]</a> de icono son las siguientes:</p>
+<p>Las opciones que debemos proporcionar en la creación de un estilo<a class="footnote-reference" href="#id10" id="id1">[1]</a> de icono son las siguientes:</p>
 <dl class="docutils">
 <dt><code class="docutils literal notranslate"><span class="pre">html</span></code> (o bien, <code class="docutils literal notranslate"><span class="pre">url</span></code>)</dt>
 <dd><p class="first">Define la plantilla que se usará para crear el icono. Sobre esa plantilla se
@@ -450,7 +450,7 @@ si hubiéramos incluido la definición a través de un <a class="reference exter
 </pre></div>
 </div>
 </li>
-<li><p class="first">Directamente a través de un <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a><a class="footnote-reference" href="#id8" id="id2">[2]</a>:</p>
+<li><p class="first">Directamente a través de un <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a><a class="footnote-reference" href="#id11" id="id2">[2]</a>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">html</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
 <span class="kr">const</span> <span class="nx">content</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">);</span>
 <span class="nx">content</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">;</span>
@@ -473,7 +473,7 @@ ejemplos anteriores, excepto el icono <abbr title="Scalable Vector Graphics">SVG
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">css</span> <span class="o">=</span> <span class="s2">&quot;images/chupachups.css&quot;</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>El fichero podría ser algo así<a class="footnote-reference" href="#id9" id="id3">[3]</a>:</p>
+<p>El fichero podría ser algo así<a class="footnote-reference" href="#id12" id="id3">[3]</a>:</p>
 <div class="highlight-css notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="nc">chupachups</span> <span class="p">.</span><span class="nc">content</span> <span class="p">{</span>
    <span class="k">position</span><span class="p">:</span> <span class="kc">relative</span><span class="p">;</span>
    <span class="k">box-sizing</span><span class="p">:</span> <span class="kc">border-box</span><span class="p">;</span>
@@ -626,7 +626,7 @@ dibujo en sí:</p>
 </pre></div>
 </div>
 <p>El contexto de la función es el elemento <abbr title="HyperText Markup Language">HTML</abbr> que representa al icono en la
-página<a class="footnote-reference" href="#id10" id="id4">[4]</a>, y <code class="docutils literal notranslate"><span class="pre">o</span></code> es el objeto que contiene las opciones de dibujo.</p>
+página<a class="footnote-reference" href="#id13" id="id4">[4]</a>, y <code class="docutils literal notranslate"><span class="pre">o</span></code> es el objeto que contiene las opciones de dibujo.</p>
 <div class="last admonition warning">
 <p class="first admonition-title">Advertencia</p>
 <p class="last">Para la mejora del rendimiento, no se pasan todos los parámetros
@@ -705,7 +705,7 @@ puede usar el método de clase <code class="docutils literal notranslate"><span 
 </div>
 </li>
 <li><p class="first">Tenga presente que cuando añade una marca a una capa cuya clase derive de
-<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>, como <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> o <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.Markercluster</a>, se dispara el evento
+<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>, como <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> o <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>, se dispara el evento
 <em>layeradd</em>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">layer</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;layeradd&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Acabo de ser añadida&quot;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">);</span>
 </pre></div>
@@ -759,10 +759,11 @@ sobre la clase de la marca:</p>
 </div>
 <p>El código crea un corrección de nombre «<em>adjpue</em>» que se aplica sobre la
 propiedad de los datos <code class="docutils literal notranslate"><span class="pre">adj</span></code>. Como es una corrección que pretende eliminar
-elmenetos, se ejecutará la función suministrada por <code class="docutils literal notranslate"><span class="pre">func</span></code> para cada uno de
+elementos, se ejecutará la función suministrada por <code class="docutils literal notranslate"><span class="pre">func</span></code> para cada uno de
 los elementos del <em>array</em> <code class="docutils literal notranslate"><span class="pre">adj</span></code>, de manera que cuando devuelva <code class="docutils literal notranslate"><span class="pre">true</span></code> se
 eliminará el elemento y cuando devuelva <code class="docutils literal notranslate"><span class="pre">false</span></code>, se conservará.</p>
-<p>La función usa como contexto la marca y tiene tres argumentos:</p>
+<p>La función usa como contexto la marca sobre la que opera la corrección
+y tiene tres argumentos:</p>
 <dl class="docutils">
 <dt><code class="docutils literal notranslate"><span class="pre">idx</span></code></dt>
 <dd>El índice correspondiente al valor que comprueba la función.</dd>
@@ -770,19 +771,32 @@ eliminará el elemento y cuando devuelva <code class="docutils literal notransla
 <dd>que es el array completo. En el ejemplo, el array <code class="docutils literal notranslate"><span class="pre">adj</span></code>.</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">opts</span></code></dt>
 <dd>que es un objeto que contiene las opciones que permiten determinar la
-corrección y cuya obtención será tarea de la interfaz de usuario. Para el
-caso de ejemplo, se necesita los colectivos cuya adjudicación deseamos
+corrección y cuya obtención será tarea de la interfaz de usuario. Para la
+definición de ejemplo, se necesitan los colectivos cuya adjudicación deseamos
 conservar (propiedad <code class="docutils literal notranslate"><span class="pre">colectivo</span></code>) y una propiedad <code class="docutils literal notranslate"><span class="pre">inv</span></code> que sirve para
 invertir el significado.</dd>
 </dl>
-<p>En caso de que la corrección sirva para añadir elementos, no se recorrerá el
-array elemento por elemento, sino que la función se ejecutará una v vez y deberá
-devolver un <em>array</em> con los elementos que se desean incorporar. Como <code class="docutils literal notranslate"><span class="pre">idx</span></code>
-no tiene sentido en este caso, tomará el valor de <em>null</em>.</p>
+<p>En caso de que la corrección sirva para añadir elementos, es necesario añadir la
+propiedad <code class="docutils literal notranslate"><span class="pre">add</span></code> con valor <code class="docutils literal notranslate"><span class="pre">true</span></code> en la definición, y durante la aplicación
+no se recorrerá el array elemento por elemento, sino que la función se ejecutará
+una vez y deberá devolver un <em>array</em> con los elementos que se desean incorporar.
+Como <code class="docutils literal notranslate"><span class="pre">idx</span></code> no tiene sentido en este caso, tomará el valor de <em>null</em>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;vt+&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="nx">add</span><span class="o">:</span> <span class="kc">true</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">getData</span><span class="p">();</span>
+      <span class="c1">// Como nuestros datos son muy simples y no hay información alguna,</span>
+      <span class="c1">// nos inventamos que en todos ha habido dos vacantes telefónicas</span>
+      <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;Interino&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">];</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
 <div class="admonition warning">
 <p class="first admonition-title">Advertencia</p>
-<p class="last">Aunque tenga disponible el <em>array</em>, no añada los nuevos elementos
-en la función, limítese a devolverlos.</p>
+<p class="last">Aunque tenga disponible el <em>array</em> dentro de la función, no añada
+los nuevos elementos; limítese a devolverlos.</p>
 </div>
 </div>
 <div class="section" id="aplicacion">
@@ -790,7 +804,7 @@ en la función, limítese a devolverlos.</p>
 <p>El registro de una corrección no provoca ningún cambio en los datos: sólo define
 la corrección. Para llevar a efecto la corrección es necesario aplicar la
 corrección:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="k">do</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivo</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">ccrrect</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivo</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
 </pre></div>
 </div>
 <p>que sutirá efecto en todas las marcas de la clase <code class="docutils literal notranslate"><span class="pre">Centro</span></code>. En este caso, en
@@ -809,46 +823,47 @@ las marcas:</p>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>
 <p class="last">Si con posterioridad a la aplicación, se crea una nueva marca de tipo
-<code class="docutils literal notranslate"><span class="pre">Centro</span></code>, las correcciones aplicadas, se aplicarán también a la marca en
-cuanto se conecten a ella los datos en don hallamos determinado a través de
-<code class="docutils literal notranslate"><span class="pre">mutable</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Centro</span></code>, las correcciones aplicadas a la clase, se aplicarán sobre a la marca
+en cuanto se conecten a ella los datos.</p>
 </div>
 <p id="dev-map-correctable">Se ha afirmado alegremente que se eliminan elementos del <em>array</em>, pero no es
 cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
 En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
 nuevos si hubo correcciones que los añadieron. Para consultar un <em>array</em> con
-correcciones debe usarse:</p>
+correcciones debe tenerse en cuenta lo siguiente</p>
 <dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">.length</span></code></dt>
+<dd>Devuelve la cantidad total de elementos: los preexistentes y los añadidos,
+se hayan eliminado o no. En general, todas las funciones que se aplican al
+<em>array</em> elemento por elemento (<a class="reference external" href="https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/forEach">.forEach()</a>, <a class="reference external" href="https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/map">.map()</a>, etc.) actúan de
+esta forma. En consecuenta, recorrerán todos los elementos, pero no se podrá
+conocer de ellos si está eliminado o no.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">..</span> <span class="pre">of</span></code></dt>
+<dd>Este modo de recorrer el <em>array</em> es la única excepción: devuelve en cada
+iteración todos los elementos no eliminados.</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">.total</span></code></dt>
-<dd><p class="first">Que es una propiedad que devuelve el número total de elementos, descontados
-los eliminados. Por tanto, la <a class="reference internal" href="#dev-map-converter-adj"><span class="std std-ref">conversión de adj en numadj</span></a> debimos haberla hecho así:</p>
+<dd><p class="first">Devuelve el número total de elementos, descontados los eliminados. Por tanto,
+la <a class="reference internal" href="#dev-map-converter-adj"><span class="std std-ref">conversión de adj en numadj</span></a> debimos haberla
+hecho así:</p>
 <div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
-                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
-                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+                        <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
+                        <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">.walk()</span></code></dt>
-<dd><p class="first">Que es un método generador que en cada iteración devuelve un
-objeto en cuya propiedad <code class="docutils literal notranslate"><span class="pre">value</span></code> se encuentra el valor de elemento o
-<code class="docutils literal notranslate"><span class="pre">null</span></code> si el elemento se eliminó, y en cuya propiedad filters se almacenan
-en un array los nombres de las correcciones que eliminaron el elemento.
-Por tanto, la definición anterior también podríamos haberla hecho así:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
-                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">walk</span><span class="p">()).</span><span class="nx">filter</span><span class="p">(</span><span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">e</span> <span class="o">===</span> <span class="kc">null</span><span class="p">).</span><span class="nx">length</span><span class="p">)</span>
-                     <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
-</pre></div>
-</div>
-<p class="last">Es obvio que es preferible, la solución anterior; pero <code class="docutils literal notranslate"><span class="pre">.walk()</span></code> se vuelve
-útil cuando necesitáramos saber qué elementos no se han filtrado y no
-simplemente cuántos.</p>
-</dd>
+<dd>Que es un método generador que en cada iteración devuelve un
+objeto en cuya propiedad <code class="docutils literal notranslate"><span class="pre">value</span></code> se encuentra el valor del elemento o
+<code class="docutils literal notranslate"><span class="pre">null</span></code> si el elemento se eliminó, y en cuya propiedad <code class="docutils literal notranslate"><span class="pre">filters</span></code> se
+almacenan en un array los nombres de las correcciones que eliminaron el
+elemento. El método es útil, si queremos mostrar una listado de los elementos
+del array y queremos dar información también de los filtrados.</dd>
 </dl>
 </div>
 <div class="section" id="reversion">
 <h4>3.1.2.5.3. Reversión<a class="headerlink" href="#reversion" title="Enlazar permanentemente con este título">¶</a></h4>
 <p>Para revertir una corrección, basta con pasar su nombre:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">undo</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">);</span>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">uncorrect</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -863,11 +878,151 @@ tanto,  si quiere trasladar el cambio al aspecto de los iconos:</p>
 </div>
 <div class="section" id="filtros">
 <h3>3.1.2.6. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>El <em class="dfn">sistema de filtros</em> posibilita eliminar entidades que cumplan con los
+criterios que establezcamos. Para habilitar el sistema de filtros es necesario
+añadir la opción <code class="docutils literal notranslate"><span class="pre">filter</span></code> al crear la clase de marca:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
+      <span class="nx">filter</span><span class="o">:</span> <span class="nx">layer</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>En principio, añadiremos la capa en la que se insertarán las marcas (que
+habíamos llamado <code class="docutils literal notranslate"><span class="pre">layer</span></code>), aunque pueden facilitarse otros valores (véase
+<a class="reference internal" href="#dev-map-style-filter"><span class="std std-ref">estilos de filtros</span></a>). Obrando así, el efecto del
+filtrado es que desaparecerán totalmente del mapa las marcas filtradas.</p>
+<div class="section" id="id6">
+<h4>3.1.2.6.1. Definición<a class="headerlink" href="#id6" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>De manera análoga a como se obra con las correcciones, antes de poder aplicar
+filtros es necesario registrarlos. Este sería el filtro para filtrar cectros
+que tengan menos de un número mínimo de adjudicaciones:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">registerF</span><span class="p">(</span><span class="s2">&quot;adjmin&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attrs</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">adj</span><span class="p">.</span><span class="nx">total</span> <span class="o">&lt;</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">min</span><span class="p">;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Para el registro del filtro es necesario un nombre (<em>adj</em> en el código de
+ejemplo) y un objeto con dos propiedades:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">attrs</span></code></dt>
+<dd>Es la lista de propiedades de los datos involucradas en el cálculo. Debe ser
+un <em>array</em>, pero si es una propiedad sola, podemos ahorramos el <em>array</em> y
+escribir directamente el nombre de la propiedad.</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">func</span></code></dt>
+<dd>Función que define si el centro se filtra (devuelve <code class="docutils literal notranslate"><span class="pre">true</span></code>) o no (devuelve
+<code class="docutils literal notranslate"><span class="pre">false</span></code>). Su contexto es la propia marca que se desea comprobar.</dd>
+</dl>
+</div>
+<div class="section" id="id7">
+<h4>3.1.2.6.2. Aplicación<a class="headerlink" href="#id7" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Para aplicar un filtro registrado, basta con pasar su nombre y cuáles son las
+opciones de filtro. En el caso de ejemplo, si quisiéramos eliminar los centros
+sin adjudicaciones, deberíamos aplicar el filtro «<em>adj</em>» del siguiente modo:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;adjmin&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>
+</pre></div>
+</div>
+<p>La aplicación del filtro afecta a las marcas que en ese momento se hayan creado,
+afectará a las futuras y se recalculará cada vez que se aplique una corrección
+que modifique alguna de las propiedades que listamos en <code class="docutils literal notranslate"><span class="pre">attrs</span></code>. Ahora bien,
+como en el caso de las correcciones, los cambios sólo se trasladarán al dibujo
+cuando refresquemos las marcas:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;refresh&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id8">
+<h4>3.1.2.6.3. Reversión<a class="headerlink" href="#id8" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Para eliminar un filtro, basto con su nombre:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">unfilter</span><span class="p">(</span><span class="s2">&quot;adjmin&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>aunque deberemos refrescar para trasladar el efecto del filtro al dibujo.</p>
+</div>
+<div class="section" id="estilos">
+<span id="dev-map-style-filter"></span><h4>3.1.2.6.4. Estilos<a class="headerlink" href="#estilos" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Hasta el momento, el comportamiento de las marcas filtradas es desaparecer del
+mapa y esto es debido a que dimos a la opción <code class="docutils literal notranslate"><span class="pre">filter</span></code> como valor la capa en
+la que se agregan las marcas. Sin embargo, existe la alternativa de no hacer
+desaparecer la marca, sino cambiar su aspecto para notar que está filtrada. para
+ello podemos usar dos valores alternativos para la opción:</p>
+<ul>
+<li><p class="first">Un nombre de clase, que hará que el elemento <abbr title="HyperText Markup Language">HTML</abbr> que representa la marca
+filtrada se incluya en esta clase <abbr title="Cascading Style Sheets">CSS</abbr>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
+      <span class="nx">filter</span><span class="o">:</span> <span class="s2">&quot;filtrado&quot;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Y en el <abbr title="Cascading Style Sheets">CSS</abbr>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="nx">filtrado</span> <span class="p">{</span>
+   <span class="nx">filter</span><span class="o">:</span> <span class="nx">grayscale</span><span class="p">(</span><span class="mi">100</span><span class="o">%</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>El efecto es que las marcas filtradas aparecerán en gris, y no en color.</p>
+</li>
+<li><p class="first">Una función que toma como contexto el elemento <abbr title="HyperText Markup Language">HTML</abbr> y lo modifica a
+voluntad:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
+      <span class="nx">filter</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">filtered</span><span class="p">)</span> <span class="p">{</span>
+         <span class="k">if</span><span class="p">(</span><span class="nx">filtered</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">filter</span> <span class="o">=</span> <span class="s2">&quot;grayscale(100%)&quot;</span><span class="p">;</span>
+         <span class="k">else</span> <span class="k">this</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">removeProperty</span><span class="p">(</span><span class="s2">&quot;filter&quot;</span><span class="p">);</span>
+      <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<blockquote>
+<div><p>que tiene el mismo efecto que el código anterior. En concreto, para este
+efecto, la librería ya tiene definida una función que puede usarse
+directamente:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
+      <span class="nx">filter</span><span class="o">:</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">grayFilter</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Una vez definida la clase, es posible modificar el estilo posteriormente:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">setFilter</span><span class="p">(</span><span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">grayFilter</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>En este caso, a diferencia de cuando se aplican filtros y correcciones, el
+redibujado de marca se hace automáticamente.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p>Cuando el estilo de filtro no elimina las marcas del mapa y se usa
+una capa <a class="reference internal" href="#dev-map-cluster"><span class="std std-ref">MarkerClusterGroup</span></a>, el número del cluster
+incluirá las marcas filtradas, ya que estas siguen en el mapa. Para evitarlo
+y que sólo represente las marcas no filtradas puede cambiarse la función que
+crea los iconos para los clusters y pasarla a través de la función
+<code class="docutils literal notranslate"><span class="pre">iconCreateFunction</span></code>. La librería trae ya una hecha con este fin:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">layer</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">markerClusterGroup</span><span class="p">({</span>
+   <span class="nx">iconFunctionCreate</span><span class="o">:</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">noFilteredIconCluster</span>
+<span class="p">}).</span><span class="nx">addTo</span><span class="p">(</span><span class="nx">map</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
 <p class="rubric">Ejemplo de aplicación</p>
 <ul class="simple">
 <li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html">en línea la variante del ejemplo anterior que añade una
 corrección</a>.</li>
 </ul>
+</div>
 </div>
 </div>
 <div class="section" id="variantes">
@@ -878,7 +1033,7 @@ ilustrado.</p>
 <span id="dev-map-cluster"></span><h3>3.1.3.1. <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.markercluster</a><a class="headerlink" href="#leaflet-markercluster" title="Enlazar permanentemente con este título">¶</a></h3>
 <p>Cuando las marcas son numerosas, es indispensable usar esta extensión que
 permite agrupar marcas cercanas e irlas desglosando según ampliamos la escala.
-<code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> es compatible con una capa <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a>, aunque
+<code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> es compatible con una capa <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>, aunque
 convendría tener claro cómo manejar datos en formato <a class="reference external" href="http://geojson.org/">GeoJSON</a> con ella. Lo más
 sencillo es usar una capa <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> intermedia, que se encargue de interpretar
 los datos:</p>
@@ -903,7 +1058,8 @@ los datos:</p>
 <span class="nx">interm</span><span class="p">.</span><span class="nx">clearLayers</span><span class="p">();</span>
 </pre></div>
 </div>
-<p>Tenga presente que la marca intermedia no se añade a la capa <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a>,
+<p>Tenga presente que la marca intermedia no se añade a la capa
+<a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>,
 sino las marcas individuales que se encuentran en ella. Por ese motivo, una vez
 pasadas las marcas, eliminamos las marcas de la capa <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> para poder
 seguir utilizándola como intermediaria.</p>
@@ -931,7 +1087,8 @@ capa final, según las van creando la intermedia:</p>
 </pre></div>
 </div>
 <p>La ventaja de este código sobre el anterior es que cada vez que creamos y
-añadimos de modo efectivo una marca al mapa (o sea a la capa <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a>)
+añadimos de modo efectivo una marca al mapa (o sea a la capa
+<a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>)
 podemos lanzar un disparador con:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">layer</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;layeradd&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Creado y añadido el centro </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">layer</span><span class="p">,</span><span class="nx">getData</span><span class="p">().</span><span class="nx">name</span><span class="si">}</span><span class="sb">`</span><span class="p">));</span>
 </pre></div>
@@ -1000,11 +1157,16 @@ correspondiente y la añadiera a la capa:</p>
 </div>
 <div class="section" id="barra-de-progreso">
 <h3>3.1.3.3. Barra de progreso<a class="headerlink" href="#barra-de-progreso" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Por hacer</p>
+<p class="last">Corregir esto, porque se queda suspendido el navegador hasta ue acaba
+la carga.</p>
+</div>
 <p>Los ejemplos que acompañan a <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.Markercluster</a> incluyen <a class="reference external" href="http://leaflet.github.io/Leaflet.markercluster/example/marker-clustering-realworld.50000.html">alguno con una
 sencilla barra de progreso</a>
 que informa de cómo va el procesamiento de datos y su adición al mapa en forma
-de marca<a class="footnote-reference" href="#id11" id="id6">[5]</a>. Se basa en la las opciones <code class="docutils literal notranslate"><span class="pre">chuckedLoading</span></code> y
-<code class="docutils literal notranslate"><span class="pre">chuckProgress</span></code> de <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerCluster</a>, que son útiles cuando se añaden de una
+de marca<a class="footnote-reference" href="#id14" id="id9">[5]</a>. Se basa en la las opciones <code class="docutils literal notranslate"><span class="pre">chuckedLoading</span></code> y
+<code class="docutils literal notranslate"><span class="pre">chuckProgress</span></code> de <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>, que son útiles cuando se añaden de una
 sola vez muchos datos a la capa, como es el caso del primer ejemplo incluido en
 el <a class="reference internal" href="#dev-map-cluster"><span class="std std-ref">apartado dedicado a discutir sobre este tipo de capa</span></a>. Sin embargo, si usamos otro tipo de capa o si utilizamos
 ésta, pero añadiendo una a una las marcas., tal solución se vuelve
@@ -1088,28 +1250,28 @@ del evento <em>layeradd</em>. Necesitamos un <abbr title="HyperText Markup Langu
 </pre></div>
 </div>
 <p class="rubric">Notas al pie</p>
-<table class="docutils footnote" frame="void" id="id7" rules="none">
+<table class="docutils footnote" frame="void" id="id10" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>O sea, una clase de icono a partir de la cual se crearán los iconos
 particulares de cada marca.</td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id8" rules="none">
+<table class="docutils footnote" frame="void" id="id11" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Estamos reproduciendo la definición anterior, pero en este caso debemos
 añadir un contenedor <code class="docutils literal notranslate"><span class="pre">&lt;div&gt;</span></code> extra.</td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id9" rules="none">
+<table class="docutils footnote" frame="void" id="id12" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>El por qué se usa la clase «<em>.chupachups</em>» en este trozo de <abbr title="Cascading Style Sheets">CSS</abbr> se
 descubrirá más adelante.</td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id10" rules="none">
+<table class="docutils footnote" frame="void" id="id13" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td>Tenga presente que <a class="reference external" href="https://leafletjs.com/">Leaflet</a> envuelve la definición que con <code class="docutils literal notranslate"><span class="pre">html</span></code> o
@@ -1117,10 +1279,10 @@ descubrirá más adelante.</td></tr>
 representa <code class="docutils literal notranslate"><span class="pre">this</span></code>.</td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id11" rules="none">
+<table class="docutils footnote" frame="void" id="id14" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id6">[5]</a></td><td>Lo que no se incluye es el tiempo de descarga del fichero de datos que es
+<tr><td class="label"><a class="fn-backref" href="#id9">[5]</a></td><td>Lo que no se incluye es el tiempo de descarga del fichero de datos que es
 anterior a todo el proceso.</td></tr>
 </tbody>
 </table>

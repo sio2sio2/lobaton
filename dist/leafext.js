@@ -753,9 +753,8 @@
          const div = createDivIcon.call(this, arguments);
          // Issue #5
          const filter = this._marker.options.filter;
-         if(filter && this._marker.filtered) {
-            if(filter.hideable) console.error("Si está filtrado y es ocultable, no debería estar aquí");
-            else filter.transform.call(div, true);
+         if(filter && this._marker.filtered && !filter.hideable) {
+            filter.transform.call(div, true);
          }
          // Fin issue #5
          return div
@@ -960,7 +959,14 @@
     * crearse con extend incluyan la opción mutable=true.
     */
    const prototypeExtra = {
-      refresh: function() {
+      /**
+       * Refresca el dibujo de la marca.
+       *
+       * @param {L.LayerGroup} force   Si se pasa la capa y la marca, aunque
+       *    no filtrada, no tiene representación en el mapa, fuerza
+       *    su adición a la misma.
+       */
+      refresh: function(force) {
          let div = this.getElement();
          // Issue #5
          const filter = this.options.filter;
@@ -981,6 +987,10 @@
             }
             else {
                if(div) filter.transform.call(div, this.filtered);
+               else if(force) {
+                  force.addLayer(this);
+                  div = this.getElement();
+               }
             }
          }
          // Fin issue #5
@@ -1807,18 +1817,14 @@
        *    todas las marcas que usan este objeto de filtrado.
        */
       FilterSys.prototype.setStyle = function(style, markerClass) {
-         const old = this.transform;
+         const old = this.transform,
+               exhideable = old instanceof L.LayerGroup;
          this.transform = style;
 
-         // Si antes se ocultaban las marcas filtradas y ahora no,
-         // hay que añadirlas a la capa antes, porque refresh no lo hará.
-         if(old instanceof L.LayerGroup && !this.hideable) { 
-            for(const m of markerClass.store) {
-               if(m.filtered) old.addLayer(m);
-               m.refresh();
-            }
-         }
-         else markerClass.invoke("refresh");
+         // Si el estilo anterior ocultaba las marcas y el nuevo no lo hace,
+         // las marcas filtradas deben añadirse a la capa y ésta debe pasarse
+         // a refresh como parámetro.
+         markerClass.invoke("refresh", exhideable && !this.hideable && old);
       }
 
       return FilterSys;
