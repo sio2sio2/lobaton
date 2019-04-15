@@ -23,10 +23,10 @@ window.onload = function() {
    }
 
    const g = M("map");
-   // En este punto, los centros no se añadido a la capa,
-   // así que no hay ni que refrescar.
-   g.Centro.do("bilingue", {bil: ["Inglés"]});
-   g.Centro.do("adjpue", {puesto: ["11590107", "00590059"]});
+   // En este punto, los centros no se han añadido a la capa,
+   // así que no es necesario refrescar.
+   g.Centro.correct("bilingue", {bil: ["Inglés"]});
+   g.Centro.correct("adjpue", {puesto: ["11590107", "00590059"]});
    g.Centro.filter("adj", {min: 1});
    g.Centro.filter("oferta", {min: 1});
 
@@ -35,7 +35,7 @@ window.onload = function() {
    g.fire(function() {
       console.log("Se han acabado de cargar los centros");
       //Ahora sí hay centros, asi que sí debemos refrescar
-      g.Centro.do("vt+", {});
+      g.Centro.correct("vt+", {});
       g.Centro.invoke("refresh");
    });
 

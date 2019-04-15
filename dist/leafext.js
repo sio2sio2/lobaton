@@ -794,24 +794,24 @@
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
          Marker.register = registerCorrMarker;
-         Marker.do = doCorrMarker;
-         Marker.undo = undoCorrMarker;
+         Marker.correct = doCorrMarker;
+         Marker.uncorrect = undoCorrMarker;
          // Issue #5
-         if(options.filter) {
-            Object.assign(Marker.prototype, prototypeExtraFilter);
-            // No puede definirse en prototypeExtraFilter:
-            // https://stackoverflow.com/questions/40211725/object-assign-getters-and-setters-in-constructor
-            Object.defineProperty(Marker.prototype, "filtered", {
-               get: function() { return this._filtered.length > 0; },
-               configurable: false,
-               enumerable: false
-            });
-            options.filter = new FilterSys(options.filter);
-            Marker.registerF = registerFilterMarker;
-            Marker.filter = filterMarker;
-            Marker.unfilter = unfilterMarker;
-            Marker.setFilterStyle = setFilterStyleMarker;
-         }
+         if(options.filter) options.filter = new FilterSys(options.filter);
+         // No puede definirse en prototypeExtra:
+         // https://stackoverflow.com/questions/40211725/object-assign-getters-and-setters-in-constructor
+         Object.defineProperty(Marker.prototype, "filtered", {
+            get: function() { 
+               if(!this.options.filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+               return this._filtered.length > 0; 
+            },
+            configurable: false,
+            enumerable: false
+         });
+         Marker.registerF = registerFilterMarker;
+         Marker.filter = filterMarker;
+         Marker.unfilter = unfilterMarker;
+         Marker.setFilterStyle = setFilterStyleMarker;
          // Fin issue #5
       }
       return Marker;
@@ -904,6 +904,9 @@
     * @seealso {@link FilterSys.prototype.register} para saber cuáles son sus parámetros.
     */
    function registerFilterMarker() {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
       return FilterSys.prototype.register.apply(this.prototype.options.filter, arguments) && this;
    }
 
@@ -914,8 +917,10 @@
     * @param {Object} params  Opciones para el filtrado.
     */
    function filterMarker(name, params) {
-      const filter = this.prototype.options.filter.setParams(name, params, true);
-      if(!filter) return false;  //El filtro no existe o ya estaba habilitado con los mismo parámetros.
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      if(!filter.setParams(name, params, true)) return false;  //El filtro no existe o ya estaba habilitado con los mismo parámetros.
       for(const marker of this.store) marker.applyF(name);
       return this;
    }
@@ -926,8 +931,10 @@
     * @param {string} name    Nombre del filtro.
     */
    function unfilterMarker(name) {
-      const filter = this.prototype.options.filter.disable(name);
-      if(!filter) return false;  // El filtro no existe o está deshabilitado.
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      if(!filter.disable(name)) return false;  // El filtro no existe o está deshabilitado.
       for(const marker of this.store) marker.unapplyF(name);
       return this;
    }
@@ -938,7 +945,10 @@
     * @param {func|string|L.LayerGroup}  style     Estilo del filtro.
     */
    function setFilterStyleMarker(style) {
-      this.prototype.options.filter.setStyle(style, this);
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      filter.setStyle(style, this);
    }
    // Fin issue #5
 
@@ -1097,16 +1107,14 @@
          const icon = this.options.icon;
          if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
          return true;
-      }
-   }
-
-   // Issue #5
-   const prototypeExtraFilter = {
+      },
+      // Issue #5
       /**
        * Aplica un filtro a la marca.
        */
       applyF: function(name) {
          const filter = this.options.filter;
+         if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
          const res = filter[name].call(this, filter.getParams(name));
          if(res) {
            if(this._filtered.indexOf(name) === -1) this._filtered.push(name) 
@@ -1119,12 +1127,13 @@
        */
       unapplyF: function(name) {
          const filter = this.options.filter;
+         if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
          const idx = this._filtered.indexOf(name)
          if(idx !== -1) this._filtered.splice(idx, 1);
          return idx !== 1;
       }
+      // Fin issue #5
    }
-   // Fin issue #5
 
 
    // Sistema de correcciones
