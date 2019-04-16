@@ -3,27 +3,22 @@ window.onload = function() {
       const selectEstilo = document.querySelector("select[name='estilo']");
       const selectEsp = document.querySelector("select[name='especialidad']");
 
-      selectEstilo.addEventListener("change", function(e) {
-         const Icono = g.Iconos[this.value];
-         //Icono.onready(() => g.cluster.eachLayer(m => m.setIcon(new Icono())));
-         Icono.onready(() => g.Centro.store.forEach(m => m.setIcon(new Icono())));
-      });
+      selectEstilo.addEventListener("change", e => g.cambiarIcono(e.target.value));
 
       selectEsp.addEventListener("change", function(e) {
          g.cluster.clearLayers();
          g.Centro.reset();
-         const Icono = g.Iconos[selectEstilo.value];
          L.utils.load({
             url: this.value,
             callback: function(xhr) {
                const centros = JSON.parse(xhr.responseText);
-               Icono.onready(g.agregarCentros.bind(null, Icono, centros));
+               g.agregarCentros(selectEstilo.value, centros);
             }
          });
       });
    }
 
-   const g = M("map", "../..");
+   const g = new MapaAdjOfer("map", "../..");
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
    g.Centro.correct("bilingue", {bil: ["Inglés"]});
@@ -31,9 +26,9 @@ window.onload = function() {
    g.Centro.filter("adj", {min: 1});
    g.Centro.filter("oferta", {min: 1});
 
-   console.log("DEBUG", `Centro añadidos: ${g.Centro.store.length}`);
+   console.log("DEBUG", `Centro añadidos por ahora: ${g.Centro.store.length}`);
 
-   g.fire(function() {
+   g.lanzarTrasDatos(function() {
       console.log("Se han acabado de cargar los centros");
       //Ahora sí hay centros, asi que sí debemos refrescar
       g.Centro.correct("vt+", {});
@@ -52,7 +47,7 @@ window.onload = function() {
       });
    });
 
-   poblarSelectores()
+   poblarSelectores();
    document.querySelector("select[name='especialidad']").dispatchEvent(new Event("change"));
 
    x = g;
