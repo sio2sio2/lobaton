@@ -9,6 +9,6 @@ function toogleSidebar() {
 }
 
 //Evitar propagación del zoom sobre la barra
-var div = L.DomUtil.get('sidebar');
-L.DomEvent.disableClickPropagation(div);
-L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
+var sidebar = L.DomUtil.get('sidebar');
+L.DomEvent.disableClickPropagation(sidebar);
+L.DomEvent.on(sidebar, 'mousewheel', L.DomEvent.stopPropagation);
