@@ -181,54 +181,55 @@ De hecho, el <em>mapa de adjudicaciones y oferta educativa</em> es una aplicaci�
 particular de su uso basada en tres niveles:</p>
 <ul class="simple">
 <li><code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> en el nivel más bajo y absolutamente genérico.</li>
-<li><code class="file docutils literal notranslate"><span class="pre">adjofer/map.js</span></code> para definir en concreto cuáles cómo son los iconos,
+<li><code class="file docutils literal notranslate"><span class="pre">adjofer/map.js</span></code> para definir en concreto cuáles son los iconos,
 cómo se dibujan a partir de los datos y cómo varían en función de las
-correcciones y filtros que se apliquen. Debe ser independiente de cuál sea
-la herramienta que se use para construir la interfaz visual.</li>
+correcciones y filtros que se apliquen sobre tales datos. Su implementación
+Debe ser independiente de cuál sea la herramienta que se use para construir la
+interfaz visual.</li>
 <li><code class="file docutils literal notranslate"><span class="pre">adjofer/visual/vue.js</span></code> que implementa una interfaz atractiva haciendo
 uso de los dos niveles anteriores.</li>
 </ul>
 <p>Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
-tendremos que introducir algún aspecto básico propio del tercero ya que, al
-menos, el mapa se tendrá que ver.</p>
+tendremos que introducir algún aspecto básico propio del tercero ya que el mapa
+se tendrá que ver de alguna forma.</p>
 <div class="section" id="conceptos-previos">
 <h2>3.1.1. Conceptos previos<a class="headerlink" href="#conceptos-previos" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Partimos de la necesidad de representar sobre un mapa una serie de entidades
 cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
-usar <a class="reference external" href="https://leafletjs.com/">Leaflet</a> y colocar una marca por entidad, pero en principio de los datos
-para configurar la marca sólo podremos rescatar las coordenadas, ya que el icono
-será indepeniente de cuáles sean los valores de los datos.</p>
-<p>Como nuestra intención es ligar el aspecto del icono a los datos, podemos
-distinguir los siguientes componentes del problema:</p>
+usar <a class="reference external" href="https://leafletjs.com/">Leaflet</a> y colocar una marca por entidad, pero el uso de esta librería (u
+otra equivalente) se limitará a permitirnos asignar un icono cuyo aspecto será
+independiente de los valores concretos de los datos. Nuestra intención, no
+obstanmte, es ligar el aspecto del icono a los datos</p>
+<p>En principio, distinguiremos estos conceptos.</p>
 <dl class="docutils">
 <dt><strong>Datos</strong></dt>
 <dd>Incluyen las coordinadas de la entidad y otros datos característicos de los
 que se quiere dejar constancia, total o parcialmente, a través del aspecto
-que adquiera la marca.</dd>
+visual de la marca.</dd>
 <dt><strong>Marca</strong></dt>
-<dd>Es la plasmación de la entidad y sus datos sobre el mapa.</dd>
+<dd>Es la plasmación de la entidad (y sus datos) sobre el mapa.</dd>
 <dt><strong>Clase</strong> (o <strong>Estilo</strong>) de marca.</dt>
-<dd>Todas las marcas que representen una misma tipo de entidad perteneceran a una
+<dd>Todas las marcas que representen un mismo tipo de entidad pertenecen a una
 misma clase de marca. Cada clase tiene, además, asociados un <em>sistema de
 correcciones</em> y un <em>sistema de filtros</em>.</dd>
 <dt><strong>Sistema de correcciones</strong></dt>
-<dd>Sistema que permite registrar, aplicar y revertir las correcciones aplicables
+<dd>Sistema que permite registrar, aplicar y revertir correcciones aplicables
 a los datos.</dd>
 <dt><strong>Sistema de filtros</strong></dt>
 <dd>Sistema que permite fijar criterios para hacer desaparecer (o volver a
 mostrar) marcas.</dd>
 </dl>
-<p class="rubric">¿Cuándo puede resultarme útil?</p>
+<p class="rubric">¿Cuándo puede resultarme útil leafext.js?</p>
 <p>La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:</p>
 <ol class="arabic simple">
-<li>Los iconos que representan los datos se quiere que no sean exactamente
-iguales, sino que sufran alteraciones dependiendo del valor que adquiera el
-dato para cada uno de ellos en concreto. Por ejemplo, que el color dependa de
-lo grande que sea la magnitud del valor correspondiente.</li>
+<li>Se quiere que los iconos que representan datos de un mismo tipo de entidad no
+sean exactamente iguales, sino que partiendo de una plantilla sufran
+alteraciones en función de loes valores de sus datos.  Por ejemplo, que el
+color dependa de lo grande que sea la magnitud del valor correspondiente.</li>
 <li>Los datos puede sufrir correcciones por la interacción del usuario, lo cual
-por supuesto se reflejará en el aspecto del icono que adoptará aquel que
-refleje su nuevo valor.</li>
+por supuesto podrá tener reflejo en el aspecto del icono, si éste dependía de
+los datos que cuyo valor ha cambiado.</li>
 <li>Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
 decisiones del usuario.</li>
 </ol>
@@ -290,8 +291,8 @@ es <a class="reference external" href="http://geojson.org/">GeoJSON</a>:</p>
 estándar y <a class="reference external" href="https://leafletjs.com/">Leaflet</a> dispone de <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">un tipo de capa</a> que es capaz de
 interpretarlos directamente generando una marca y conectando los datos
 a ella a través de la propiedad <code class="docutils literal notranslate"><span class="pre">feature</span></code>. En cualquier caso, es posible
-tratar un formato cualquiera de datos, creando independientemente la marca
-y conectando a través de una propiedad el dato correspondiente a ella .</p>
+tratar un formato cualquiera de datos, creando nosotros mismos la marca
+y asociándole sus datos a través de una propiedad.</p>
 </div>
 </div>
 <div class="section" id="requerimientos">
@@ -316,7 +317,7 @@ nuestra librería y el <em>script</em> donde desarrollaremos la creación del ma
 </pre></div>
 </div>
 <p>Las pautas para escribir este último <em>script</em> (<code class="file docutils literal notranslate"><span class="pre">scripts/demo.js</span></code>) (y el
-propio duocumento <abbr title="HyperText Markup Language">HTML</abbr> claro está) son el propósito de este documento.</p>
+propio documento <abbr title="HyperText Markup Language">HTML</abbr> claro está) son el propósito de este documento.</p>
 <p>También, por supuesto, deberíamos incluir en el <abbr title="HyperText Markup Language">HTML</abbr> un elemento en el que
 incrustar el mapa. Típicamente:</p>
 <div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;map&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
@@ -357,10 +358,10 @@ incrustar el mapa. Típicamente:</p>
 </li>
 <li><p class="first">La creación de una capa para el tratamiento de los datos en formato
 <em>GeoJSON</em>. En este caso se ha supuesto que los datos se obtuvieron
-previamente de algún modo. Obsérvese cómo usamos la clase de marca
-(<code class="docutils literal notranslate"><span class="pre">Centro</span></code>) e icono (<code class="docutils literal notranslate"><span class="pre">Icono</span></code>) previamente utilidazos para generar
-cada marca asociada a cada dato. En caso de que el formato de entrada no sea
-<a class="reference external" href="http://geojson.org/">GeoJSON</a>, podríamos usar simplemente <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#layergroup">L.LayerGroup</a> o <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>.</p>
+previamente de algún modo. Obsérvese cómo se usa la clase de marca
+(<code class="docutils literal notranslate"><span class="pre">Centro</span></code>) e icono (<code class="docutils literal notranslate"><span class="pre">Icono</span></code>).  En caso de que el formato de entrada no
+sea <a class="reference external" href="http://geojson.org/">GeoJSON</a>, podríamos usar simplemente <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#layergroup">L.LayerGroup</a> o <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#featuregroup">L.FeatureGroup</a>, aunque
+tendríamos que ligar manualmente los datos la marca.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">Ver también</p>
 <p class="last">Vea cómo <a class="reference internal" href="#dev-map-no-geojson"><span class="std std-ref">tratar datos que no tengan formato GeoJSON</span></a>.</p>
@@ -370,7 +371,7 @@ cada marca asociada a cada dato. En caso de que el formato de entrada no sea
 de la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code>, cuyo valor debe ser la propiedad de la marca donde
 se guardarán los datos asociados a la marca. Dado que usamos como origen de
 los datos un objeto <a class="reference external" href="http://geojson.org/">GeoJSON</a> y los añadimos al mapa mediante una capa
-<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> , éstos apareceran dentro de <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>, así que es
+<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#geojson">L.GeoJSON</a> , éstos aparecerán dentro de <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>, así que es
 ahí donde indicamos que se deben buscar los datos. Resumiendo:</p>
 <ul>
 <li><p class="first">Al pasar la opción <code class="docutils literal notranslate"><span class="pre">mutable</span></code> la marca añadirá los métodos y propiedades
@@ -721,7 +722,6 @@ realizar <a class="reference internal" href="#dev-map-util"><span class="std std
 la librería:</p>
 <ul class="simple">
 <li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html">en línea el resultado del ejemplo</a>.</li>
-<li>Descargue el <a class="reference download internal" download="" href="../_downloads/fb7d4c632331d73d8a2252046fa3b89d/demo.minima.zip"><code class="xref download docutils literal notranslate"><span class="pre">ejemplo</span> <span class="pre">completo</span> <span class="pre">en</span> <span class="pre">formato</span> <span class="pre">zip</span></code></a>.</li>
 </ul>
 </div>
 <div class="section" id="correcciones">
@@ -759,7 +759,7 @@ sobre la clase de la marca:</p>
 <p class="first admonition-title">Nota</p>
 <p class="last">Una corrección sólo puede aplicarse a una única propiedad.</p>
 </div>
-<p>El código crea un corrección de nombre «<em>adjpue</em>» que se aplica sobre la
+<p>El código crea un corrección de nombre «<em>adjcol</em>» que se aplica sobre la
 propiedad de los datos <code class="docutils literal notranslate"><span class="pre">adj</span></code>. Como es una corrección que pretende eliminar
 elementos, se ejecutará la función suministrada por <code class="docutils literal notranslate"><span class="pre">func</span></code> para cada uno de
 los elementos del <em>array</em> <code class="docutils literal notranslate"><span class="pre">adj</span></code>, de manera que cuando devuelva <code class="docutils literal notranslate"><span class="pre">true</span></code> se
@@ -803,9 +803,8 @@ los nuevos elementos; limítese a devolverlos.</p>
 </div>
 <div class="section" id="aplicacion">
 <h4>3.1.2.5.2. Aplicación<a class="headerlink" href="#aplicacion" title="Enlazar permanentemente con este título">¶</a></h4>
-<p>El registro de una corrección no provoca ningún cambio en los datos: sólo define
-la corrección. Para llevar a efecto la corrección es necesario aplicar la
-corrección:</p>
+<p>El registro de una corrección no provoca ningún cambio en los datos: sólo la
+define. Para llevar a efecto la corrección es necesario aplicar la corrección:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">ccrrect</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivo</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Prácticas&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">]});</span>
 </pre></div>
 </div>
@@ -891,10 +890,11 @@ añadir la opción <code class="docutils literal notranslate"><span class="pre">
 <span class="p">});</span>
 </pre></div>
 </div>
-<p>En principio, añadiremos la capa en la que se insertarán las marcas (que
-habíamos llamado <code class="docutils literal notranslate"><span class="pre">layer</span></code>), aunque pueden facilitarse otros valores (véase
-<a class="reference internal" href="#dev-map-style-filter"><span class="std std-ref">estilos de filtros</span></a>). Obrando así, el efecto del
-filtrado es que desaparecerán totalmente del mapa las marcas filtradas.</p>
+<p>En principio, le daremos como valor a <code class="docutils literal notranslate"><span class="pre">fitler</span></code> la capa en la que se insertarán
+las marcas (que habíamos llamado <code class="docutils literal notranslate"><span class="pre">layer</span></code>), aunque pueden facilitarse otros
+valores (véase <a class="reference internal" href="#dev-map-style-filter"><span class="std std-ref">estilos de filtros</span></a>). Obrando así,
+el efecto del filtrado es que desaparecerán totalmente del mapa las marcas
+filtradas.</p>
 <div class="section" id="id6">
 <h4>3.1.2.6.1. Definición<a class="headerlink" href="#id6" title="Enlazar permanentemente con este título">¶</a></h4>
 <p>De manera análoga a como se obra con las correcciones, antes de poder aplicar
@@ -953,8 +953,8 @@ la que se agregan las marcas. Sin embargo, existe la alternativa de no hacer
 desaparecer la marca, sino cambiar su aspecto para notar que está filtrada. para
 ello podemos usar dos valores alternativos para la opción:</p>
 <ul>
-<li><p class="first">Un nombre de clase, que hará que el elemento <abbr title="HyperText Markup Language">HTML</abbr> que representa la marca
-filtrada se incluya en esta clase <abbr title="Cascading Style Sheets">CSS</abbr>:</p>
+<li><p class="first">Un nombre, que hará que el elemento <abbr title="HyperText Markup Language">HTML</abbr> que representa la marca
+filtrada se incluya en la clase <abbr title="Cascading Style Sheets">CSS</abbr> de tal nombre:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Centro</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
    <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
       <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
@@ -1022,7 +1022,7 @@ crea los iconos para los clusters y pasarla a través de la función
 <p class="rubric">Ejemplo de aplicación</p>
 <ul class="simple">
 <li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html">en línea la variante del ejemplo anterior que añade una
-corrección</a>.</li>
+corrección y un filtro</a></li>
 </ul>
 </div>
 </div>

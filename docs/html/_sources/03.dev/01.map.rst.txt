@@ -9,43 +9,44 @@ De hecho, el *mapa de adjudicaciones y oferta educativa* es una aplicación
 particular de su uso basada en tres niveles:
 
 - :file:`leafext.js` en el nivel más bajo y absolutamente genérico.
-- :file:`adjofer/map.js` para definir en concreto cuáles cómo son los iconos,
+- :file:`adjofer/map.js` para definir en concreto cuáles son los iconos,
   cómo se dibujan a partir de los datos y cómo varían en función de las
-  correcciones y filtros que se apliquen. Debe ser independiente de cuál sea
-  la herramienta que se use para construir la interfaz visual.
+  correcciones y filtros que se apliquen sobre tales datos. Su implementación
+  Debe ser independiente de cuál sea la herramienta que se use para construir la
+  interfaz visual.
 - :file:`adjofer/visual/vue.js` que implementa una interfaz atractiva haciendo
   uso de los dos niveles anteriores.
 
 Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
-tendremos que introducir algún aspecto básico propio del tercero ya que, al
-menos, el mapa se tendrá que ver.
+tendremos que introducir algún aspecto básico propio del tercero ya que el mapa
+se tendrá que ver de alguna forma.
 
 Conceptos previos
 *****************
 Partimos de la necesidad de representar sobre un mapa una serie de entidades
 cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
-usar Leaflet_ y colocar una marca por entidad, pero en principio de los datos
-para configurar la marca sólo podremos rescatar las coordenadas, ya que el icono
-será indepeniente de cuáles sean los valores de los datos.
+usar Leaflet_ y colocar una marca por entidad, pero el uso de esta librería (u
+otra equivalente) se limitará a permitirnos asignar un icono cuyo aspecto será
+independiente de los valores concretos de los datos. Nuestra intención, no
+obstanmte, es ligar el aspecto del icono a los datos
 
-Como nuestra intención es ligar el aspecto del icono a los datos, podemos
-distinguir los siguientes componentes del problema:
+En principio, distinguiremos estos conceptos.
 
 **Datos**
    Incluyen las coordinadas de la entidad y otros datos característicos de los
    que se quiere dejar constancia, total o parcialmente, a través del aspecto
-   que adquiera la marca.
+   visual de la marca.
 
 **Marca**
-   Es la plasmación de la entidad y sus datos sobre el mapa.
+   Es la plasmación de la entidad (y sus datos) sobre el mapa.
 
 **Clase** (o **Estilo**) de marca.
-   Todas las marcas que representen una misma tipo de entidad perteneceran a una
+   Todas las marcas que representen un mismo tipo de entidad pertenecen a una
    misma clase de marca. Cada clase tiene, además, asociados un *sistema de
    correcciones* y un *sistema de filtros*.
 
 **Sistema de correcciones**
-   Sistema que permite registrar, aplicar y revertir las correcciones aplicables
+   Sistema que permite registrar, aplicar y revertir correcciones aplicables
    a los datos.
 
 **Sistema de filtros**
@@ -54,19 +55,19 @@ distinguir los siguientes componentes del problema:
 
 .. _dev-map-util:
 
-.. rubric:: ¿Cuándo puede resultarme útil?
+.. rubric:: ¿Cuándo puede resultarme útil leafext.js?
 
 La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:
 
-#. Los iconos que representan los datos se quiere que no sean exactamente
-   iguales, sino que sufran alteraciones dependiendo del valor que adquiera el
-   dato para cada uno de ellos en concreto. Por ejemplo, que el color dependa de
-   lo grande que sea la magnitud del valor correspondiente.
+#. Se quiere que los iconos que representan datos de un mismo tipo de entidad no
+   sean exactamente iguales, sino que partiendo de una plantilla sufran
+   alteraciones en función de loes valores de sus datos.  Por ejemplo, que el
+   color dependa de lo grande que sea la magnitud del valor correspondiente.
 
 #. Los datos puede sufrir correcciones por la interacción del usuario, lo cual
-   por supuesto se reflejará en el aspecto del icono que adoptará aquel que
-   refleje su nuevo valor.
+   por supuesto podrá tener reflejo en el aspecto del icono, si éste dependía de
+   los datos que cuyo valor ha cambiado.
 
 #. Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
    decisiones del usuario.
@@ -132,8 +133,8 @@ es GeoJSON_:
    <https://leafletjs.com/reference-1.4.0.html#geojson>`_ que es capaz de
    interpretarlos directamente generando una marca y conectando los datos
    a ella a través de la propiedad ``feature``. En cualquier caso, es posible
-   tratar un formato cualquiera de datos, creando independientemente la marca
-   y conectando a través de una propiedad el dato correspondiente a ella .
+   tratar un formato cualquiera de datos, creando nosotros mismos la marca
+   y asociándole sus datos a través de una propiedad.
 
 
 Requerimientos
@@ -162,7 +163,7 @@ nuestra librería y el *script* donde desarrollaremos la creación del mapa.
    <script src="scripts/demo.js"></script>
 
 Las pautas para escribir este último *script* (:file:`scripts/demo.js`) (y el
-propio duocumento |HTML| claro está) son el propósito de este documento.
+propio documento |HTML| claro está) son el propósito de este documento.
 
 También, por supuesto, deberíamos incluir en el |HTML| un elemento en el que
 incrustar el mapa. Típicamente:
@@ -203,12 +204,12 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
 
 #. La creación de una capa para el tratamiento de los datos en formato
    *GeoJSON*. En este caso se ha supuesto que los datos se obtuvieron
-   previamente de algún modo. Obsérvese cómo usamos la clase de marca
-   (``Centro``) e icono (``Icono``) previamente utilidazos para generar
-   cada marca asociada a cada dato. En caso de que el formato de entrada no sea
-   GeoJSON_, podríamos usar simplemente `L.LayerGroup
+   previamente de algún modo. Obsérvese cómo se usa la clase de marca
+   (``Centro``) e icono (``Icono``).  En caso de que el formato de entrada no
+   sea GeoJSON_, podríamos usar simplemente `L.LayerGroup
    <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
-   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_.
+   <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_, aunque
+   tendríamos que ligar manualmente los datos la marca.
 
    .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
       <dev-map-no-geojson>`.
@@ -217,7 +218,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
    se guardarán los datos asociados a la marca. Dado que usamos como origen de
    los datos un objeto GeoJSON_ y los añadimos al mapa mediante una capa
-   `L.GeoJSON`_ , éstos apareceran dentro de ``feature.properties``, así que es
+   `L.GeoJSON`_ , éstos aparecerán dentro de ``feature.properties``, así que es
    ahí donde indicamos que se deben buscar los datos. Resumiendo:
 
    * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
@@ -551,7 +552,6 @@ la librería:
 
 * Consulte `en línea el resultado del ejemplo
   <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
-* Descargue el :download:`ejemplo completo en formato zip <files/demo.minima.zip>`.
 
 Correcciones
 ============
@@ -586,7 +586,7 @@ sobre la clase de la marca::
 
 .. note:: Una corrección sólo puede aplicarse a una única propiedad.
 
-El código crea un corrección de nombre "*adjpue*" que se aplica sobre la
+El código crea un corrección de nombre "*adjcol*" que se aplica sobre la
 propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
 elementos, se ejecutará la función suministrada por ``func`` para cada uno de
 los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
@@ -630,9 +630,8 @@ Como ``idx`` no tiene sentido en este caso, tomará el valor de *null*::
 
 Aplicación
 ----------
-El registro de una corrección no provoca ningún cambio en los datos: sólo define
-la corrección. Para llevar a efecto la corrección es necesario aplicar la
-corrección::
+El registro de una corrección no provoca ningún cambio en los datos: sólo la
+define. Para llevar a efecto la corrección es necesario aplicar la corrección::
 
    Centro.ccrrect("adjcol", {colectivo: ["Prácticas", "Interino"]});
 
@@ -711,10 +710,11 @@ añadir la opción ``filter`` al crear la clase de marca::
       }
    });   
 
-En principio, añadiremos la capa en la que se insertarán las marcas (que
-habíamos llamado ``layer``), aunque pueden facilitarse otros valores (véase
-:ref:`estilos de filtros <dev-map-style-filter>`). Obrando así, el efecto del
-filtrado es que desaparecerán totalmente del mapa las marcas filtradas.
+En principio, le daremos como valor a ``fitler`` la capa en la que se insertarán
+las marcas (que habíamos llamado ``layer``), aunque pueden facilitarse otros
+valores (véase :ref:`estilos de filtros <dev-map-style-filter>`). Obrando así,
+el efecto del filtrado es que desaparecerán totalmente del mapa las marcas
+filtradas.
 
 Definición
 ----------
@@ -775,8 +775,8 @@ la que se agregan las marcas. Sin embargo, existe la alternativa de no hacer
 desaparecer la marca, sino cambiar su aspecto para notar que está filtrada. para
 ello podemos usar dos valores alternativos para la opción:
 
-* Un nombre de clase, que hará que el elemento |HTML| que representa la marca
-  filtrada se incluya en esta clase |CSS|::
+* Un nombre, que hará que el elemento |HTML| que representa la marca
+  filtrada se incluya en la clase |CSS| de tal nombre::
 
    const Centro = L.Marker.extend({
       options: {
@@ -838,7 +838,7 @@ redibujado de marca se hace automáticamente.
 .. rubric:: Ejemplo de aplicación
 
 * Consulte `en línea la variante del ejemplo anterior que añade una
-  corrección <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_.
+  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_
 
 Variantes
 *********
