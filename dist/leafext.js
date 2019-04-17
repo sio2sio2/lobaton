@@ -1,32 +1,39 @@
 (function() {
    "use strict";
 
+   /** @namespace */
    L.utils = {};
 
    /**
     * Realiza peticiones AJAX.
+    * @memberof L.utils
+    *
+    * La petición será siempree asíncrona a menos que no se proporcionen
+    * funciones de *callback* y *failback*.
+    * 
+    * @param {Object} params Objeto que contiene los parámetros para realizar
+    *    la petición.
+    * @param {String} params.url URL de la petición.
+    * @param {String} params.method  Método HTTP de petición. Por defecto, será
+    *    ``GET``, si no se envía parámetros y ``POST``, si sí se hace.
+    * @param {Object} params.params Parámetros que se envían en la petición
+    * @param {Function} params.callback   Función que se ejecutará si la
+    *    petición tiene éxito. La función tendrá como único argumento el objeto
+    *    {@link https://developer.mozilla.org/es/docs/Web/API/XMLHttpRequest XMLHttpRequest}
+    * @param {Function} params.failback   Función que se ejecutará cuando
+    *    la petición falle. También admite como argumento un objeto
+    *    ``XMLHttpRequest``.
+    * @param {Object} context Objeto que usará como contexto las funciones
+    *    de *callback* y *failback*.
+    *
     * @example
     *
     * load({
     *    url: 'image/centro.svg',
-    *    params: {
-    *       a: 1,
-    *       b: 2
-    *    },
-    *    method: "GET",
-    *    context: objeto,
     *    callback: funcion(xhr) { console.log("Éxito"); },
     *    failback: function(xhr) { console.log("Error"); },
     * });
     *
-    * Si no se especifica el método, se usará GET cuando no haya parámetros
-    * y POST cuando sí los haya.
-    *
-    * La petición será asíncrona cuando se proporcionen funciones callback o
-    * failback, y síncrona en caso contrario.
-    * 
-    * context permite indicar qué objeto se usará de contexto (this) para la
-    * ejecución de callback y failback.
     */
    function load(params) {
       const xhr = new XMLHttpRequest();
@@ -76,63 +83,39 @@
    /**
     * Facilita la construcción de clases de iconos. Cada clase está asociada
     * a un estilo de icono distinto.
+    * @memberof L.utils
     *
     * @param {string} name          Nombre identificativo para la clase de icono.
-    * @param {Object} optiones      Opciones de construcción de la clase.
+    * @param {Object} options       Opciones de construcción de la clase.
     * @param {string} options.css   Para un icono creado con CSS, el archivo .css.
-    * @param {string|DocumentFragment|Document} options.html  HTML que define el
-    *    icono. Se puede pasar como:
-    *
-    *    + Una cadena que contenga directamente el código HTML.
-    *    + Un DocumentFragment, que sería lo que se obtiene como contenido de
-    *       un template:
-    *
-    *          var fragmento = document.querySelector("template").content;
-    *
-    *    + Un Document, que sería lo que se obtiene de haber hecho una petición
-    *      AJAX:
-    *
-    *          var doc = xhr.responseXML;
+    *    que define el aspecto.
+    * @param {string|DocumentFragment|Document} options.html  HTML que define la
+    *    plantilla del icono. Se puede pasar como:
+    *    <ul>
+    *    <li>Una cadena que contenga directamente el código HTML.
+    *    <li>Un <code>DocumentFragment</code>, que sería lo que se obtiene como
+    *        contenido de un <code>&lt;template&gt;</code>.
+    *    <li>Un <code>Document</code>, que sería lo que se obtiene de haber hecho
+    *    una petición AJAX y quedarse cn la respuesta XML.
+    *    </ul>
     *
     * @param {string} options.url   Alternativamente a la opción anterior,
     *    la URL de un archivo donde está definido el icono (p.e. un SVG).
     *
-    * @param {function} options.converter  Función que convierte en opciones
-    *     de dibujo los datos asociados a la entidad que representa la marca.
-    *     Recibe como único argumento los datos a convertir. Es conveniente que
-    *     se escriba permitiendo el paso de datos parciales, de manera que sólo
-    *     genere las opciones de dibujo asociadas a esos datos parciales y no
-    *     todas. Por ejemplo, supongamos que tenemos dos datos:
-    *
-    *     + gente: Array con personas de un mismo sexo.
-    *     + sexo: Valor que puede ser hombre o mujer.
-    *
-    *     y que estos datos se convierten en las opciones de dibujo num (número
-    *     de personas) y sexo (el sexo):
-    *
-    *     function converter(data) {
-    *          const opts= {};
-    *          if(data.hasOwnProperty("gente") opts["num"] = data.gente.length;
-    *          if(data.hasOwnProperty("sexo") opts["sexo"] = data.sexo;
-    *          return opts;
-    *     }
-    *
-    *     La función anterior sólo devuelve la opción de dibujo "num", si se le
-    *     pasó la propiedad "gente"; y sólo "sexo", si la propiedad "sexo".
-    *     Si se escribe de este modo (admitiendo datos parciales), puede
-    *     añadirse la opción "fast: true" para que el programa tome ventaja de
-    *     este hecho.
+    * @param {L.utils.Converter} options.converter  Objeto {@link
+    *    L.utils.Converter} para la conversión de los datos en opciones de dibujo.
     *    
-    * @param {function} updater  Función que actualiza el aspecto del icono
+    * @param {Function} updater  Función que actualiza el aspecto del icono
     *    a partir de los nuevos valores que tengan las opciones de dibujo.
     *    Toma las opciones de dibujo (o una parte de ellas) y modifica el
     *    elemento DIV (o SVG. etc.) del icono para que adquiera un aspecto
-    *    adecuado. Debe escribirse teniendo presente que no se pasan todas
+    *    adecuado. Debe escribirse teniendo presente que pueden no pasarse todas
     *    las opciones de dibujo, sino sólo las que se modificaron desde
     *    la última vez que se dibujó el icono. Por tanto, debe escribirse la
     *    función para realizar modificaciones sobre el aspecto preexistente
-    *    del icono, en vez de escribirse para recrear el icono desde cero.
+    *    del icono, en vez de escribirse para recrear el icono desde la plantilla
     *
+    * @retuns {Icon} La clase de icono que se desea crear.
     */
    L.utils.createMutableIconClass = function(name, options) {
 
@@ -156,8 +139,10 @@
    // Issue #5
    /**
     * Pone en escala de grises un icono filtrado o elimina
-    * tal escala si ya no lo está. Debe pasársele como contexto
-    * el div del icono.
+    * tal escala si ya no lo está.
+    *
+    * @this El elemento HTML del documento dentro del cual se encuentra
+    * definida la marca 
     *
     * @param {boolean} filtered  Si el icono está filtrado o no.
     */
@@ -167,9 +152,12 @@
    }
    
    /**
-    * Redefine un iconCreateFunction basado en el predeterminado de
-    * L.MarkerClusterGroup para que el número del clúster sólo incluya
-    * los centros no filtrados.
+    * Redefine ``iconCreateFunction`` basándose en la definición original de
+    * {@link https://github.com/Leaflet/Leaflet.markercluster
+    * L.MarkerClusterGroup} para que el número del clúster sólo cuente los
+    * centros no filtrados.
+    *
+    * @param {L.MarkerCluster} El cluster sobre el que se aplica la función.
     */
    L.utils.noFilteredIconCluster = function(cluster) {
 		const childCount = cluster.getChildCount(),
@@ -186,16 +174,37 @@
 
 		return new L.DivIcon({ html: '<div><span>' + noFilteredChildCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
    }
-
    // Fin issue #5
+
 
    // Issue #21
    /**
-    * Clase que permite definir cómo un objeto se obtiene a partir de otro.
+    * Construye conversores entre objetos de distinto tipo.
+    *
+    * @class
+    * @param {Array.<String>} params Enumera las nombres de las propiedades que tiene
+    *    el objeto de destino.
+    *
+    * @classdesc Permite definir cómo un objeto se obtiene
+    *    a partir de las propiedades de otro.
+    *
+    * @example
+    *
+    *    const converter = L.utils.Converter(["numadj", "tipo"])
+    *                             .define("numadj", "adj", a => a.total)
+    *                             .define("tipo");
     */
    L.utils.Converter = (function() {
 
-      // Calcula la intersección entre dos arrays.
+      /**
+       * Calcula la intersección entre dos *arrays*.
+       * @function
+       *
+       * @param {Array} a1  Un ``Array``.
+       * @param {Array} a2 El otro ``Array``.
+       *
+       * @return {Array}  Un array con los elementos que se encuentra en ambos *arrays*.
+       */
       const intersection = (a1, a2) => a1.filter(e => a2.indexOf(e) !== -1);
 
       /**
@@ -203,8 +212,17 @@
        * así como los nombres de las propiedades anidadas.
        *
        * Sólo se extraen propiedades de objetos cuyo constructor
-       * sea directamente ``Object``, y opcionalmente los índices
+       * sea directamente ``Object``; y, opcionalmente, los índices
        * de los arrays.
+       *
+       * @param {Object}  o     El objeto a inspeccionar.
+       * @param {Number}  depth Profundidad hasta la que se desea inspeccionar.
+       *                         Para no definir ninguna, use ``null``.
+       * @param {Boolean} arr   ``true``, si se desea inspeccionar las propiedades
+       *                        que son ``arrays``.
+       * @param {String}  attr  Nombre parcial de la propiedad. En principio,
+       *                        sólo debería usarse este parámetro en las llamadas
+       *                        recursivas que se hacen dentro de la propia función.
        *
        * @example
        *
@@ -212,11 +230,6 @@
        * getNestedKeys(o)  // ["a", "arr", "b", "b.c"]
        * getNestedKeys(o, true)  // ["a", "arr", "arr.0", "arr.1", ,"b", "b.c"]
        *
-       * @param {Object}  o     El objeto a inspeccionar.
-       * @param {boolean} arr   true, si se desea inspeccionar las propiedades
-       *                        que son arrays.
-       * @param {string}  attr  Nombre parcial de la propiedad. En principio,
-       *                        sólo se usa el parámetro en las llamadas recursivas.
        */
       function getNestedKeys(o, depth, arr, attr) {
          let res = [],
@@ -234,28 +247,44 @@
          return res;
       }
 
+      /**
+       * Cuenta el número de veces que aparece un carácter en una cadena.
+       *
+       * @param {String}  La cadena donde se realiza la busqueda
+       * @param {String}  El carácter que se desea contar (carácter, no subcadena).
+       *
+       * @returns {Number} El número de ocurrencias.
+       */
       function countChar(string, ch) {
          let res = 0;
          for(const c of string) if(c===ch) res++;
          return res;
       }
 
-      /**
-       * Constructor de la clase.
-       *
-       * @param {Array} params Enumera las nombres de las propiedades que tiene
-       *                       el objeto destino.
-       */
       function Converter(params) {
+         /**
+          * Almacena los nombres de cada propiedad del objeto resultante,
+          * de qué propiedades del objeto de partida dependen y cuál es
+          * la función conversora entre estas últimas y la primera.
+          * @type {Array}
+          * @private
+          */
          this._params = {}
          for(const p of params) this._params[p] = {
             enabled: true,
             depends: [],
             converter: null
          }
-         // Profundidad máxima en la que se encuentra
-         // una propiedad del objeto original que influye
-         // en el valor de alguna propiedad del objeto destino.
+         /**
+          * Guarda la profundidad máxima a la que se encuentran las propiedades
+          * del objeto de partidad que influyen en las propiedades del objeto
+          * resultado. Su valor calculándolo a partir de las dependencias que
+          * se van declarando para cada propiedad al usar {@link L.utils.Converter#define}
+          * @name L.utils.Converter#__depth
+          * @private
+          * @type {Number}
+          *
+          */
          Object.defineProperty(this, "__depth", {
             value: 1,
             writable: true,
@@ -266,15 +295,14 @@
 
       Object.defineProperties(Converter.prototype, {
          /**
-          * Deshabilita una propiedad del objeto destino. Esto significa
+          * Deshabilita una propiedad del objeto resultante. Esto significa
           * que cuando se obre la conversión del objeto, nunca se intentará
           * obtener el valor de esta propiedad.
-          *
-          * @method disable
+          * @method L.utils.Converter#disable
           *
           * @param {string} param  Nombre de la propiedad.
           *
-          * @returns {Converter} El propio objeto.
+          * @returns {L.utils.Converter} El propio objeto.
           */
          "disable": {
             value: function(param) {
@@ -285,13 +313,12 @@
             configurable: false
          },
          /**
-          * Habilita una propiedad del objeto destino.
-          *
-          * @method enable
+          * Habilita una propiedad del objeto resultante.
+          * @method L.utils.Converter#enable
           *
           * @param {string} param  Nombre de la propiedad.
           *
-          * @returns {Converter} El propio objeto.
+          * @returns {L.utils.Converter} El propio objeto.
           */
          "enable": {
             value: function(param) {
@@ -302,7 +329,9 @@
             configurable: false
          },
          /**
-          * Las propiedades definidas para el objeto de destino.
+          * Las propiedades definidas para el objeto resultante.
+          * @name L.utils.Converter#params
+          * @type Array.<String>
           */
          "params": {
             get: function() {
@@ -311,7 +340,9 @@
             configurable: false
          },
          /**
-          * Las propiedades habilitadas para el objeto de destino.
+          * Las propiedades habilitadas para el objeto resultante.
+          * @name L.utils.Converter#enabled
+          * @type Array.<String>
           */
          "enabled": {
             get: function() {
@@ -320,7 +351,9 @@
             configurable: false
          },
          /**
-          * true, si todas las propiedades habilitadas tienen definida una conversión.
+          * Informa de si todas las propiedades habilitadas tienen definida una conversión
+          * @name L.utils.Converter#defined
+          * @tyoe {Boolean}
           */
          "defined": {
             get: function() {
@@ -329,23 +362,22 @@
             configurable: false
          },
          /**
-          * Define cómo obtener una propiedad del objeto de destino.
-          * 
-          * @method define
+          * Define cómo obtener una propiedad del objeto resultante.
+          * @method L.utils.Converter#define
           *
-          * @param {string} param     El nombre de la propiedad.
-          * @param {Array|string} properties Los nombres de las propiedades del objeto
+          * @param {String} param     El nombre de la propiedad.
+          * @param {(Array.<String>|String)} properties Los nombres de las propiedades del objeto
           *       original que contribuyen a formar el valor de la propiedad del objeto
-          *       de destino. Si la propiedad es una sola, puede evitarse el uso del
-          *       array y escribir directamente el nombre. Si se omite este argumento,
+          *       resultante. Si la propiedad es una sola, puede evitarse el uso del
+          *       *array* y escribir directamente el nombre. Si se omite este argumento,
           *       se sobreentiende que el nombre de la propiedad en el objeto original
-          *       y el de destino es el mismo.
-          * @param {function} func    La función conversora. Debe construirse de modo
-          *       que, conservando el orden, reciba como argumentos los valores de las
-          *       propiedades que se enumeran en ``properties``.
+          *       y el resultante es el mismo.
+          * @param {Function} func    La función conversora. Debe definirse de modo
+          *       que reciba como argumentos los valores de las
+          *       propiedades que se enumeran en ``properties``, conservando el orden.
           *
-          * @returns {?Converter} El propio objeto de conversión o null, si
-          *       la propiedad que se intenta definir, no se registro al crear
+          * @returns {?L.utils.Converter} El propio objeto de conversión o null, si
+          *       la propiedad que se intenta definir, no se registró al crear
           *       el objeto.
           */
          "define": {
@@ -366,12 +398,11 @@
          },
          /**
           * Informa de si la propiedad tiene definida la conversión.
+          * @method L.utils.Converter#isDefined
           *
-          * @method isDefined
+          * @param {String} param  El nombre de la propiedad.
           *
-          * @param {string} param  El nombre de la propiedad.
-          *
-          * @returns {boolean}
+          * @returns {Boolean}
           */
          "isDefined": {
             value: function(param) {
@@ -381,14 +412,15 @@
             configurable: false
          },
          /**
-          * Lleva a cabo la conversión de un objeto suministrado. Sólo se
+          * Lleva a cabo la conversión del objeto suministrado. Sólo se
           * obtienen las propiedades que estén habilitadas y para las que
           * se pueda realizar la conversión, porque exista toda la
           * información requerida en el objeto.
+          * @method L.utils.Converter#run
           *
-          * @param {Object} o El objeto con los datos originales.
+          * @param {Object} o El objeto original
           *
-          * @returns {Object} El objeto de conversión.
+          * @returns {Object} El objeto resultante.
           */
          "run": {
             value: function(o) {
@@ -408,10 +440,12 @@
           * Devuelve las propiedades habilitadas cuyas dependecias
           * se encuentran por completo en la lista de propiedades
           * que se suministra.
+          * @method L.utils.Converter#_getParams 
+          * @private
           *
-          * @param {Array} properties Lista con nombres de propiedades
+          * @param {Array.<String>} properties Lista con nombres de propiedades
           *
-          * @returns {boolean}
+          * @returns {Boolean}
           */
          "_getParams": {
             value: function(properties) {
@@ -428,22 +462,19 @@
    // Fin issue #21
 
    /**
-    * Devuelve el valor de la propiedad "anidada" de un objeto.
+    * Devuelve el valor de la propiedad "anidada" de un objeto,
+    * aunque comprueba que la no propiedad no sea realmente anidada.
+    * @function
+    *
+    * @param {Object}  obj  El objeto del que se busca la propiedad.
+    * @param {String}  name El nombre de la propiedad anidada.
     *
     * @example
     *
     * o = {a:1, b: {c:2, d:3}}
     * geProperty(o, "b.c") === o.b.c  // true
-    *
-    * No obstante, comprueba antes que la propiedad no sea "anidada".
-    *
-    * @example
-    *
     * o = {a:1, "b.c": 2, "b.d": 3}
     * geProperty(o, "b.c") === o["b.c"]  // true
-    *
-    * @param {Object}  obj  El objeto del que se busca la propiedad.
-    * @param {string}  name El nombre de la propiedad anidada.
     */
    const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
 
@@ -454,7 +485,7 @@
     * @param {Object} o  Un objeto.
     * @param {Object} p  El otro.
     *
-    * @returns {boolean}
+    * @returns {Boolean}
     */
    function equals(o,p) {
       if(typeof o !== typeof p) return false;
@@ -474,10 +505,18 @@
 
 
    /**
-    * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
-    * desde la última vez que se reseteó (con el método reset).
+    * Contruye el objeto. Una vez creado, pueden modificarse los valores de
+    * los atributos; pero no añadir nuevos o eliminar alguno de los existentes.
+    * @name Options
+    * @class
     *
-    * Uso:
+    * @param {Object} Objeto que contiene las propiedades y sus valores iniciales.
+    *
+    * @classdesc Clase que permite saber si el objeto ha cambiado algunos de
+    * sus propiedades desde la última vez que se reseteó (con el método 
+    * {@link Options#reset}.
+    *
+    * @example
     *
     *    const o = new Options({a: 1, b: 2, c: 3});
     *    o.updated  // false, ya que se fijaron valores nuevos.
@@ -487,13 +526,14 @@
     *    o.reset()
     *    o.updated  // true. Resetear marca el objeto como actualizado.
     *
-    * Una vez creado el objeto, pueden modificarse los valores de los atributos
-    * (a, b y c, en el ejemplo); pero no añadir nuevos o eliminar alguno de los
-    * existentes.
-    *
     */
    const Options = (function() {
 
+      /**
+       * Nombres prohibidos para las propiedades
+       * @private
+       * @type {Array.<String>}
+       */
       const banned = ["updated"];
 
       function Options(opts) {
@@ -512,6 +552,15 @@
          Object.seal(this);
       }
 
+      /**
+       * Setter para las propiedades. Básicamente se encarga
+       * de fijar el valor y apuntar en la propiedad como actualizada.
+       * @memberof Options
+       * @private
+       *
+       * @param {String} attr Nombre de la propiedad.
+       * @param {*} value  Valor de la propiedad.
+       */
       function setter(attr, value) {
          if(this["_" + attr] === value) return;
          this["_" + attr] = value;
@@ -539,7 +588,11 @@
       }
 
       /**
-       * Cambia de una tacada varios valores.
+       * Cambia varios valores a la vez.
+       * @method Options#change
+       *
+       * @param {Obj} obj  Objeto que contien los nombres y los nuevos valores
+       *    de las propiedades.
        */
       Object.defineProperty(Options.prototype, "change", {
          value: function(obj) {
@@ -556,6 +609,8 @@
       /**
        * Informa de si se han modificado las opciones. Cuando una opción cambia,
        * se modifica automáticamente el valor de esta propiedad a verdadera.
+       * @name Options#updated
+       * @type {Boolean}
        */
       Object.defineProperty(Options.prototype, "updated", {
          get: function() { return this._updated.size === 0; },
@@ -565,6 +620,7 @@
 
       /**
        * Marca las opciones como actualizadas.
+       * @method Options#reset
        */
       Object.defineProperty(Options.prototype, "reset", {
          value: function() { this._updated.clear(); },
@@ -575,6 +631,8 @@
 
       /**
        * Devuelve sólo las opciones modificadas
+       * @name Options#modified
+       * @type {Array.<String>}
        */
       Object.defineProperty(Options.prototype, "modified", {
          get: function() {
@@ -589,81 +647,14 @@
       return Options;
    })();
 
-   /**
-    *
-    * Extendemos DivIcon a fin de poder crear iconos que cambien
-    * su aspecto al cambiar una o varias de sus propiedades.
-    *
-    * Uso:
-    *
-    *    // this es el elemento HTML que
-    *    // en el mapa dibuja el icono.
-    *    function updater(o) {
-    *       const content = this.querySelector(".content");
-    *       if(o.tipo !== undefined) content.className = "content " + o.tipo;
-    *       if(o.numvac !== undefined) content.textContent = o.numvac;
-    *       return this;
-    *    }
-    *
-    *    // o es el objeto con los datos en crudo a partir de los cuales
-    *    // se obtienen los valores de los parámetros. En este ejemplo,
-    *    // el conversor consiste en no no hacer conversión.
-    *    function converter(o) {
-    *       return Object.assign({}, o); 
-    *    }
-    *
-    *    const Icon = L.divIcon.extend({
-    *       options: {
-    *          updater: updater,
-    *          converter: converter,
-    *          fast: false,
-    *          className: "icon",
-    *          iconSize: [25, 34],
-    *          iconAnchor: [12.5, 34],
-    *          html: elemento_html
-    *       }
-    *    });
-    *
-    *    const icon = new Icon();
-    *
-    * Los parámetros que se pasan son:
-    *
-    * + updater:
-    *     Función que se encarga de modificar el elemento HTML que define
-    *     el icono según los valores de sus propiedades (numvac y tipo en el ejemplo).
-    *
-    * + converter:
-    *     Función que a partir de los datos en crudo, genera los valores de
-    *     las propiedades que permiten definir el icono.
-    *
-    * + fast:
-    *     true implica que converter se definió de forma que si el objeto "o" que
-    *     se le pasa no contiene todos lo datos, sólo devuelve valor para
-    *     aquellas propiedades del icono que pueden calcularse. Por ejemplo,
-    *     si en el objeto o hay información sobre el número de adjucudicaciones,
-    *     pero no sobre el tipo, se deulverá algo de la forma: { numvac: 5 }.
-    *     Esto es útil al aplicar una corrección que sólo modifica una parte
-    *     de los datos, ya que se le pasará a converter exclusivamente esa parte
-    *     y la conversión se ahorrará cálculos.
-    *
-    * + html:
-    *     El elemento HTML que se desea usar como icono. Se acepta:
-    *
-    *     - Una cadena (tal como describe la documentación de Leaflet):
-    *
-    *       '<div class="content">5</div><div class="arrow"></div>'
-    *
-    *     - Un HTMLElement.
-    *
-    *     - Un Document (como lo que devuelve xhr.responseXML) o
-    *       DocumentFragment (que es el contenido de un elemento "template").
-    *
-    * + iconSize:
-    *     Si definimos el tamaño exacto a través de CSS (lo cual no es recomentable),
-    *     debe ser null.
-    *
-    */
 
+   /**
+    * Genera un ``HTMLElement`` a partir del parámetro que se le proporciona.
+    * 
+    * @param {(HTMLElement|Document|DocumentFragment|String)} Definición del elemento.
+    *
+    * @returns {HTMLElement} El elemento generado.
+    */
    function getElement(e) {
       if(typeof e === "string" || e instanceof String) {
          e = new DomParser().parseFromString("<div>" + e + "</div>", 'text/html');
@@ -691,6 +682,42 @@
 
    const DivIconExtend = L.DivIcon.extend
 
+   /**
+    * @name Icon
+    * @extends L.DivIcon
+    * @classdesc Extensión de <code>L.DivIcon</code> a fin de crear iconos
+    *    definidos por una plantilla a la que se aplican cambios en sus detalles
+    *    según sean cambien los valores de sus opciones de dibujo. Consulte
+    *    {@link Icon#options} para conocer cuales son las opciones
+    *    adicionales que debe proporcionar para que la clase sea capaz de
+    *    manejar iconos mutables.
+    * @class
+    * @hideconstructor
+    *
+    * @example
+    *
+    * function updater(o) {
+    *    const content = this.querySelector(".content");
+    *    if(o.hasOwnProperty(tipo) content.className = "content " + o.tipo;
+    *    if(o.hasOwnProperty(numadj) content.textContent = o.numadj;
+    *    return this;
+    * }
+    *
+    * const Icon = L.divIcon.extend({
+    *    options: {
+    *       className: "icon",
+    *       iconSize: [25, 34],
+    *       iconAnchor: [12.5, 34],
+    *       url: "images/boliche.svg",
+    *       updater: updater,
+    *       converter: new L.utils.Converter(["numadj", "tipo"])
+    *                             .define("numadj", "adj", a => a.total)
+    *                             .define("tipo")
+    *    }
+    * });
+    *
+    *    const icon = new Icon();
+    */
    L.DivIcon.extend = function(obj) {
       const Icon = DivIconExtend.call(this, obj);
       const options = Icon.prototype.options;
@@ -698,11 +725,26 @@
          // Issue #2
          if(options.html) options.html = getElement(options.html);
          else if(!options.url) throw new Error("Falta definir las opciones html o url");
+         /**
+          * Informa de si la clase de icono se encuentra lista para utilizarse.
+          * @name Icon.ready
+          * @type {Boolean}
+          */
          Object.defineProperty(Icon, "ready", {
             get: () => Icon.prototype.options.html,
             configurable: false,
             enumerable: false
          });
+         /**
+          * Define qué hacer cuando la clase de icono esté lista para usarse.
+          * @memberof Icon
+          * @async
+          *
+          * @param {Function} func_success  Define la acción que se realizará en caso
+          *    de que la creación de la clase de icono haya tenido éxito.
+          * @param {Function} func_fail Define la acción a realizar en caso de que
+          * la creación del icono haya fallado.
+          */
          Icon.onready = async function(func_success, func_fail) {
             if(!this.ready) {
                new Promise(function(resolve, reject) {
@@ -727,14 +769,38 @@
 
    const createDivIcon = L.DivIcon.prototype.createIcon;
 
+   /**
+    * Opciones para la {@link Icono}. A las que reconoce la clase
+    * {@link https://leafletjs.com/reference-1.4.0.html#icon  L.DivIcon de Leaflet},
+    * añade algunas más.
+    * @namespace Icon.prototype.options
+    *
+    * @property {Options} params Define cuáles son las opciones de dibujo del icono.
+    *    El valor de esta opción, sin embargo, se calcula a partir de la información
+    *    proporcionada en el objeto {@link L.utils.Converter} por lo que
+    *    <strong>no</strong> debe facilitarse.
+    * @property {HTMLElement|String|DocumentFragment|Document} html Plantilla
+    *    para el dibujo del icono.
+    * @property {String} url URL donde se escuentra la plantilla para el dibujo. Es
+    *    una opción alternativa a la anteior.
+    * @property {Converter} converter  Objeto que define la conversión entre los
+    *    datos asociados a la marca y las opciones de dibujo.
+    * @property {Function} updater  Función que actualiza el dibujo usando los nuevos
+    *    valores de las opciones de dibujo. Debe construirse de forma que se tenga
+    *    en cuenta que se pasarán sólo las opciones que cambiaron desde el último
+    *    dibujado y que, por tanto, sólo deben cambiarse los detalles del dibujo que
+    *    dependen de las opciones pasadas y dejar inalterados el resto de detalles.
+    *    El contexto de la función es el elemento HTML que representa al icono.
+    */
+
    const IconPrototype = {
       /**
-       * Wrapper para el método homónimo de DivIcon.
+       * Wrapper para el método homónimo de <code>L.DivIcon</code>. Su funcion
+       * es preparar el valor <code>options.html</code> usando la plantilla y 
+       * las opciones de dibujo antes de que el método original actúe.
+       * @memberof Icon.prototype
        *
-       * Detecta si cambiaron las opciones de dibujo, mientras el icono no
-       * estaba dibujado, y, en ese caso, regenera options.html a partir de la
-       * plantilla HTML.
-       *
+       * @returns {HTMLElement}
        */
       createIcon: function() {
          this.options.params = this.options.params || new Options(this.options.converter.run(this._marker.getData()));
@@ -762,6 +828,9 @@
       /**
        * Refresca el icono, en caso de que hayan cambiado las opciones de dibujo.
        * El método modifica directamente el HTML sobre el documento.
+       * @memberof Icon.prototype
+       *
+       * @return {Boolean} <code>true</code> si se redibujó realmente el icono.
        */
       refresh: function() {
          // TODO: Filtrado
@@ -777,18 +846,67 @@
 
    const MarkerExtend = L.Marker.extend;
 
+   /**
+    * Opciones para {@link Marker}. A las generales que permite
+    * {@link https://leafletjs.com/reference-1.4.0.html#marker L.Marker de Leaflet}
+    * añade algunas más
+    * @namespace Marker.prototype.options
+    *
+    * @property {String} mutable  Nombre de la propiedad a la que se conectan los datos de
+    *    las marcas. Si es una propiedad anidada puede usarse la notación de punto.
+    *    Por ejemplo, <code>feature.properties</code>.
+    * @property {(L.LayerGroup|String|Function)} filter Habliita un {@link CorrSys sistema de filtros}
+    *    para la clase de marca. Puede adoptar tres valores distintos:
+    *    <ul>
+    *    <li>La capa a la que se agregan las marcas de esta clase. En este caso, el efecto
+    *       del filtro será eliminar del mapa las marcas filtradas.
+    *    <li>Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que
+    *    pertenezcan las marcas filtradas.
+    *    <li>Una función de transformación que se aplicará al elemento HTML que
+    *    representa en el mapa cada marca filtrada. El contexto de esta función será el propio
+    *    elemento HTML.
+    *    </ul>
+    */
+
+   /**
+    * @name Marker
+    * @extends L.Marker
+    * @classdesc  Extiende la clase {@link https://leafletjs.com/reference-1.4.0.html#marker L.Marker},
+    *    a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
+    *    Consulte cuáles son las {@link Marker#options opciones que lo habiliten}.
+    * @class
+    * @hideconstructor
+    *
+    * @example
+    *
+    * const Marker = L.Marker.extend({
+    *    options: {
+    *       mutable: "feature.properties",
+    *       filter: L.utils.grayFilter
+    *    }
+    * });
+    */
    L.Marker.extend = function() {
       const Marker = MarkerExtend.apply(this, arguments);
       const options = Marker.prototype.options;
       if(options.mutable) {
          options.corr = new CorrSys();
          Object.assign(Marker.prototype, prototypeExtra);
+         /**
+          * Almacena todas las marcas creadas de este tipo
+          * @name Marker.store
+          * @type {Array.<Marker>}
+          */
          Object.defineProperty(Marker, "store", {
             value: [],
             configurable: false,
             enumerable: false,
             writable: false
          }); 
+         /**
+          * Vacía {@link Marker.store} de marcas.
+          * @memberof Marker
+          */
          Marker.reset = function() { this.store.length = 0; }
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
@@ -819,10 +937,11 @@
    /**
     * Elimina una marca del almacén donde se guardan
     * todos los objetos marca de una misma clase.
+    * @method Marker.remove
     *
-    * @param {L.Marker} marker  La marca que se desea eliminar.
+    * @param {Marker} marker  La marca que se desea eliminar.
     *
-    * @returns {boolean}  El éxito en la eliminación.
+    * @returns {Boolean}  El éxito en la eliminación.
     */
    function removeMarker(marker) {
       const idx = this.store.indexOf(marker);
@@ -833,9 +952,10 @@
 
    /**
     * Ejecuta un método para todas las marcas almacenadas en store.
+    * @method Marker.invoke
     *
-    * @param {string} method  Nombre del métodos
-    * @param {...*} param Parámetro que se pasa al método
+    * @param {String} method  Nombre del métodos
+    * @param {...*} param Parámetros que se pasan al método
     */
    function invokeMarker(method) {
       for(const marker of this.store) {
@@ -846,8 +966,46 @@
 
    /**
     * Registra una corrección en el sistema de correcciones de la marca.
+    * @method Marker.register
     *
-    * @seealso {@link CorrSys.prototype.register} para saber cuáles son sus parámetros.
+    * @param {String} name        Nombre que identifica a la corrección.
+    * @param {Object} obj         Objeto que define la corrección
+    * @param {String} obj.attr    Propiedad sobre el que opera la corrección.
+    *    Puede usarse la notación de punto para propiedades anidadas.
+    * @param {Function} obj.func  Función que determina si se hace corrección o no.
+    *    Cuando la función corrige el array actúa eliminado valores y para
+    *    ello se ejecuta repetidamente sobre todos los elementos del *array*. Usa
+    *    como contexto la marca a la que pertenece el objeto
+    *    que contiene el *array*, y recibe tres parámetros: el primero es
+    *    el índice del elemento que se comprueba, el segundo el array mismo
+    *    y el tercero un objeto con las opciones aplicables de corrección.
+    *    Debe devolver <code>true</code> (el elemento debe eliminarse) o
+    *    <code>false</code> (no debe hacerlo). La función también puede añadir
+    *    nuevos elementos, en vez de eliminar los existentes. Vea la información
+    *    sobre el argumento <code>add</code> para saber más sobre ello.
+    * @param {Boolean} obj.add    <code>true</code> si la corrección añade
+    *    elementos al array, y cualquier otro valor asimilable a <code>false</code>
+    *    si su intención es eliminar elementos. Si los añade, la función deberá
+    *    devolver un *array* con los elementos a añadir y sólo se ejecuta una vez,
+    *    por lo que su primer argumento que representa el índice del elemento vale
+    *    <code>null</code>.
+    *
+    * @example
+    * Centro.register("adjpue", {
+    *                   attr: "adj",
+    *                   func: function(idx, adj, opts) {
+    *                      return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
+    *                   },
+    *                })
+    *       .register("vt+", {
+    *                   attr: "adj",
+    *                   func: function(idx, adj, opts) {
+    *                      const data = this.getData();
+    *                      //Se deberían obtener las vacantes telefónicas de estos datos...
+    *                      return ["Interino", "Interino"];
+    *                   },
+    *                   add: true
+    *                });
     */
    function registerCorrMarker() {
       return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments) && this;
@@ -857,9 +1015,13 @@
    // Issue #23
    /**
     * Aplica una corrección a las marcas de una clase.
+    * @method Marker.correct
     *
-    * @params {string} name   Nombre de la corrección.
+    * @params {String} name   Nombre de la corrección.
     * @prams {Object} params  Opciones de aplicacion de la corrección.
+    *
+    * @example
+    * Centro.correct("adjpue", {puesto: ["11590107", "00590059"]})
     */
    function doCorrMarker(name, params) {
       const corr = this.prototype.options.corr;
@@ -879,8 +1041,12 @@
 
    /**
     * Elimina una correccón de las marcas de una clase.
+    * @method Marker.uncorrect
     *
-    * @params {string} name   Nombre de la corrección.
+    * @params {String} name   Nombre de la corrección.
+    *
+    * @example
+    * marca.uncorrect("adjpue");
     */
    function undoCorrMarker(name) {
       const corr = this.prototype.options.corr;
@@ -901,8 +1067,13 @@
    // Issue #5
    /**
     * Registra para una clase de marcas un filtro.
+    * @method Marker.registerF
     *
-    * @seealso {@link FilterSys.prototype.register} para saber cuáles son sus parámetros.
+    * @param {String}         name  Nombre del filtro.
+    * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
+    *    cuyos valores afectan al filtro.
+    * @param {Function}       func  Función que filtra. Debe devolver
+    *     <code>true</code> (sí filtra) o <code>false</code>.
     */
    function registerFilterMarker() {
       const filter = this.prototype.options.filter;
@@ -913,6 +1084,7 @@
 
    /**
     * Habilita un filtro para las marcas de una clase
+    * @method Marker.filter
     *
     * @param {string} name    Nombre del filtro.
     * @param {Object} params  Opciones para el filtrado.
@@ -928,6 +1100,7 @@
 
    /**
     * Deshabilita un filtro para las marcas de una clase
+    * @method Marker.unfilter
     *
     * @param {string} name    Nombre del filtro.
     */
@@ -942,8 +1115,11 @@
 
    /**
     * Cambia el estilo de filtro.
+    * @method Marker.setFilter
     *
-    * @param {func|string|L.LayerGroup}  style     Estilo del filtro.
+    * @param {Function|String|L.LayerGroup}  style     Estilo del filtro.
+    *    Consulte el valor de la {@link Marker#options opción filter} para
+    *    saber qué valor de estilo suministrar.
     */
    function setFilterStyleMarker(style) {
       const filter = this.prototype.options.filter;
@@ -956,17 +1132,16 @@
    const MarkerInitialize = L.Marker.prototype.initialize;
    const MarkerSetIcon = L.Marker.prototype.setIcon;
 
-   /**
-    * Métodos modificados o adicionales que tendrán los derivados de Marker que al
-    * crearse con extend incluyan la opción mutable=true.
-    */
+   // Métodos modificados o adicionales que tendrán los derivados de Marker que al
+   // crearse con extend incluyan la opción mutable=true.
+   /** @lends Marker.prototype */
    const prototypeExtra = {
       /**
        * Refresca el dibujo de la marca.
        *
        * @param {L.LayerGroup} force   Si se pasa la capa y la marca, aunque
-       *    no filtrada, no tiene representación en el mapa, fuerza
-       *    su adición a la misma.
+       *    no filtrada, no se encuentra en el mapa, fuerza su adición a la
+       *    misma.
        */
       refresh: function(force) {
          let div = this.getElement();
@@ -999,6 +1174,12 @@
          if(!div) return false;  // La marca no está en el mapa.
          this.options.icon.refresh();
       },
+      /**
+       * Wrapper para el método homónimo original. Se encarga de de
+       * convertir en un descriptor de acceso la propiedad a la que
+       * se conectan los datos, de almacenar en {@link Marker.store}
+       * la nueva marca, de algunos aspectos menores más.
+       */
       initialize: function() {
          MarkerInitialize.apply(this, arguments);
          this.constructor.store.push(this);
@@ -1047,27 +1228,38 @@
          });
          // Fin Issue #5
       },
+      /**
+       * Wrapper para el método homónimo original. Se encarga de conectar
+       * al icono la marca.
+       */
       setIcon: function(icon) {
          icon._marker = this;
          MarkerSetIcon.apply(this, arguments);
       },
+      /**
+       * Prepara los datos recién conectado a la marca. Es un método interno
+       * del que hace uso, el descriptor de acceso al que se fijan los datos.
+       * @private
+       */
       _prepare: function() {  // Convierte Arrays en Correctables.
+         //TODO:: Usar getData();
          const data = getProperty(this, this.options.mutable);
          if(data === undefined) return false;  // La marca no posee los datos.
          this.options.corr.prepare(data);
          return true;
       },
+      /**
+       * Devuelve los datos asociados a la marca.
+       */
       getData: function() {  // Devuelve los datos asociados a la marca.
          return getProperty(this, this.options.mutable);
       },
       /**
-       *  Aplica una corrección a la marca.
+       *  Aplica una corrección a la marca. No debería usarse directamente, 
+       *  ya que las correcciones deben aplicarse a través de {@link Marker.correct}.
+       *  @private
        *
-       *  @method apply
-       *
-       *  @param {string} name   Nombre de la corrección
-       *  @param {Object} params Opciones que emplea la función de corrección
-       *    para realizar su tarea.
+       *  @param {String} name   Nombre de la corrección
        */
       apply: function(name) {
          const property = this.options.corr.getProp(name),
@@ -1097,11 +1289,11 @@
          return true;
       },
       /**
-       * Elimina una corrección de la marca.
+       * Elimina una corrección de la marca. No debería usarse directamente, 
+       * ya que las correcciones deben eliminarse a través de {@link Marker.uncorrect}.
+       * @private
        *
-       * @method unapply
-       *
-       * @param {string} name    Nombre de la corrección.
+       * @param {String} name    Nombre de la corrección.
        */
       unapply: function(name) {  // Elimina la corrección.
          const property = this.options.corr.getProp(name),
@@ -1122,7 +1314,11 @@
       },
       // Issue #5
       /**
-       * Aplica un filtro a la marca.
+       * Aplica un filtro a la marca. No debería usarse directamente, 
+       * ya que los filtros deben aplicarse a través de {@link Marker.filter}.
+       * @private
+       *
+       * @param {String} El nombre del filtro.
        */
       applyF: function(name) {
          const filter = this.options.filter;
@@ -1135,7 +1331,11 @@
          return res;
       },
       /**
-       * Lo elimina.
+       * Elimina un filtro de la marca.No debería usarse directamente, 
+       * ya que los filtros deben eliminarse a través de {@link Marker.unfilter}.
+       * @private
+       *
+       * @param {String} El nombre del filtro.
        */
       unapplyF: function(name) {
          const filter = this.options.filter;
@@ -1148,10 +1348,9 @@
    }
 
 
-   // Sistema de correcciones
    const CorrSys = (function() {
 
-      /**
+      /*
        * Convierte un array en un array con esteroides. Básicamente, el array
        * (llamémoslo A) pasa a tener un atributo "corr", que es un objeto cuyas
        * claves son las correcciones aplicadas sobre A y cuyos valores son arrays de
@@ -1175,39 +1374,41 @@
        * el valor3 lo añade corr2 y no lo elimina corr1.
        *
        */
+
+      /**
+       * Construye el <code>Correctable</code>.
+       * @name Correctable
+       * @class
+       * @classdesc La clase permite apuntar sobre el array qué elementos han sido filtrados
+       *    por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál corrección.
+       * @param {Array} arr El array original.
+       * @param {Object} sc Parte del {@link CorrSys sistema de correcciones} definido para la
+       *    marca en la que está el array que se aplica exclusivamente al array.
+       */
       const Correctable = (function() {
-         /**
-          * Métodos y propiedas añadidas al objeto array cuyos valores
-          * son susceptibles de corrección.
-          *
-          * @mixin
-          */
+         /** @lends Correctable.prototype */
          const Prototype = {
             /**
              * Devuelve las correcciones que han eliminado el elemento idx del array.
              *
-             * @method filters
-             *
-             * @param {int} idx: Índice del elemento que se quiere consultar.
+             * @param {int} idx Índice del elemento que se quiere consultar.
              * @returns {Array} Array con los nombres
              */
             filters: function(idx) {
                return Object.keys(this.corr).filter(n => this.corr[n][idx]);
             },
             /**
-             * @typedef {Object} CorrValue
-             * @property {} value   El valor del elemento o null, si alguna corrección lo eliminó.
-             * @property {string[]} filters  Los nombres de las correcciones que eliminan el elemento.
+             * @typedef {Object} Correctable.CorrValue
+             * @property {?*} value   El valor del elemento o null, si alguna corrección lo eliminó.
+             * @property {Array.<String>} filters  Los nombres de las correcciones que eliminan el elemento.
              */
 
             /**
              * Generador que recorre el array y devuelve información sobre el valor
              * de los elementos y cuáles son las correcciones que los eliminan.
-             *
              * @generator
-             * @method walk
              *
-             * @yields {CorrValue}
+             * @yields {Correctable.CorrValue}
              */
             walk: function* () {
                for(let i=0; i<this.length; i++) {
@@ -1221,18 +1422,11 @@
             /**
              * Aplica una determinada corrección sobre el array.
              *
-             * @method apply
+             * @param {Marker} marker  Marca a la que pertenece el {@link Correctable}
+             * @param {String} name    El nombre de la corrección.
              *
-             * @param {function} func  Función que opera la corrección.
-             *    Al invocarse este método debe haberse usado .bind() para
-             *    que el contexto de esta función sea el objeto Marker
-             *    en el que se encuentra el array.
-             *
-             * @param {Object} params  Objeto que se pasa a la función
-             *    con valores que ésta usa en su funcionamiento.
-             *
-             * @returns {boolean}  Verdadero si provocó correcciones
-             *    falso si no se hizo porque ya estaba aplicada.
+             * @returns {boolean}  <code>true</code> Si la correción
+             *    provocó algún cambio en el array.
              */
             apply: function(marker, name) {
                const func = this._sc[name],
@@ -1278,10 +1472,10 @@
             /**
              * Deshace una determinada corrección hecha previamente.
              *
-             * @param {string} name: Nombre de la corrección.
+             * @param {String} name: Nombre de la corrección.
              *
-             * @returns {boolean}  Verdadero si se desaplicó y provocó cambios, y
-             *    false si no se hizo porque no estaba aplicada.
+             * @returns {Boolean}  <code>true</code> si eliminar la corrección
+             *    provocó cambios en el *array*.
              */
             unapply: function(name) {
                if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
@@ -1336,7 +1530,11 @@
             return this._count;
          }
 
-         // El iterador excluye los valores eliminados por las correcciones.
+         // ¿Cómo narices se incluye esto en la documentación.
+         /**
+          * Iterador que excluye los valores anulados.
+          * @generator
+          */
          function* iterator() {
             for(const e of this.walk()) {
                if(e.value !== null) yield e.value;
@@ -1374,6 +1572,8 @@
                },
                /**
                 * Longitud del array corregido, descontados los valores anulados.
+                * @name Correctable#total
+                * @type {Number}
                 */
                "total": {
                   get: total,
@@ -1392,73 +1592,20 @@
 
 
       /**
-       * Implementa un sistema para realizar correcciones sobre los atributos Array
-       * de un objeto. Las correcciones consisten bien en filtrar sus elementos, bien
-       * en añadir nuevos.
+       * @name CorrSys
+       * @class
+       * @hideconstructor
+       * @classdesc Implemeta un sistema para realizar correcciones sobre los atributos
+       * *array* de un objeto. Las correcciones consisten bien en filtrar sus elementos,
+       * bien en añadir nuevos.
        *
        * El sistema de correcciones estará constituido por varias correcciones, cada
        * una de las cuales afectará a un atributo del objeto. Varias correcciones
        * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
        * varios atributos.
        *
-       * Las marcas definidas como mutables definen automáticamente una opción "corr"
-       * que es un objeto de este tipo:
-       *
-       *   const Centro = L.Marker.extend({ 
-       *      options: {mutable: "feature.properties.data"}
-       *   });
-       *
-       * La opción mutable, además de informar de que la marca contendrá datos mutables,
-       * indica cuál es el atributo dónode se guardan esos datos.
-       *
-       * En este objeto es necesario registrar las correcciones que se quieren
-       * realizar sobre los datos de las marcas. Por ejemplo:
-       *
-       *   Centro.prototype.options.corr.register("turno", {
-       *      attr: "oferta",
-       *      func: corrigeOferta,
-       *      add: false
-       *   });
-       *
-       * En este caso se registra para las marcas de tipo "Centro", la corrección "turno",
-       * que actúa sobre el array "oferta" de los datos de la marca. En consecuencia, el
-       * array será la propiedad "feature.properties.data.oferta" de la marca. Al ser "add"
-       * false, la corrección elimina valores de oferta; y se podría haber obviado su
-       * expresión, ya que sólo es obligatoria cuando es true. Por último, la corrección está
-       * definida por la función corrigeOferta cuya definición podría ser esta:
-       *
-       *   function corrigeOferta(idx, oferta, opts) {
-       *      return opts.inv ^ (oferta[idx].tur === opts.turno || oferta[idx].tur === "ambos");
-       *   }
-       *
-       * O sea, recibe como primer argumento un índice del array, como segundo
-       * argumento el array mismo y como tercero las opciones que dependen de
-       * cómo haya configurado la corrección el usuario interactuando con la
-       * interfaz.
-       *
-       * Para aplicar una corrección registrada sobre una marca:
-       *
-       *   marca.apply("turno", opts);
-       *
-       * donde el objeto opts se obtendrá a partir de algún formulario que sobre la corrección
-       * haya rellenado el usuario. Para eliminar la corrección:
-       *
-       *   marca.unapply("turno");
-       *
-       * Otro tipo de correcciones son las que añaden valores:
-       *
-       *   Centro.prototype.options.corr.register("vt", {
-       *      attr: "adjudicaciones",
-       *      func: agregaVt,
-       *      add: true
-       *   });
-       *
-       *   function agregaVt(idx, adjudicaciones, opts) {
-       *       const res = [];
-       *       // Se añaden a res las vacantes telefónicas que se han dado al centro
-       *       // y que se encontrarán entre los datos de la marca (accesible con this).
-       *       return res;
-       *   }
+       * Las {@link Marker marcas definidas como mutables} definen
+       * automáticamente una opción <code>corr</code> que es un objeto de este tipo:
        *
        */
       const CorrSys = (function() {
@@ -1466,24 +1613,14 @@
          function CorrSys() {}
 
          /**
-          * Registra una corrección,
+          * Registra una corrección.
+          * @method CorrSys#register
           *
-          * @method register
+          * @param {String} name Nombre de la corrección
+          * @param {Object} obj  Objeto que define la corrección. Consulte {@link Marker.register}
+          *    para saber cómo es este objeto.
           *
-          * @param {string} name        Nombre que identifica a la corrección.
-          * @param {object} obj         Objeto que define la corrección
-          * @param {string} obj.attr    Atributo sobre el que opera la corrección.
-          *    Puede usarse la notación attrA.subattrB si es un atributo de un atributo.
-          * @param {function} obj.func  Función que determina si se hace corrección o no.
-          *    La función usa como contexto la marca a la que pertenece el objeto
-          *    que contiene el array y recibirá tres parámetros: el primero será el
-          *    un elemento individual del array, el segundo el array mismo y el tercero
-          *    un objeto con valores necesarios para que se pueda ejecutar la función.
-          * @param {boolean} obj.add    true si la corrección añade elementos al array,
-          *    y cualquier otro valor asimilable a false si su intención es filtrar sus
-          *    elementos. En el primer caso, la función deberá devolver un array con
-          *    los elementos añadir, mientras que en el segundo caso deberá devolver
-          *    true (el elemento se filtra) o false (el elemnento no se filtra).
+          * @returns {CorrSys} El propio objeto
           */
          CorrSys.prototype.register = function(name, obj) {
             // Internamente el objeto tiene la forma
@@ -1522,10 +1659,12 @@
 
          /**
           * Informa de si la propiedad de una marca es corregible.
+          * @method CorrSys.prototype.isCorrectable
           *
-          * @param {string} attr     Nombre de la propiedad que se quiere investigar.
-          * @param {L.Marker} marker Marca donde se encuentra la propiedad
-          * @return {?Correctable}   La propia propiedad si es corregible, o nulo.
+          * @param {String} attr     Nombre de la propiedad que se quiere investigar. Es admisible
+          *    la notación de punto para propiedades anidadas.
+          * @param {Marker} marker Marca donde se encuentra la propiedad
+          * @returns {?Correctable}   La propia propiedad si es corregible, o nulo.
           */
          CorrSys.prototype.isCorrectable = function(attr, marker) {
             const arr = getProperty(marker.getData(), attr);
@@ -1536,12 +1675,13 @@
 
          /**
           * Devuelve las correcciones aplicables a una propiedad.
+          * @method CorrSys#getCorrections
           *
-          * @param {?string} attr  Nombre de la propiedad. Si es null, devolverá
+          * @param {?String} attr  Nombre de la propiedad. Si es <code>null</code>, devolverá
           *    los nombres de todas las correcciones.
           *
-          * @returns {?Object}  Un objeto en que cada atributo es el nombre
-          * de las corrección y cada valor la función que aplica tal corrección.
+          * @returns {?Object.<String, Function>}  Un objeto en que cada atributo es el nombre
+          * de las corrección y cada valor la función que la define.
           */
          CorrSys.prototype.getCorrections = function(attr) {
             if(attr) return this[attr] || null;
@@ -1555,8 +1695,9 @@
 
          /**
           * Devuelve las propiedades corregibles.
+          * @method CorrSys#list
           *
-          * @returns {string[]}
+          * @returns {Array.<String>}
           */
          CorrSys.prototype.list = function() {
             return Object.keys(this);
@@ -1564,9 +1705,10 @@
 
          /**
           * Prepara un objeto convirtiendo los arrays en Correctables.
+          * @method CorrSys#prepare
           *
           * @param {Object} obj  El objeto que sufrirá el cambio.
-          * @param {string} prop Un array concreto del objeto que se quiere convertir
+          * @param {String} prop Un array concreto del objeto que se quiere convertir
           *    en Correctable. Si no se especifica, se buscan todos para los
           *    que se hayan definido al menos una corrección.
           */
@@ -1600,10 +1742,11 @@
 
          /**
           * Devuelve la propiedad de los datos que corrige la corrección.
+          * @method CorrSys#getProp
           *
           * @param {string} name  Nombre de la corrección
           *
-          * @returns {string}
+          * @returns {string} El nombre de la propiedad en notación de punto.
           */
          CorrSys.prototype.getProp = function(name) {
             for(const prop in this) {
@@ -1613,8 +1756,8 @@
 
          /**
           * @typedef  {Object} OptionsCorr
-          * @property {string}  name          Nombre de la corrección.
-          * @property {boolean} add           true, si la corrección agrega valores.
+          * @property {String}  name          Nombre de la corrección.
+          * @property {Boolean} add           true, si la corrección agrega valores.
           * @property {Object}  params        Opciones con que se ha aplicado la corrección.
           */
 
@@ -1622,8 +1765,9 @@
          /**
           * Devuelve las características de una corrección
           * (nombre, si es adictiva, y con qué opciones se aplicó).
+          * @method CorrSys#getOptions
           *
-          * @param {string} name  Nombre de la corrección.
+          * @param {String} name  Nombre de la corrección.
           *
           * @returns {OptionsCorr}
           */
@@ -1635,9 +1779,12 @@
 
          /**
           * Establece unas nuevas opciones de aplicación de una determinada corrección.
+          * @method CorrSys#setParams
           *
-          * @params {string} name   Nombre de la corrección.
+          * @params {String} name   Nombre de la corrección.
           * @params {Object} opts   Opciones de aplicación de la corrección.
+          *
+          * @returns {CorrSys}   El propio objeto.
           */
          CorrSys.prototype.setParams = function(name, opts) {
             const sc = this[this.getProp(name)];
@@ -1656,22 +1803,16 @@
    
    // Issue #5
    /**
-    * Sistema de filtros
+    * Construye un sistema de filtros
+    * @name FilterSys
+    * @class
+    * @param {Function|L.LayerGroup|string} style  Estilo de filtrado.
+    *    Consulte el significado del {@link Marker#options valor de
+    *    la opción filter para Marker.prototype.options}.
+    * @classdesc Implementa un sistema de filtros para las marcas.
     */
    const FilterSys = (function() {
       
-      /**
-       * Constructor de la clase
-       *
-       * @param {function|L.LayerGroup|string} style  Estilo de filtrado.
-       *    Puede ser:
-       *    
-       *    * La capa a la que se agregan las marcas, en cuyo caso se entenderá
-       *      que se quiere sacar/meter la marca al filtrar/dejar de filtrar.
-       *    * Un nombre, en cuyo caso se entenderá que se quiere meter la
-       *      marca dentro de una clase con tal nombre.
-       *    * Una función que manipula el elemento HTML que representa la marca.
-       */
       function FilterSys(style) {
          Object.defineProperties(this, {
             transform: {
@@ -1701,6 +1842,11 @@
          this.transform = style;
       }
 
+      /**
+       * Informa de si la marca debe ocultarse.
+       * @name FilterSys#hideable
+       * @type {Boolean}
+       */
       Object.defineProperty(FilterSys.prototype, "hideable", {
          get: function() { return this.transform instanceof L.LayerGroup; },
          configurable: false,
@@ -1709,18 +1855,18 @@
 
       /**
        * Expulsa automáticamente de la capa las marcas filtradas.
+       * @method FilterSys#ejectFiltered
        */
       FilterSys.prototype.ejectFiltered = e => e.layer.refresh();
 
       /**
        * Registra una corrección
+       * @memberof FilterSys
        *
-       * @method register
-       *
-       * @param {string}         name  Nombre del filtro.
-       * @param {Array<string>}  attrs Nombre de las propiedades de los datos
+       * @param {String}         name  Nombre del filtro.
+       * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
        *    cuyos valores afecta al filtro.
-       * @param {function}       func  Función que filtra. Debe devolver
+       * @param {Function}       func  Función que filtra. Debe devolver
        *    true (sí filtra) o false.
        */
       FilterSys.prototype.register = function(name, obj) {
@@ -1739,15 +1885,14 @@
       }
 
       /**
-       * Devuelve los filtros habilitados cuyo resultados depende de
+       * Devuelve los filtros habilitados cuyo resultados dependen de
        * la propiedad cuyo nombre se suministra
+       * @memberof FilterSys
        *
-       * @method getFilters
-       *
-       * @param {string} attr Nombre del propiedad. Si no se facilita, devuelve
+       * @param {?String} attr Nombre de la propiedad. Si no se facilita, devuelve
        *    todos los filtros habilitados.
        *
-       * @retuns  {Array<string>}   Los nombres de los filtros.
+       * @retuns  {Array.<string>}   Los nombres de los filtros.
        */
       FilterSys.prototype.getFilters = function(attr) {
          return Object.keys(this).filter(filter => 
@@ -1761,8 +1906,9 @@
 
       /**
        * Habilita un filtro
+       * @memberof FilterSys
        *
-       * @param {string} name  El nombre del filtro que se quiere habilitar.
+       * @param {String} name  El nombre del filtro que se quiere habilitar.
        */
       FilterSys.prototype.enable = function(name) {
          if(!this.hasOwnProperty(name) || this[name].prop.enabled) return false;
@@ -1772,6 +1918,7 @@
 
       /**
        * Deshabilita un filtro
+       * @memberof FilterSys
        *
        * @param {string} name  El nombre del filtro que se quiere deshabilitar.
        */
@@ -1784,13 +1931,15 @@
 
       /**
        * Establece unas nuevas opciones de aplicación para el filtro.
+       * @memberof FilterSys
        *
-       * @params {string} name   Nombre del filtro.
+       * @params {String} name   Nombre del filtro.
        * @params {Object} opts   Opciones de aplicación del filtro.
-       * @params {boolean} enable   Fuerza a habilitar el filtro.
+       * @params {Boolean} enable   Fuerza a habilitar el filtro.
        *
-       * @returns {boolean|FilterSys} false en caso de que el filtro no exista,
-       *    esté deshabilitado, o estuviera habilitado, pero con las mismas opciones.
+       * @returns {(Boolean|FilterSys)} <code>false</code> en caso de que el filtro
+       *    no exista, esté deshabilitado, o estuviera habilitado, pero con
+       *    las mismas opciones.
        */
       FilterSys.prototype.setParams = function(name, opts, enable) {
          if(!this.hasOwnProperty(name)) return false;
@@ -1803,8 +1952,11 @@
 
       /**
        * Obtiene las opción de filrado de un determinado filtro.
+       * @memberof FilterSys
        *
        * @param {string} name    El nombre del filtro.
+       *
+       * @return {Object}
        */
       FilterSys.prototype.getParams = function(name) {
          if(!this.hasOwnProperty(name)) throw new Error(`${name}: filtro no registrado`);
@@ -1813,9 +1965,11 @@
 
       /**
        * Modifica el estilo de filtrado.
+       * @memberof FilterSys
        *
-       * @param {func|L.LayerGroup|string} style  Estilo de filtrado.
-       * @param {L.Marker} markerClass    Clase de marca a la que pertenecen
+       * @param {Function|L.LayerGroup|String} style  Estilo de filtrado. Consulte el
+       * {@link Marker#options valor de la opción filter para Marker.prototype.options}
+       * @param {Marker} markerClass    Clase de marca a la que pertenecen
        *    todas las marcas que usan este objeto de filtrado.
        */
       FilterSys.prototype.setStyle = function(style, markerClass) {
