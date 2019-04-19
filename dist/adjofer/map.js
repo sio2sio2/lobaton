@@ -93,7 +93,13 @@ const MapaAdjOfer = (function() {
    } 
 
    function loadMap() {
-      this.map = L.map(this._idmap).setView([37.07, -6.27], 9);
+      this.map = L.map(this._idmap, {
+         center: [37.07, -6.27],
+         zoom: 9
+      });
+
+      this.map.zoomControl.setPosition('topright');
+
       this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18

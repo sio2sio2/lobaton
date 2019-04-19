@@ -12,6 +12,8 @@ window.onload = function() {
    g.cluster.on("layeradd", function(e) {
       const marca = e.layer;
       marca.addEventListener("click", function(e) {
+         //Mostramos la barra si estaba oculta
+         displaySidebar();
          displayInfoCentro(e.target);
          // Para una mejor visibilidad, al cargar la información del centro, colapsamos los filtros
          collapseFiltros();
@@ -53,6 +55,15 @@ window.onload = function() {
 function toogleSidebar() {
    $('#sidebar').toggleClass('active');
    $('#sidebarCollapse').toggleClass('invisible');
+}
+
+/**
+ * Esta función muestra la barra lateral si estaba oculta, y no hace nada si estaba visible
+ */
+function displaySidebar() {
+   if ( ! $('#sidebarCollapse').hasClass('invisible')) {
+      toogleSidebar();
+   }
 }
 
 function aplicaCorreccion(cor, params) {
@@ -214,7 +225,7 @@ function displayInfoCentro(centro) {
                      }
                      return c.getData().id.nom;
                }
-               }
+            }
          });
    }
 }
