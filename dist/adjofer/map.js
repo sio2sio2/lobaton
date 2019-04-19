@@ -1,71 +1,131 @@
-/**
- * Creación de un mapa que muestra la oferta de centros, las adjudicaciones
- * del PCE, las vacantes telefónicas, los cambios producidos por el CGT
- * y permite al usuario realizar distintas correcciones y filtros.
- */
-const M = function(id) {
+const MapaAdjOfer = (function() {
    "use strict";
 
-   const events = [];
+   /**
+    * Constructor de mapa
+    *
+    * @param {string} id  Identificador del elemento HTML
+    *    donde se incrustará el mapa.
+    *
+    * @param {string} pathToRootDir  Ruta relativa desde el directorio en que
+    *    se encuentra la página web al directorio ``dist``.
+    */
+   function MapaAdjOfer(id, pathToRootDir) {
+      Object.defineProperties(this, {
+         _idmap: {
+            value: id,
+            writable: false,
+            enumerable: false,
+            configurable: false
+         },
+         _path: {
+            value: pathToRootDir,
+            writable: false,
+            enumerable: false,
+            configurable: false
+         },
+         // Funciónes que se dispararán al acabar de cargar datos.
+         _events: {
+            value: [],
+            writable: false,
+            enumerable: false,
+            configurable: false
+         }
+      });
 
-   // ¿A qué se puede acceder desde fuera?
-   const g = {
-      map: undefined,      // Mapa.
-      Centro: undefined,   // Clase para las marcas de centro.
-      general: undefined,  // Datos generales del mapa (la primera feature).
-      Iconos: undefined,   // Array con todos los estilos de icono.
-      cluster: undefined,  // Capa donde se guardan las marcas de centro.
-      agregarCentros: undefined,  // Permite agregar centros al mapa.
-      // Lanza un evento cuando se han cargado datos.
-      fire: func => events.push(func),
-      flush: () => events.length = 0
+      this.Iconos = createIcons.call(this);
+      loadMap.call(this);
+      createMarker.call(this);
    }
 
 
-   function crearMapa() {
-      g.map = L.map(id).setView([37.07, -6.27], 9);
-      g.map.addControl(new L.Control.Fullscreen({position: "topright"}));
+   /**
+    * Permite agregar centros al mapa.
+    *
+    * @param {string} estilo    Estilo del icono.
+    * @param {Object} datos     Datos en formato GeoJSON.
+    *
+    * TODO:: En vez del icono habría que pasar el nombre del estilo.
+    */
+   MapaAdjOfer.prototype.agregarCentros = function(estilo, datos) {
+      const Icon = this.Iconos[estilo];
+      Icon.onready((function() {
+         this.general = datos.features[0].properties;
+         // Capa intermedia capaz de leer objetos GeoJSON.
+         const layer = L.geoJSON(datos, {
+            pointToLayer: (f, p) => new this.Centro(p, {
+               icon: new Icon(),
+               title: f.properties.name
+            })
+         });
+
+         this.cluster.addLayer(layer);
+         this._events.forEach(func => func());
+      }).bind(this));
+   }
+
+
+   /**
+    * Cambia el estilo del icono.
+    *
+    * @param {string} estilo  Nuevo estilo para el icono.
+    */
+   MapaAdjOfer.prototype.cambiarIcono = function(estilo) {
+      const Icono = this.Iconos[estilo];
+      Icono.onready(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
+   }
+
+   /**
+    * Define una función que se ejecutará al acabar de agregar datos.
+    *
+    * @param {function} func   La función.
+    */
+   MapaAdjOfer.prototype.lanzarTrasDatos = function(func) {
+      this._events.push(func);
+   }
+
+
+   /**
+    * Elimina todas las funciones que se disparan al acabar de agregar datos.
+    */
+   MapaAdjOfer.prototype.flush = function() {
+      this._event.length = 0;
+   } 
+
+   function loadMap() {
+      this.map = L.map(this._idmap).setView([37.07, -6.27], 9);
+      this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18
-      }).addTo(g.map);
+      }).addTo(this.map);
 
       // Capa que agrupa las marcas.
-      g.cluster = L.markerClusterGroup({
+      this.cluster = L.markerClusterGroup({
          showCoverageOnHover: false,
          // Al llegar a nivel 14 de zoom se ven todas las marcas.
          disableClusteringAtZoom: 14,
-         spiderfyOnMaxZoom: false
-      }).addTo(g.map);
+         spiderfyOnMaxZoom: false,
+         iconCreateFunction: L.utils.noFilteredIconCluster
+      }).addTo(this.map);
    }
 
 
-   function definirMarca() {
-      g.Centro = L.Marker.extend({
-         options: {mutable: "feature.properties.data"}
+   function createMarker() {
+      this.Centro = L.Marker.extend({
+         options: {
+            mutable: "feature.properties.data",
+            filter: this.cluster,
+            //filter: "filtered",
+            //filter: L.utils.grayFilter
+         }
       });
-      definirCorrecciones.call(g.Centro);
+      createCorrections.call(this);
+      createFilters.call(this);
    }
 
-   function agregarCentros(Icono, datos) {
-      g.general = datos.features[0].properties;
-      // Capa intermedia capaz de leer objetos GeoJSON.
-      const layer = L.geoJSON(datos, {
-         pointToLayer: (f, p) => new g.Centro(p, {
-            icon: new Icono(),
-            title: f.properties.name
-         })
-      });
-
-      g.cluster.addLayer(layer);
-      events.forEach(func => func());
-   }
-
-   crearMapa();
-   definirMarca();
-
-   function definirCorrecciones() {
+   function createCorrections() {
       // Elimina enseñanzas que no son bilingües
-      this.register("bilingue", {
+      this.Centro.register("bilingue", {
          attr: "oferta",
          // opts= { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
          func: function(idx, oferta, opts) {
@@ -75,7 +135,7 @@ const M = function(id) {
       });
 
       // Añade las vacantes telefónicas a las adjudicaciones.
-      this.register("vt+", {
+      this.Centro.register("vt+", {
          attr: "adj",
          add: true,
          func: function(idx, adj, opts) {
@@ -97,7 +157,7 @@ const M = function(id) {
       });
 
       // Elimina las adjudicaciones de los puestos suministrados.
-      this.register("adjpue", {
+      this.Centro.register("adjpue", {
          attr: "adj",
          // opts= {puesto: ["00590059", "11590107"], inv: true}
          func: function(idx, adj, opts) {
@@ -106,9 +166,28 @@ const M = function(id) {
       });
    }
 
+   function createFilters() {
+      // Filtra según cantidad de adjudicaciones.
+      this.Centro.registerF("adj", {
+         attrs: "adj",
+         // opts= {min: 0}
+         func: function(opts) {
+             return this.getData().adj.total < opts.min;
+         }
+      });
+      // Filtra según número de enseñanzas.
+      this.Centro.registerF("oferta", {
+         attrs: "oferta",
+         // opts= {min: 0}
+         func: function(opts) {
+             return this.getData().oferta.total < opts.min;
+         }
+      });
+   }
+
 
    // Definición de los distintos estilos para iconos.
-   function crearIconos() {
+   function createIcons() {
       // Los dos iconos CSS comparten todo, excepto el estilo CSS.
       const converterCSS = new L.utils.Converter(["numvac", "tipo"])
                                  .define("tipo", "mod.tipo", t => t || "normal")
@@ -127,8 +206,8 @@ const M = function(id) {
 
       // Los boliches tienen mucha miga...
       const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar"])
-                                 .define("tipo", "mod.tipo", t => t || "normal")
-                                 .define("numvac", "adj", a => a.total !== undefined?a.total:a.length)
+                                 .define("tipo", "mod.dif", t => t || "normal")
+                                 .define("numvac", "adj", a => a.total)
                                  .define("ofervar", "mod.cam", c => c || 0);
 
       // Para calcular la cantidad de oferta se considera
@@ -266,9 +345,14 @@ const M = function(id) {
 
             if(o.tipo !== undefined) {
                e = content.querySelector(".tipo");
-               if(o.tipo === null) if(e) defs.appendChild(e);
+               if(o.tipo === "normal") {
+                  if(e) defs.appendChild(e);
+               }
                else {
-                  if(!e) content.appendChild(defs.querySelector(".tipo"));
+                  if(!e) {
+                     e = defs.querySelector(".tipo");
+                     content.appendChild(e);
+                  }
                   if(o.tipo === "dificil") e.setAttribute("fill", "#c13");
                   else e.setAttribute("fill", "#13b"); 
                }
@@ -282,7 +366,7 @@ const M = function(id) {
          piolin: L.utils.createMutableIconClass("piolin", {
             iconSize: null,
             iconAnchor: [12.5, 34],
-            css:  "dist/adjofer/icons/piolin.css",
+            css:  this._path + "/dist/adjofer/icons/piolin.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -290,7 +374,7 @@ const M = function(id) {
          chupachups: L.utils.createMutableIconClass("chupachups", {
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
-            css:  "dist/adjofer/icons/chupachups.css",
+            css:  this._path + "/dist/adjofer/icons/chupachups.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -298,7 +382,7 @@ const M = function(id) {
          solicitud: L.utils.createMutableIconClass("solicitud", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  "dist/adjofer/icons/solicitud.svg",
+            url:  this._path + "/dist/adjofer/icons/solicitud.svg",
             converter: converterSol,
             updater: function(o) {
                var text = this.querySelector("text");
@@ -313,15 +397,12 @@ const M = function(id) {
          boliche: L.utils.createMutableIconClass("boliche", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  "dist/adjofer/icons/boliche.svg",
+            url:  this._path + "/dist/adjofer/icons/boliche.svg",
             converter: converterBol,
             updater: updaterBoliche,
          }),
       }
    }
 
-   g.Iconos = crearIconos();
-   g.agregarCentros = agregarCentros;
-   return g;
-
-}
+   return MapaAdjOfer;
+})();

@@ -4,19 +4,20 @@
    L.utils = {};
 
    /**
-    * Realiza peticiones AJAX. Uso:
+    * Realiza peticiones AJAX.
+    * @example
     *
-    *    load({
-    *       url: 'image/centro.svg',
-    *       params: {
-    *          a: 1,
-    *          b: 2
-    *       },
-    *       method: "GET",
-    *       context: objeto,
-    *       callback: funcion(xhr) { console.log("Éxito"); },
-    *       failback: function(xhr) { console.log("Error"); },
-    *    });
+    * load({
+    *    url: 'image/centro.svg',
+    *    params: {
+    *       a: 1,
+    *       b: 2
+    *    },
+    *    method: "GET",
+    *    context: objeto,
+    *    callback: funcion(xhr) { console.log("Éxito"); },
+    *    failback: function(xhr) { console.log("Error"); },
+    * });
     *
     * Si no se especifica el método, se usará GET cuando no haya parámetros
     * y POST cuando sí los haya.
@@ -73,54 +74,8 @@
    L.utils.load = load;
 
    /**
-    * Devuelve el valor de la propiedad "anidada" de un objeto.
-    *
-    * @example
-    *
-    * o = {a:1, b: {c:2, d:3}}
-    * geProperty(o, "b.c") === o.b.c  // true
-    *
-    * No obstante, comprueba antes que la propiedad no sea "anidada".
-    *
-    * @example
-    *
-    * o = {a:1, "b.c": 2, "b.d": 3}
-    * geProperty(o, "b.c") === o["b.c"]  // true
-    *
-    * @param {Object}  obj  El objeto del que se busca la propiedad.
-    * @param {string}  name El nombre de la propiedad anidada.
-    */
-   const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
-
-
-   /**
-    * Comprueba si dos objetos son iguales a efectos de lo requerido
-    * en este código.
-    *
-    * @param {Object} o  Un objeto.
-    * @param {Object} p  El otro.
-    *
-    * @returns {boolean]
-    */
-   function equals(o,p) {
-      if(typeof o !== typeof p) return false;
-      if(typeof o !== "object" || o === null) return o == p;  // Comparación laxa.
-
-      const oprop = Object.getOwnPropertyNames(o);
-      const pprop = Object.getOwnPropertyNames(p);
-
-      if(oprop.length !== pprop.length) return false;
-
-      for(let i=0; i<oprop.length; i++) {
-         const name = oprop[i];
-         if(!equals(o[name], p[name])) return false;
-      }
-      return true;
-   }
-
-   // Issue #2
-   /**
-    * Facilita la construcción de clases de iconos.
+    * Facilita la construcción de clases de iconos. Cada clase está asociada
+    * a un estilo de icono distinto.
     *
     * @param {string} name          Nombre identificativo para la clase de icono.
     * @param {Object} optiones      Opciones de construcción de la clase.
@@ -197,6 +152,42 @@
       return L.DivIcon.extend({options: options});
    }
    // Fin issue #2
+
+   // Issue #5
+   /**
+    * Pone en escala de grises un icono filtrado o elimina
+    * tal escala si ya no lo está. Debe pasársele como contexto
+    * el div del icono.
+    *
+    * @param {boolean} filtered  Si el icono está filtrado o no.
+    */
+   L.utils.grayFilter = function(filtered) {
+      if(filtered) this.style.filter = "grayscale(100%)";
+      else this.style.removeProperty("filter");
+   }
+   
+   /**
+    * Redefine un iconCreateFunction basado en el predeterminado de
+    * L.MarkerClusterGroup para que el número del clúster sólo incluya
+    * los centros no filtrados.
+    */
+   L.utils.noFilteredIconCluster = function(cluster) {
+		const childCount = cluster.getChildCount(),
+            noFilteredChildCount = cluster.getAllChildMarkers().filter(e => !e.filtered).length;
+
+		let c = ' marker-cluster-';
+		if (childCount < 10) {
+			c += 'small';
+		} else if (childCount < 100) {
+			c += 'medium';
+		} else {
+			c += 'large';
+		}
+
+		return new L.DivIcon({ html: '<div><span>' + noFilteredChildCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+   }
+
+   // Fin issue #5
 
    // Issue #21
    /**
@@ -435,6 +426,52 @@
       return Converter;
    })();
    // Fin issue #21
+
+   /**
+    * Devuelve el valor de la propiedad "anidada" de un objeto.
+    *
+    * @example
+    *
+    * o = {a:1, b: {c:2, d:3}}
+    * geProperty(o, "b.c") === o.b.c  // true
+    *
+    * No obstante, comprueba antes que la propiedad no sea "anidada".
+    *
+    * @example
+    *
+    * o = {a:1, "b.c": 2, "b.d": 3}
+    * geProperty(o, "b.c") === o["b.c"]  // true
+    *
+    * @param {Object}  obj  El objeto del que se busca la propiedad.
+    * @param {string}  name El nombre de la propiedad anidada.
+    */
+   const getProperty = (obj, name) => obj.hasOwnProperty(name)?obj[name]:name.split(".").reduce((o, k) => o && o.hasOwnProperty(k)?o[k]:undefined, obj);
+
+   /**
+    * Comprueba si dos objetos son iguales a efectos de lo requerido
+    * en este código.
+    *
+    * @param {Object} o  Un objeto.
+    * @param {Object} p  El otro.
+    *
+    * @returns {boolean}
+    */
+   function equals(o,p) {
+      if(typeof o !== typeof p) return false;
+      if(typeof o !== "object" || o === null) return o == p;  // Comparación laxa.
+
+      const oprop = Object.getOwnPropertyNames(o);
+      const pprop = Object.getOwnPropertyNames(p);
+
+      if(oprop.length !== pprop.length) return false;
+
+      for(let i=0; i<oprop.length; i++) {
+         const name = oprop[i];
+         if(!equals(o[name], p[name])) return false;
+      }
+      return true;
+   }
+
 
    /**
     * Clase que permite saber si el objeto ha cambiado algunos de sus atributos
@@ -713,13 +750,21 @@
             this.options.params.reset();
          }
 
-         return createDivIcon.call(this, arguments);
+         const div = createDivIcon.call(this, arguments);
+         // Issue #5
+         const filter = this._marker.options.filter;
+         if(filter && this._marker.filtered && !filter.hideable) {
+            filter.transform.call(div, true);
+         }
+         // Fin issue #5
+         return div
       },
       /**
        * Refresca el icono, en caso de que hayan cambiado las opciones de dibujo.
        * El método modifica directamente el HTML sobre el documento.
        */
       refresh: function() {
+         // TODO: Filtrado
          if(!this.options.params || this.options.params.updated) return false;
          this.options.updater.call(this._marker.getElement(), this.options.params.modified);
          this.options.params.reset();
@@ -744,15 +789,32 @@
             enumerable: false,
             writable: false
          }); 
+         Marker.reset = function() { this.store.length = 0; }
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
          Marker.register = registerCorrMarker;
-         Marker.apply = applyCorrMarker;
-         Marker.unapply = unapplyCorrMarker;
+         Marker.correct = doCorrMarker;
+         Marker.uncorrect = undoCorrMarker;
+         // Issue #5
+         if(options.filter) options.filter = new FilterSys(options.filter);
+         // No puede definirse en prototypeExtra:
+         // https://stackoverflow.com/questions/40211725/object-assign-getters-and-setters-in-constructor
+         Object.defineProperty(Marker.prototype, "filtered", {
+            get: function() { 
+               if(!this.options.filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+               return this._filtered.length > 0; 
+            },
+            configurable: false,
+            enumerable: false
+         });
+         Marker.registerF = registerFilterMarker;
+         Marker.filter = filterMarker;
+         Marker.unfilter = unfilterMarker;
+         Marker.setFilterStyle = setFilterStyleMarker;
+         // Fin issue #5
       }
       return Marker;
    }
-
 
    /**
     * Elimina una marca del almacén donde se guardan
@@ -788,7 +850,7 @@
     * @seealso {@link CorrSys.prototype.register} para saber cuáles son sus parámetros.
     */
    function registerCorrMarker() {
-      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments);
+      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments) && this;
    }
 
 
@@ -799,7 +861,7 @@
     * @params {string} name   Nombre de la corrección.
     * @prams {Object} params  Opciones de aplicacion de la corrección.
     */
-   function applyCorrMarker(name, params) {
+   function doCorrMarker(name, params) {
       const corr = this.prototype.options.corr;
       try {
          // Si la correción ya está aplicada, sólo no se aplica en
@@ -812,6 +874,7 @@
 
       corr.setParams(name, params);
       for(const marker of this.store) marker.apply(name);
+      return this;
    }
 
    /**
@@ -819,7 +882,7 @@
     *
     * @params {string} name   Nombre de la corrección.
     */
-   function unapplyCorrMarker(name) {
+   function undoCorrMarker(name) {
       const corr = this.prototype.options.corr;
       try {
          // La corrección no está aplicada.
@@ -831,8 +894,64 @@
 
       for(const marker of this.store) marker.unapply(name);
       corr.setParams(name, null);
+      return this;
    }
    // Fin issue #23
+
+   // Issue #5
+   /**
+    * Registra para una clase de marcas un filtro.
+    *
+    * @seealso {@link FilterSys.prototype.register} para saber cuáles son sus parámetros.
+    */
+   function registerFilterMarker() {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      return FilterSys.prototype.register.apply(this.prototype.options.filter, arguments) && this;
+   }
+
+   /**
+    * Habilita un filtro para las marcas de una clase
+    *
+    * @param {string} name    Nombre del filtro.
+    * @param {Object} params  Opciones para el filtrado.
+    */
+   function filterMarker(name, params) {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      if(!filter.setParams(name, params, true)) return false;  //El filtro no existe o ya estaba habilitado con los mismo parámetros.
+      for(const marker of this.store) marker.applyF(name);
+      return this;
+   }
+
+   /**
+    * Deshabilita un filtro para las marcas de una clase
+    *
+    * @param {string} name    Nombre del filtro.
+    */
+   function unfilterMarker(name) {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      if(!filter.disable(name)) return false;  // El filtro no existe o está deshabilitado.
+      for(const marker of this.store) marker.unapplyF(name);
+      return this;
+   }
+
+   /**
+    * Cambia el estilo de filtro.
+    *
+    * @param {func|string|L.LayerGroup}  style     Estilo del filtro.
+    */
+   function setFilterStyleMarker(style) {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      filter.setStyle(style, this);
+   }
+   // Fin issue #5
 
    const MarkerInitialize = L.Marker.prototype.initialize;
    const MarkerSetIcon = L.Marker.prototype.setIcon;
@@ -842,8 +961,42 @@
     * crearse con extend incluyan la opción mutable=true.
     */
    const prototypeExtra = {
-      refresh: function() {
-         if(!this.getElement()) return false;  // La marca no está en el mapa.
+      /**
+       * Refresca el dibujo de la marca.
+       *
+       * @param {L.LayerGroup} force   Si se pasa la capa y la marca, aunque
+       *    no filtrada, no tiene representación en el mapa, fuerza
+       *    su adición a la misma.
+       */
+      refresh: function(force) {
+         let div = this.getElement();
+         // Issue #5
+         const filter = this.options.filter;
+         if(filter) {
+            if(filter.hideable) {
+               if(this.filtered) {
+                  // Puede estar en la capa, aunque no se encuentre en el map,
+                  // si la capa es MarkerClusterGroup.
+                  filter.transform.removeLayer(this);
+                  div = undefined;
+               }
+               else {
+                  if(!div) {
+                     filter.transform.addLayer(this);
+                     div = this.getElement();
+                  }
+               }
+            }
+            else {
+               if(div) filter.transform.call(div, this.filtered);
+               else if(force) {
+                  force.addLayer(this);
+                  div = this.getElement();
+               }
+            }
+         }
+         // Fin issue #5
+         if(!div) return false;  // La marca no está en el mapa.
          this.options.icon.refresh();
       },
       initialize: function() {
@@ -864,8 +1017,13 @@
          function setFeature(value) {
             this["_" + feature] = value;
             this._prepare();
-            // Aplicamos a los nuevos datos las correcciones ya aplicadas
+            // Issue #5
+            // Aplicamos a los nuevos datos los filtros ya aplicadas
             // a los datos de las restantes marcas de la misma clase.
+            const filter = this.options.filter;
+            if(filter) for(const name of filter.getFilters()) this.applyF(name);
+            // Fin issue #5
+            // Y los mismo con las correcciones
             const corr = this.options.corr;
             for(const name in corr.getCorrections()) {
                if(corr.getOptions(name).params) this.apply(name);
@@ -878,8 +1036,16 @@
             configurable: false,
             enumerable: false
          });
-         // Fin #Issue 22
+         // Fin issue #22
 
+         // Issue #5
+         Object.defineProperty(this, "_filtered", {
+            value: [],
+            writable: true,
+            configurable: false,
+            enumerable: false
+         });
+         // Fin Issue #5
       },
       setIcon: function(icon) {
          icon._marker = this;
@@ -904,12 +1070,13 @@
        *    para realizar su tarea.
        */
       apply: function(name) {
+         console.log("asfasf");
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
                func     = sc[name],
                params   = func.prop.params;
          let   arr;
-
+         
          // La resolución de issue #22, hace que esto ocurra sólo
          // si se registra la corrección después de haber añadido la marca.
          if(!(arr = this.options.corr.isCorrectable(property, this))) {
@@ -918,6 +1085,11 @@
          }
 
          if(!arr.apply(this, name)) return false;
+
+         // Issue #5
+         const filter = this.options.filter;
+         if(filter) for(const f of filter.getFilters(property)) this.applyF(f);
+         // Fin issue #5
 
          // Cambia las opciones de dibujo en función de los datos corregidos
          const icon = this.options.icon;
@@ -940,10 +1112,40 @@
 
          if(!arr.unapply(name)) return false;
 
+         // Issue #5
+         const filter = this.options.filter;
+         if(filter) for(const f of filter.getFilters(property)) this.unapplyF(f);
+         // Fin issue #5
+
          const icon = this.options.icon;
          if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
          return true;
+      },
+      // Issue #5
+      /**
+       * Aplica un filtro a la marca.
+       */
+      applyF: function(name) {
+         const filter = this.options.filter;
+         if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
+         const res = filter[name].call(this, filter.getParams(name));
+         if(res) {
+           if(this._filtered.indexOf(name) === -1) this._filtered.push(name) 
+         }
+         else this.unapplyF(name);
+         return res;
+      },
+      /**
+       * Lo elimina.
+       */
+      unapplyF: function(name) {
+         const filter = this.options.filter;
+         if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
+         const idx = this._filtered.indexOf(name)
+         if(idx !== -1) this._filtered.splice(idx, 1);
+         return idx !== 1;
       }
+      // Fin issue #5
    }
 
 
@@ -994,17 +1196,6 @@
                return Object.keys(this.corr).filter(n => this.corr[n][idx]);
             },
             /**
-             * Devuelve el valor del elemento idx
-             *
-             * @method get
-             *
-             * @param {int} idx: Índice del elemento que se quiere consultar.
-             * @returns {} El valor del elemento o null si alguna correción lo eliminó.
-             */
-            get: function(idx) {
-               return this.filters(idx).length>0?null:this[i];
-            },
-            /**
              * @typedef {Object} CorrValue
              * @property {} value   El valor del elemento o null, si alguna corrección lo eliminó.
              * @property {string[]} filters  Los nombres de las correcciones que eliminan el elemento.
@@ -1041,10 +1232,11 @@
              * @param {Object} params  Objeto que se pasa a la función
              *    con valores que ésta usa en su funcionamiento.
              *
-             * @returns {boolean}  Verdadero si se aplicó la correción y
+             * @returns {boolean}  Verdadero si provocó correcciones
              *    falso si no se hizo porque ya estaba aplicada.
              */
             apply: function(marker, name) {
+               console.log("asfasf2");
                const func = this._sc[name],
                      add  = func.prop.add,
                      params = func.prop.params;
@@ -1055,11 +1247,12 @@
                if(add) {
                   const values = func.call(marker, null, this, params);
                   let num = values.length;
+                  if(num === 0) return false;
                   this.push.apply(this, values);
 
                   this.corr[name] = new Array(this.length);
                   for(let i=this.length-num; i<this.length; i++) this.corr[name][i] = null;
-                  if(num>0) this._count = undefined;
+                  this._count = undefined;
 
                   // Las correcciones que eliminan valores,
                   // pueden eliminar los valores añadidos.
@@ -1069,7 +1262,7 @@
 
                      const func = this._sc[n];
                      const params = marker.options.corr.getOptions(n).params;
-                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, this[i], this, params);
+                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, i, this, params);
                   }
 
                }
@@ -1079,6 +1272,7 @@
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func.call(marker, this.length[i], params);
                   // Si la corrección ha filtrado algún valor:
                   if(this.corr[name].some(e => e)) this._count = undefined;
+                  else return false;
                }
 
                return true;
@@ -1088,14 +1282,15 @@
              *
              * @param {string} name: Nombre de la corrección.
              *
-             * @returns {boolean}  Verdadero si se desaplicó u false si no se hizo
-             *    porque no estaba aplicada.
+             * @returns {boolean}  Verdadero si se desaplicó y provocó cambios, y
+             *    false si no se hizo porque no estaba aplicada.
              */
             unapply: function(name) {
                if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
 
                if(this._sc[name].prop.add) {
                   const arr = this.corr[name];
+                  delete this.corr[name];
                   let a, b;
                   for(let i=0; i<arr.length; i++) {
                      if(arr[i] === null) {
@@ -1106,17 +1301,18 @@
                         break;
                      }
                   }
-                  if(a === undefined) return true;
+                  if(a === undefined) return false;
                   if(b === undefined) b = arr.length;
                   this._count = undefined;
-                  delete this.corr[name];
                   // Eliminamos los valores al array añadidos por esta corrección
                   this.splice(a, b-a);
                   for(const name in this.corr) this.corr[name].splice(a, b-a);
                }
                else {
-                  if(this.corr[name].some(e => e)) this._count = undefined;
+                  const arr = this.corr[name];
                   delete this.corr[name];
+                  if(arr.some(e => e)) this._count = undefined;
+                  else return false;
                }
 
                return true;
@@ -1133,52 +1329,64 @@
          }
 
          // Total de elementos excluyendo los eliminados por correcciones.
-         const total = {
-            get: function() {
-               if(this._count !== undefined) return this._count;
-               this._count = 0;
-               for(let i=0; i<this.length; i++) {
-                  if(this.filters(i).length === 0) this._count++;
-               }
-               return this._count;
-            },
-            enumerable: false,
-            configurable: false
+         function total() {
+            if(this._count !== undefined) return this._count;
+            this._count = 0;
+            for(let i=0; i<this.length; i++) {
+               if(this.filters(i).length === 0) this._count++;
+            }
+            return this._count;
+         }
+
+         // El iterador excluye los valores eliminados por las correcciones.
+         function* iterator() {
+            for(const e of this.walk()) {
+               if(e.value !== null) yield e.value;
+            }
          }
 
          function Correctable(arr, sc) {
             if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
-            Object.assign(arr, Prototype);  // Evitamos hacer una subclase de array porque es menos eficiente.
-            /**
-             * Parte del sistema de correcciones que se aplica sobre el array.
-             */
-            Object.defineProperty(arr, "_sc", {
-               value: sc,
-               writable: false,
-               enumerable: false,
-               configurable: false
+            const obj = Object.assign(Object.create(arr), Prototype);
+            Object.defineProperties(obj, {
+               // Sistema parcial de correcciones (sólo las correcciones que se aplican sobre el array).,
+               "_sc": {
+                  value: sc,
+                  writable: false,
+                  enumerable: false,
+                  configurable: false
+               },
+               /**
+                * Objeto que almacena las correcciones del array.
+                * Cada clave es el nombre de la corrección y cada valor
+                * un array 
+                */
+               "corr": {
+                  value: {},
+                  writable: false,
+                  enumerable: false,
+                  configurable: false,
+               },
+               // Pre-almacena el número de elementos para mejorar el rendimiento.
+               "_count": {
+                  value: arr.length,
+                  writable: true,
+                  configurable: false,
+                  enumerable: false
+               },
+               /**
+                * Longitud del array corregido, descontados los valores anulados.
+                */
+               "total": {
+                  get: total,
+                  enumerable: false,
+                  configurable: false
+               },
             });
-            /**
-             * Objeto que almacena las correcciones del array.
-             * Cada clave es el nombre de la corrección y cada valor
-             * un array 
-             */
-            Object.defineProperty(arr, "corr", {
-               value: {},
-               writable: false,
-               enumerable: false,
-               configurable: false,
-            });
-            // Pre-almacena el número de elementos para mejorar el rendimiento.
-            Object.defineProperty(arr, "_count", {
-               value: arr.length,
-               writable: true,
-               configurable: false,
-               enumerable: false
-            });
-            Object.defineProperty(arr, "total", total);
 
-            return arr;
+            obj[Symbol.iterator] = iterator;
+
+            return obj;
          }
 
          return Correctable;
@@ -1299,7 +1507,10 @@
             //       - si es aditiva.
             //       - con qué parámetros se ha aplicado.
             const sc = this[obj.attr] = this[obj.attr] || {};
-            if(sc.hasOwnProperty(name)) return false; // La corrección ya se ha registrado.
+            if(sc.hasOwnProperty(name)) {
+               console.warn(`${name}: La corrección ya está registrada`);
+               return false;
+            }
             // Apuntamos en una propiedad de la función, el nombre de la corrección,
             // si es aditiva, y con qué opciones se ha aplicado.
             obj.func.prop = {
@@ -1308,6 +1519,7 @@
                params: null  // Issue #23.
             }
             sc[name] = obj.func;
+            return this;
          }
 
          /**
@@ -1411,7 +1623,7 @@
          // Issue #23
          /**
           * Devuelve las características de una corrección
-          * (nombre, si es adictiva o con qué opciones se aplicó).
+          * (nombre, si es adictiva, y con qué opciones se aplicó).
           *
           * @param {string} name  Nombre de la corrección.
           *
@@ -1433,6 +1645,7 @@
             const sc = this[this.getProp(name)];
             if(!sc) throw new Error(`${name}: corrección no registrada`);
             sc[name].prop.params = opts;
+            return this;
          }
          // Fin issue #23
 
@@ -1441,5 +1654,185 @@
 
       return CorrSys;
    })();
+
+   
+   // Issue #5
+   /**
+    * Sistema de filtros
+    */
+   const FilterSys = (function() {
+      
+      /**
+       * Constructor de la clase
+       *
+       * @param {function|L.LayerGroup|string} style  Estilo de filtrado.
+       *    Puede ser:
+       *    
+       *    * La capa a la que se agregan las marcas, en cuyo caso se entenderá
+       *      que se quiere sacar/meter la marca al filtrar/dejar de filtrar.
+       *    * Un nombre, en cuyo caso se entenderá que se quiere meter la
+       *      marca dentro de una clase con tal nombre.
+       *    * Una función que manipula el elemento HTML que representa la marca.
+       */
+      function FilterSys(style) {
+         Object.defineProperties(this, {
+            transform: {
+               get: function() { return this._transform; },
+               set: function(value) { 
+                  if(this.hideable) this.transform.off("layeradd", this.ejectFiltered);
+                  if(typeof value === "string") {
+                     this._transform = function(filtered) {
+                        if(filtered) this.classList.add(value);
+                        else this.classList.remove(value);
+                     }
+                  }
+                  else {
+                     this._transform = value; 
+                     if(this.hideable) this.transform.on("layeradd", this.ejectFiltered);
+                  }
+               },
+               configurable: false,
+               enumerable: false
+            },
+            _transform: {
+               writable: true,
+               enumerable: false,
+               configurable: false
+            }
+         });
+         this.transform = style;
+      }
+
+      Object.defineProperty(FilterSys.prototype, "hideable", {
+         get: function() { return this.transform instanceof L.LayerGroup; },
+         configurable: false,
+         enumerable: false
+      });
+
+      /**
+       * Expulsa automáticamente de la capa las marcas filtradas.
+       */
+      FilterSys.prototype.ejectFiltered = e => e.layer.refresh();
+
+      /**
+       * Registra una corrección
+       *
+       * @method register
+       *
+       * @param {string}         name  Nombre del filtro.
+       * @param {Array<string>}  attrs Nombre de las propiedades de los datos
+       *    cuyos valores afecta al filtro.
+       * @param {function}       func  Función que filtra. Debe devolver
+       *    true (sí filtra) o false.
+       */
+      FilterSys.prototype.register = function(name, obj) {
+         if(this[name]) {
+            console.warn(`${name}: El filtro ya está registrado`);
+            return false;
+         }
+         if(!(obj.attrs instanceof Array)) obj.attrs = [obj.attrs];
+         obj.func.prop = {
+            depends: obj.attrs,
+            enabled: false,
+            params: undefined
+         }
+         this[name] = obj.func;
+         return this;
+      }
+
+      /**
+       * Devuelve los filtros habilitados cuyo resultados depende de
+       * la propiedad cuyo nombre se suministra
+       *
+       * @method getFilters
+       *
+       * @param {string} attr Nombre del propiedad. Si no se facilita, devuelve
+       *    todos los filtros habilitados.
+       *
+       * @retuns  {Array<string>}   Los nombres de los filtros.
+       */
+      FilterSys.prototype.getFilters = function(attr) {
+         return Object.keys(this).filter(filter => 
+            this[filter].prop.enabled
+         && (
+               !attr
+               || this[filter].prop.depends.indexOf(attr) !== -1
+            )
+         );
+      }
+
+      /**
+       * Habilita un filtro
+       *
+       * @param {string} name  El nombre del filtro que se quiere habilitar.
+       */
+      FilterSys.prototype.enable = function(name) {
+         if(!this.hasOwnProperty(name) || this[name].prop.enabled) return false;
+         this[name].prop.enabled = true;
+         return this;
+      }
+
+      /**
+       * Deshabilita un filtro
+       *
+       * @param {string} name  El nombre del filtro que se quiere deshabilitar.
+       */
+      FilterSys.prototype.disable = function(name) {
+         if(!this.hasOwnProperty(name) || !this[name].prop.enabled) return false;
+         this[name].prop.enabled = false;
+         this[name].prop.params = undefined;
+         return this;
+      }
+
+      /**
+       * Establece unas nuevas opciones de aplicación para el filtro.
+       *
+       * @params {string} name   Nombre del filtro.
+       * @params {Object} opts   Opciones de aplicación del filtro.
+       * @params {boolean} enable   Fuerza a habilitar el filtro.
+       *
+       * @returns {boolean|FilterSys} false en caso de que el filtro no exista,
+       *    esté deshabilitado, o estuviera habilitado, pero con las mismas opciones.
+       */
+      FilterSys.prototype.setParams = function(name, opts, enable) {
+         if(!this.hasOwnProperty(name)) return false;
+         if(!enable && !this[name].prop.enabled) return false;  // No se fuerza la habilitación y no está habilitado.
+         else this[name].prop.enabled = true;
+         if(equals(this[name].prop.params, opts)) return false;
+         this[name].prop.params = opts;
+         return this;
+      }
+
+      /**
+       * Obtiene las opción de filrado de un determinado filtro.
+       *
+       * @param {string} name    El nombre del filtro.
+       */
+      FilterSys.prototype.getParams = function(name) {
+         if(!this.hasOwnProperty(name)) throw new Error(`${name}: filtro no registrado`);
+         return this[name].prop.params;
+      }
+
+      /**
+       * Modifica el estilo de filtrado.
+       *
+       * @param {func|L.LayerGroup|string} style  Estilo de filtrado.
+       * @param {L.Marker} markerClass    Clase de marca a la que pertenecen
+       *    todas las marcas que usan este objeto de filtrado.
+       */
+      FilterSys.prototype.setStyle = function(style, markerClass) {
+         const old = this.transform,
+               exhideable = old instanceof L.LayerGroup;
+         this.transform = style;
+
+         // Si el estilo anterior ocultaba las marcas y el nuevo no lo hace,
+         // las marcas filtradas deben añadirse a la capa y ésta debe pasarse
+         // a refresh como parámetro.
+         markerClass.invoke("refresh", exhideable && !this.hideable && old);
+      }
+
+      return FilterSys;
+   })();
+   // Fin issue #5
 
 })();
