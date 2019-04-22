@@ -74,6 +74,15 @@ un mapa:
 
 Y, por supuesto, cuando deseamos hacer todo esto conjuntamente. ;-)
 
+Para que se haga una idea, esto es mapa desarrollado con la librería:
+
+.. image:: files/iconos.png
+
+Todos los iconos representan centros educativos y todos tienen una plantilla
+común, pero sus detalles visuales particulares dependen de los datos que cada
+uno tiene asociados (algunos son bilingües en inglés y muestran una bandera,
+otros son de compensatoria y muestran un pequeño círculo azul, etc.).
+
 Uso básico
 **********
 

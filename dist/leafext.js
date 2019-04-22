@@ -23,7 +23,7 @@
     * @param {Function} params.failback   Función que se ejecutará cuando
     * la petición falle. También admite como argumento un objeto
     * ``XMLHttpRequest``.
-    * @param {Object} context Objeto que usará como contexto las funciones
+    * @param {Object} params.context Objeto que usará como contexto las funciones
     * de *callback* y *failback*.
     *
     * @example
@@ -99,10 +99,10 @@
     *   una petición AJAX y quedarse cn la respuesta XML.
     *
     * @param {string} options.url   Alternativamente a la opción anterior,
-    *    la URL de un archivo donde está definido el icono (p.e. un SVG).
+    * la URL de un archivo donde está definido el icono (p.e. un SVG).
     *
-    * @param {L.utils.Converter} options.converter  Objeto {@link
-    *    L.utils.Converter} para la conversión de los datos en opciones de dibujo.
+    * @param {L.utils.Converter} options.converter  Objeto :class:`L.utils.Converter`
+    * para la conversión de los datos en opciones de dibujo.
     *    
     * @param {Function} updater  Función que actualiza el aspecto del icono
     *    a partir de los nuevos valores que tengan las opciones de dibujo.
@@ -115,6 +115,25 @@
     *    del icono, en vez de escribirse para recrear el icono desde la plantilla
     *
     * @retuns {Icon} La clase de icono que se desea crear.
+    *
+    * @example
+    * function updater(o) {
+    *    const content = this.querySelector(".content");
+    *    if(o.hasOwnProperty(tipo) content.className = "content " + o.tipo;
+    *    if(o.hasOwnProperty(numadj) content.textContent = o.numadj;
+    *    return this;
+    * }
+    *
+    * const Icon = L.utils.createMutableIconClass("chupachups", {
+    *    iconSize: [25, 34],
+    *    iconAnchor: [12.5, 34],
+    *    css: "styles/chupachups.css",
+    *    html: '<div class="content"><span></span></div><div class="arrow"></div>',
+    *    converter: new L.utils.Converter(["numadj", "tipo"])
+    *                          .define("numadj", "adj", a => a.total)
+    *                          .define("tipo")
+    *    updater: updater
+    * });
     */
    L.utils.createMutableIconClass = function(name, options) {
 
@@ -277,7 +296,7 @@
           * Guarda la profundidad máxima a la que se encuentran las propiedades
           * del objeto de partidad que influyen en las propiedades del objeto
           * resultado. Su valor calculándolo a partir de las dependencias que
-          * se van declarando para cada propiedad al usar {@link L.utils.Converter#define}
+          * se van declarando para cada propiedad al usar :meth:`L.utils.Converter#define`
           * @name L.utils.Converter#__depth
           * @private
           * @type {Number}
@@ -503,8 +522,9 @@
 
 
    /**
-    * Contruye el objeto. Una vez creado, pueden modificarse los valores de
-    * los atributos; pero no añadir nuevos o eliminar alguno de los existentes.
+    * Construye el objeto modificable. Una vez construido, pueden modificarse los
+    * valores de los atributos; pero no añadir nuevos o eliminar alguno de los
+    * existentes.
     * @name Options
     * @class
     *
@@ -512,7 +532,7 @@
     *
     * @classdesc Clase que permite saber si el objeto ha cambiado algunos de
     * sus propiedades desde la última vez que se reseteó (con el método 
-    * {@link Options#reset}.
+    * :meth:`Options#reset`).
     *
     * @example
     *
@@ -647,7 +667,9 @@
 
 
    /**
-    * Genera un ``HTMLElement`` a partir del parámetro que se le proporciona.
+    * Genera un `HTMLElement
+    * <https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement>`_ a partir del
+    * parámetro que se le proporciona.
     * 
     * @param {(HTMLElement|Document|DocumentFragment|String)} Definición del elemento.
     *
@@ -683,17 +705,19 @@
    /**
     * @name Icon
     * @extends L.DivIcon
-    * @classdesc Extensión de <code>L.DivIcon</code> a fin de crear iconos
-    *    definidos por una plantilla a la que se aplican cambios en sus detalles
-    *    según sean cambien los valores de sus opciones de dibujo. Consulte
-    *    {@link Icon#options} para conocer cuales son las opciones
-    *    adicionales que debe proporcionar para que la clase sea capaz de
-    *    manejar iconos mutables.
+    * @classdesc Extensión de `L.DivIcon <https://leafletjs.com/reference-1.4.0.html#divicon>`_
+    * a fin de crear iconos definidos por una plantilla a la que se aplican
+    * cambios en sus detalles según sean cambien los valores de sus opciones de
+    * dibujo. Consulte :js:attr:`Icon.options` para conocer cuales son las
+    * opciones adicionales que debe proporcionar para que la clase sea capaz de
+    * manejar iconos mutables.
+    *
+    * .. warning:: Para crear el icono, use preferente la función :js:func:`L.utils.createMutableIconClass`.
+    *
     * @class
     * @hideconstructor
     *
     * @example
-    *
     * function updater(o) {
     *    const content = this.querySelector(".content");
     *    if(o.hasOwnProperty(tipo) content.className = "content " + o.tipo;
@@ -714,7 +738,7 @@
     *    }
     * });
     *
-    *    const icon = new Icon();
+    * const icon = new Icon();
     */
    L.DivIcon.extend = function(obj) {
       const Icon = DivIconExtend.call(this, obj);
@@ -738,9 +762,9 @@
           * @memberof Icon
           * @async
           *
-          * @param {Function} func_success  Define la acción que se realizará en caso
-          *    de que la creación de la clase de icono haya tenido éxito.
-          * @param {Function} func_fail Define la acción a realizar en caso de que
+          * @param {Function} success  Define la acción que se realizará en caso
+          * de que la creación de la clase de icono haya tenido éxito.
+          * @param {Function} fail Define la acción a realizar en caso de que
           * la creación del icono haya fallado.
           */
          Icon.onready = async function(func_success, func_fail) {
@@ -768,33 +792,39 @@
    const createDivIcon = L.DivIcon.prototype.createIcon;
 
    /**
-    * Opciones para la {@link Icono}. A las que reconoce la clase
-    * {@link https://leafletjs.com/reference-1.4.0.html#icon  L.DivIcon de Leaflet},
+    * Opciones para la clase :class:`Icon`. A las que reconoce la clase
+    * `L.DivIcon <https://leafletjs.com/reference-1.4.0.html#divicon>`_ de Leaflet
     * añade algunas más.
-    * @namespace Icon.prototype.options
-    *
+    * @name Icon.prototype.options
+    * @type {Icon.Options}
+    */
+
+   /**
+    * Opciones adicionales para la clase :class:`Icon`.
+    * @typedef {Object} Icon~Options
     * @property {Options} params Define cuáles son las opciones de dibujo del icono.
-    *    El valor de esta opción, sin embargo, se calcula a partir de la información
-    *    proporcionada en el objeto {@link L.utils.Converter} por lo que
-    *    <strong>no</strong> debe facilitarse.
+    * El valor de esta opción, sin embargo, se calcula a partir de la información
+    * proporcionada en el objeto :js:class:`L.utils.Converter` por lo que
+    * **no** debe facilitarse.
     * @property {HTMLElement|String|DocumentFragment|Document} html Plantilla
-    *    para el dibujo del icono.
+    * para el dibujo del icono.
     * @property {String} url URL donde se escuentra la plantilla para el dibujo. Es
-    *    una opción alternativa a la anteior.
+    * una opción alternativa a la anteior.
     * @property {Converter} converter  Objeto que define la conversión entre los
-    *    datos asociados a la marca y las opciones de dibujo.
+    * datos asociados a la marca y las opciones de dibujo.
     * @property {Function} updater  Función que actualiza el dibujo usando los nuevos
-    *    valores de las opciones de dibujo. Debe construirse de forma que se tenga
-    *    en cuenta que se pasarán sólo las opciones que cambiaron desde el último
-    *    dibujado y que, por tanto, sólo deben cambiarse los detalles del dibujo que
-    *    dependen de las opciones pasadas y dejar inalterados el resto de detalles.
-    *    El contexto de la función es el elemento HTML que representa al icono.
+    * valores de las opciones de dibujo. Debe construirse de forma que se tenga
+    * en cuenta que se pasarán sólo las opciones que cambiaron desde el último
+    * dibujado y que, por tanto, sólo deben cambiarse los detalles del dibujo que
+    * dependen de las opciones pasadas y dejar inalterados el resto de detalles.
+    * El contexto de la función es el elemento HTML que representa al icono.
     */
 
    const IconPrototype = {
       /**
-       * Wrapper para el método homónimo de <code>L.DivIcon</code>. Su funcion
-       * es preparar el valor <code>options.html</code> usando la plantilla y 
+       * Wrapper para el método homónimo de `L.DivIcon
+       * <https://leafletjs.com/reference-1.4.0.html#divicon>`_. Su función
+       * es preparar el valor ``options.html`` usando la plantilla y 
        * las opciones de dibujo antes de que el método original actúe.
        * @memberof Icon.prototype
        *
@@ -828,7 +858,7 @@
        * El método modifica directamente el HTML sobre el documento.
        * @memberof Icon.prototype
        *
-       * @return {Boolean} <code>true</code> si se redibujó realmente el icono.
+       * @return {Boolean} ``true`` si se redibujó realmente el icono.
        */
       refresh: function() {
          // TODO: Filtrado
@@ -845,33 +875,37 @@
    const MarkerExtend = L.Marker.extend;
 
    /**
-    * Opciones para {@link Marker}. A las generales que permite
-    * {@link https://leafletjs.com/reference-1.4.0.html#marker L.Marker de Leaflet}
+    * Opciones para :js:class:`Marker`. A las generales que permite `L.Marker
+    * <https://leafletjs.com/reference-1.4.0.html#marker>`_ de Leaflet
     * añade algunas más
-    * @namespace Marker.prototype.options
-    *
-    * @property {String} mutable  Nombre de la propiedad a la que se conectan los datos de
-    *    las marcas. Si es una propiedad anidada puede usarse la notación de punto.
-    *    Por ejemplo, <code>feature.properties</code>.
-    * @property {(L.LayerGroup|String|Function)} filter Habliita un {@link CorrSys sistema de filtros}
-    *    para la clase de marca. Puede adoptar tres valores distintos:
-    *    <ul>
-    *    <li>La capa a la que se agregan las marcas de esta clase. En este caso, el efecto
-    *       del filtro será eliminar del mapa las marcas filtradas.
-    *    <li>Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que
-    *    pertenezcan las marcas filtradas.
-    *    <li>Una función de transformación que se aplicará al elemento HTML que
-    *    representa en el mapa cada marca filtrada. El contexto de esta función será el propio
-    *    elemento HTML.
-    *    </ul>
+    * @name Marker.prototype.options
+    * @type {Marker.Options}
+    */
+
+   /**
+    * Optiones adicionales de la clase :js:class:`Marker`.
+    * @typedef {Object} Marker~Options
+    * @property {String} opts.mutable  Nombre de la propiedad a la que se conectan los datos de
+    * las marcas. Si es una propiedad anidada puede usarse la notación de punto.
+    * Por ejemplo, ``feature.properties``.
+    * @property {(L.LayerGroup|String|Function)} opts.filter Habilita un :class:`sistema de filtros
+    * <CorrSys>` para la clase de marca. Puede adoptar tres valores distintos:
+    *    
+    * * La capa a la que se agregan las marcas de esta clase. En este caso, el efecto
+    *   del filtro será eliminar del mapa las marcas filtradas.
+    * * Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que
+    *   pertenezcan las marcas filtradas.
+    * * Una función de transformación que se aplicará al elemento HTML que
+    *   representa en el mapa cada marca filtrada. El contexto de esta función será el propio
+    *   elemento HTML.
     */
 
    /**
     * @name Marker
     * @extends L.Marker
-    * @classdesc  Extiende la clase {@link https://leafletjs.com/reference-1.4.0.html#marker L.Marker},
-    *    a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
-    *    Consulte cuáles son las {@link Marker#options opciones que lo habiliten}.
+    * @classdesc  Extiende la clase `L.Marker <https://leafletjs.com/reference-1.4.0.html#marker>`_
+    * a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
+    * Consulte cuáles son las :attr:`Marker#options` opciones que lo habiliten}.
     * @class
     * @hideconstructor
     *
@@ -883,6 +917,8 @@
     *       filter: L.utils.grayFilter
     *    }
     * });
+    *
+    * const marca = new Marker([37.07,-5.98], {icon: new Icon()});
     */
    L.Marker.extend = function() {
       const Marker = MarkerExtend.apply(this, arguments);
@@ -902,7 +938,7 @@
             writable: false
          }); 
          /**
-          * Vacía {@link Marker.store} de marcas.
+          * Vacía :attr:`Marker.store` de marcas.
           * @memberof Marker
           */
          Marker.reset = function() { this.store.length = 0; }
@@ -969,24 +1005,24 @@
     * @param {String} name        Nombre que identifica a la corrección.
     * @param {Object} obj         Objeto que define la corrección
     * @param {String} obj.attr    Propiedad sobre el que opera la corrección.
-    *    Puede usarse la notación de punto para propiedades anidadas.
+    * Puede usarse la notación de punto para propiedades anidadas.
     * @param {Function} obj.func  Función que determina si se hace corrección o no.
-    *    Cuando la función corrige el array actúa eliminado valores y para
-    *    ello se ejecuta repetidamente sobre todos los elementos del *array*. Usa
-    *    como contexto la marca a la que pertenece el objeto
-    *    que contiene el *array*, y recibe tres parámetros: el primero es
-    *    el índice del elemento que se comprueba, el segundo el array mismo
-    *    y el tercero un objeto con las opciones aplicables de corrección.
-    *    Debe devolver <code>true</code> (el elemento debe eliminarse) o
-    *    <code>false</code> (no debe hacerlo). La función también puede añadir
-    *    nuevos elementos, en vez de eliminar los existentes. Vea la información
-    *    sobre el argumento <code>add</code> para saber más sobre ello.
-    * @param {Boolean} obj.add    <code>true</code> si la corrección añade
-    *    elementos al array, y cualquier otro valor asimilable a <code>false</code>
-    *    si su intención es eliminar elementos. Si los añade, la función deberá
-    *    devolver un *array* con los elementos a añadir y sólo se ejecuta una vez,
-    *    por lo que su primer argumento que representa el índice del elemento vale
-    *    <code>null</code>.
+    * Cuando la función corrige el array actúa eliminado valores y para
+    * ello se ejecuta repetidamente sobre todos los elementos del *array*. Usa
+    * como contexto la marca a la que pertenece el objeto
+    * que contiene el *array*, y recibe tres parámetros: el primero es
+    * el índice del elemento que se comprueba, el segundo el array mismo
+    * y el tercero un objeto con las opciones aplicables de corrección.
+    * Debe devolver ``true`` (el elemento debe eliminarse) o
+    * ``false`` (no debe hacerlo). La función también puede añadir
+    * nuevos elementos, en vez de eliminar los existentes. Vea la información
+    * sobre el argumento *add* para saber más sobre ello.
+    * @param {Boolean} obj.add    ``true`` si la corrección añade
+    * elementos al array, y cualquier otro valor asimilable a ``false``
+    * si su intención es eliminar elementos. Si los añade, la función deberá
+    * devolver un *array* con los elementos a añadir y sólo se ejecuta una vez,
+    * por lo que su primer argumento (que representa el índice del elemento) vale
+    * ``null``.
     *
     * @example
     * Centro.register("adjpue", {
@@ -1069,9 +1105,9 @@
     *
     * @param {String}         name  Nombre del filtro.
     * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
-    *    cuyos valores afectan al filtro.
+    * cuyos valores afectan al filtro.
     * @param {Function}       func  Función que filtra. Debe devolver
-    *     <code>true</code> (sí filtra) o <code>false</code>.
+    * ``true`` (sí filtra) o ``false``.
     */
    function registerFilterMarker() {
       const filter = this.prototype.options.filter;
@@ -1116,8 +1152,8 @@
     * @method Marker.setFilter
     *
     * @param {Function|String|L.LayerGroup}  style     Estilo del filtro.
-    *    Consulte el valor de la {@link Marker#options opción filter} para
-    *    saber qué valor de estilo suministrar.
+    * Consulte los valores posibles de la opción :attr:`filter <Marker#options>` para
+    * saber qué valor de estilo suministrar.
     */
    function setFilterStyleMarker(style) {
       const filter = this.prototype.options.filter;
@@ -1131,15 +1167,15 @@
    const MarkerSetIcon = L.Marker.prototype.setIcon;
 
    // Métodos modificados o adicionales que tendrán los derivados de Marker que al
-   // crearse con extend incluyan la opción mutable=true.
+   // crearse con extend incluyan la opción ``mutable=true``.
    /** @lends Marker.prototype */
    const prototypeExtra = {
       /**
        * Refresca el dibujo de la marca.
        *
        * @param {L.LayerGroup} force   Si se pasa la capa y la marca, aunque
-       *    no filtrada, no se encuentra en el mapa, fuerza su adición a la
-       *    misma.
+       * no filtrada, no se encuentra en el mapa, fuerza su adición a la
+       * misma.
        */
       refresh: function(force) {
          let div = this.getElement();
@@ -1173,10 +1209,10 @@
          this.options.icon.refresh();
       },
       /**
-       * Wrapper para el método homónimo original. Se encarga de de
+       * Wrapper para el método homónimo original. Se encarga de
        * convertir en un descriptor de acceso la propiedad a la que
-       * se conectan los datos, de almacenar en {@link Marker.store}
-       * la nueva marca, de algunos aspectos menores más.
+       * se conectan los datos, de almacenar en :attr:`Marker.store`
+       * la nueva marca, y de algunos aspectos menores más.
        */
       initialize: function() {
          MarkerInitialize.apply(this, arguments);
@@ -1228,7 +1264,7 @@
       },
       /**
        * Wrapper para el método homónimo original. Se encarga de conectar
-       * al icono la marca.
+       * la marca al icono.
        */
       setIcon: function(icon) {
          icon._marker = this;
@@ -1288,7 +1324,7 @@
       },
       /**
        * Elimina una corrección de la marca. No debería usarse directamente, 
-       * ya que las correcciones deben eliminarse a través de {@link Marker.uncorrect}.
+       * ya que las correcciones deben eliminarse a través de :meth:`Marker#uncorrect`.
        * @private
        *
        * @param {String} name    Nombre de la corrección.
@@ -1313,7 +1349,7 @@
       // Issue #5
       /**
        * Aplica un filtro a la marca. No debería usarse directamente, 
-       * ya que los filtros deben aplicarse a través de {@link Marker.filter}.
+       * ya que los filtros deben aplicarse a través de :meth:`Marker#filter`.
        * @private
        *
        * @param {String} El nombre del filtro.
@@ -1330,7 +1366,7 @@
       },
       /**
        * Elimina un filtro de la marca.No debería usarse directamente, 
-       * ya que los filtros deben eliminarse a través de {@link Marker.unfilter}.
+       * ya que los filtros deben eliminarse a través de :meth:`Marker#unfilter`.
        * @private
        *
        * @param {String} El nombre del filtro.
@@ -1350,15 +1386,15 @@
 
       /*
        * Convierte un array en un array con esteroides. Básicamente, el array
-       * (llamémoslo A) pasa a tener un atributo "corr", que es un objeto cuyas
-       * claves son las correcciones aplicadas sobre A y cuyos valores son arrays de
-       * longitud idéntica a A. Cada elemento de estos arrays represente el efecto
-       * que ha tenido la corrección sobre el elemento correspondiente de A:
+       * (llamémoslo *A*) pasa a tener un atributo *corr*, que es un objeto cuyas
+       * claves son las correcciones aplicadas sobre *A* y cuyos valores son arrays de
+       * longitud idéntica a *A*. Cada elemento de estos arrays represente el efecto
+       * que ha tenido la corrección sobre el elemento correspondiente de *A*:
        *
-       * - true:  la correción filtró el elemento.
-       * - false: la corrección no filtró el elemento.
-       * - undefined: la corrección no se aplicó sobre ese elemento.
-       * - null: la corrección creó el elemento.
+       * - ``true``:  la correción filtró el elemento.
+       * - ``false``: la corrección no filtró el elemento.
+       * - ``undefined``: la corrección no se aplicó sobre ese elemento.
+       * - ``null``: la corrección creó el elemento.
        *
        * Un ejemplo esquemático:
        *
@@ -1368,19 +1404,19 @@
        *    corr2:  [ undefined, undefined ,  null ]
        *  }
        *
-       * En este caso, el valor1 lo eliminan ambas correcciones. el valor2 sólo corr1, y
-       * el valor3 lo añade corr2 y no lo elimina corr1.
+       * En este caso, el *valor1* lo eliminan ambas correcciones. el *valor2*
+       * sólo *corr1*, y el *valor3* lo añade *corr2* y no lo elimina *corr1*.
        *
        */
 
       /**
-       * Construye el ``Correctable``.
        * @name Correctable
+       * @hideconstructor
        * @class
        * @classdesc La clase permite apuntar sobre el array qué elementos han sido filtrados
        * por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál corrección.
        * @param {Array} arr El array original.
-       * @param {Object} sc Parte del {@link CorrSys sistema de correcciones} definido para la
+       * @param {Object} sc Parte del :js:class:`sistema de correcciones <CorrSys>` definido para la
        * marca en la que está el array que se aplica exclusivamente al array.
        */
       const Correctable = (function() {
@@ -1397,12 +1433,12 @@
             },
             /**
              * @typedef {Object} Correctable.CorrValue
-             * @property {?*} value   El valor del elemento o null, si alguna corrección lo eliminó.
+             * @property {?*} value   El valor del elemento o ``null``, si alguna corrección lo eliminó.
              * @property {Array.<String>} filters  Los nombres de las correcciones que eliminan el elemento.
              */
 
             /**
-             * Generador que recorre el array y devuelve información sobre el valor
+             * Generador que recorre el *array* y devuelve información sobre el valor
              * de los elementos y cuáles son las correcciones que los eliminan.
              * @generator
              *
@@ -1420,10 +1456,10 @@
             /**
              * Aplica una determinada corrección sobre el array.
              *
-             * @param {Marker} marker  Marca a la que pertenece el {@link Correctable}
+             * @param {Marker} marker  Marca a la que pertenece el :class:`Correctable`
              * @param {String} name    El nombre de la corrección.
              *
-             * @returns {boolean}  <code>true</code> Si la correción
+             * @returns {boolean}  ``true`` Si la correción
              *    provocó algún cambio en el array.
              */
             apply: function(marker, name) {
@@ -1472,7 +1508,7 @@
              *
              * @param {String} name: Nombre de la corrección.
              *
-             * @returns {Boolean}  <code>true</code> si eliminar la corrección
+             * @returns {Boolean}  ``true`` si eliminar la corrección
              *    provocó cambios en el *array*.
              */
             unapply: function(name) {
@@ -1602,8 +1638,11 @@
        * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
        * varios atributos.
        *
-       * Las {@link Marker marcas definidas como mutables} definen
-       * automáticamente una opción ``corr`` que es un objeto de este tipo.
+       * Las :js:class:`clases de marcas definidas como mutables <Marker>` definen
+       * automáticamente una opción ``corr`` que es un objeto de este tipo, de modo
+       * que cuando se usan métodos que definen o aplican correcciones obre las marcas
+       * de la clase (:js:meth:`Marker.register`, :js:meth:`Marker.correct`,
+       * :js:meth:`Marker.uncorrect`) se utiliza este objeto.`
        *
        */
       const CorrSys = (function() {
@@ -1805,9 +1844,14 @@
     * @name FilterSys
     * @class
     * @param {Function|L.LayerGroup|string} style  Estilo de filtrado.
-    *    Consulte el significado del {@link Marker#options valor de
-    *    la opción filter para Marker.prototype.options}.
+    * Consulte la opción ``filter`` de las :js:attr:`optiones de Marker <Marker.options>`
+    * para conocer cuáles son sus valores posibles.
     * @classdesc Implementa un sistema de filtros para las marcas.
+    * Las :js:class:`clases de marcas definidas como mutables <Marker>` definen
+    * una propiedad ``filter`` que es un objeto de este tipo, de modo que los métodos
+    * que definen o aplican filtros a las marcas de la clase (:js:meth:`Marker.registerF`,
+    * :js:meth:`Marker.filter`, :js:meth:`Marker.unfilter`),
+    * utilizan este objeto.
     */
    const FilterSys = (function() {
       

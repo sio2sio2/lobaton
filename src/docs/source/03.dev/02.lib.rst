@@ -1,15 +1,48 @@
 |API|
 *****
 
-Utilidades
-==========
+Iconos
+======
 
 .. js:autofunction:: L.utils.createMutableIconClass
+
+.. js:autoclass:: Icon
+   :members: ready, onready, options, Options
 
 .. js:autoclass:: L.utils.Converter
    :members:
 
-.. js:autoclass:: L.utils.noFilteredIconCluster
+Marcas
+======
+
+.. js:autoclass:: Marker
+   :members: store, reset, register, correct, uncorrect, registerF, filter, unfilter, invoke, refresh, options, Options
+
+Correcciones
+============
+
+.. js:autoclass:: CorrSys
+
+   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
+      detalles de su implementación recurra a los comentarios incluidos en el
+      código fuente.
+
+.. js:autoclass:: Correctable
+   :members: total, walk, CorrValue
+
+Filtros
+=======
+
+.. js:autoclass:: FilterSys
+
+   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
+      detalles de su implementación recurra a los comentarios incluidos en el
+      código fuente.
+
+Otras utilidades
+================
+
+.. js:autofunction:: L.utils.noFilteredIconCluster
 
 .. js:autofunction:: L.utils.grayFilter
 

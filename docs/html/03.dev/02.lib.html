@@ -86,7 +86,11 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="01.map.html">3.1. Creación de mapas</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">3.2. <abbr title="Application Programming Interface">API</abbr></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#utilidades">3.2.1. Utilidades</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#iconos">3.2.1. Iconos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#marcas">3.2.2. Marcas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#correcciones">3.2.3. Correcciones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtros">3.2.4. Filtros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#otras-utilidades">3.2.5. Otras utilidades</a></li>
 </ul>
 </li>
 </ul>
@@ -159,8 +163,8 @@
             
   <div class="section" id="api">
 <h1>3.2. <abbr title="Application Programming Interface">API</abbr><a class="headerlink" href="#api" title="Enlazar permanentemente con este título">¶</a></h1>
-<div class="section" id="utilidades">
-<h2>3.2.1. Utilidades<a class="headerlink" href="#utilidades" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="iconos">
+<h2>3.2.1. Iconos<a class="headerlink" href="#iconos" title="Enlazar permanentemente con este título">¶</a></h2>
 <dl class="function">
 <dt id="L.utils.createMutableIconClass">
 <code class="descclassname">L.utils.</code><code class="descname">createMutableIconClass</code><span class="sig-paren">(</span><em>name</em>, <em>options</em>, <em>updater</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.createMutableIconClass" title="Enlazar permanentemente con esta definición">¶</a></dt>
@@ -176,13 +180,127 @@ a un estilo de icono distinto.</p>
 <li><strong>options.css</strong> (<em>string</em>) – Para un icono creado con CSS, el archivo .css. que define el aspecto.</li>
 <li><strong>options.html</strong> (<em>string|DocumentFragment|Document</em>) – HTML que define la plantilla del icono. Se puede pasar como:  * Una cadena que contenga directamente el código HTML. * Un <code class="docutils literal notranslate"><span class="pre">DocumentFragment</span></code>, que sería lo que se obtiene como contenido de un <code class="docutils literal notranslate"><span class="pre">&lt;template&gt;</span></code>. * Un <code class="docutils literal notranslate"><span class="pre">Document</span></code>, que sería lo que se obtiene de haber hecho una petición AJAX y quedarse cn la respuesta XML.</li>
 <li><strong>options.url</strong> (<em>string</em>) – Alternativamente a la opción anterior, la URL de un archivo donde está definido el icono (p.e. un SVG).</li>
-<li><strong>options.converter</strong> (<a class="reference internal" href="#L.utils.Converter" title="L.utils.Converter"><em>L.utils.Converter</em></a>) – Objeto <a class="reference external" href="mailto:{&#37;&#52;&#48;link">{<span>&#64;</span>link</a> L.utils.Converter} para la conversión de los datos en opciones de dibujo.</li>
+<li><strong>options.converter</strong> (<a class="reference internal" href="#L.utils.Converter" title="L.utils.Converter"><em>L.utils.Converter</em></a>) – Objeto <code class="xref py py-class docutils literal notranslate"><span class="pre">L.utils.Converter</span></code> para la conversión de los datos en opciones de dibujo.</li>
 <li><strong>updater</strong> (<em>function</em>) – Función que actualiza el aspecto del icono a partir de los nuevos valores que tengan las opciones de dibujo. Toma las opciones de dibujo (o una parte de ellas) y modifica el elemento DIV (o SVG. etc.) del icono para que adquiera un aspecto adecuado. Debe escribirse teniendo presente que pueden no pasarse todas las opciones de dibujo, sino sólo las que se modificaron desde la última vez que se dibujó el icono. Por tanto, debe escribirse la función para realizar modificaciones sobre el aspecto preexistente del icono, en vez de escribirse para recrear el icono desde la plantilla</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">updater</span><span class="p">(</span><span class="nx">o</span><span class="p">)</span> <span class="p">{</span>
+   <span class="kr">const</span> <span class="nx">content</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s2">&quot;.content&quot;</span><span class="p">);</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">tipo</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;content &quot;</span> <span class="o">+</span> <span class="nx">o</span><span class="p">.</span><span class="nx">tipo</span><span class="p">;</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">numadj</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">numadj</span><span class="p">;</span>
+   <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">Icon</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">createMutableIconClass</span><span class="p">(</span><span class="s2">&quot;chupachups&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">iconSize</span><span class="o">:</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+   <span class="nx">iconAnchor</span><span class="o">:</span> <span class="p">[</span><span class="mf">12.5</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+   <span class="nx">css</span><span class="o">:</span> <span class="s2">&quot;styles/chupachups.css&quot;</span><span class="p">,</span>
+   <span class="nx">html</span><span class="o">:</span> <span class="s1">&#39;&lt;div class=&quot;content&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;arrow&quot;&gt;&lt;/div&gt;&#39;</span><span class="p">,</span>
+   <span class="nx">converter</span><span class="o">:</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                         <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
+                         <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">)</span>
+   <span class="nx">updater</span><span class="o">:</span> <span class="nx">updater</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="Icon">
+<em class="property">class </em><code class="descname">Icon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Icon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Extensión de <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#divicon">L.DivIcon</a>
+a fin de crear iconos definidos por una plantilla a la que se aplican
+cambios en sus detalles según sean cambien los valores de sus opciones de
+dibujo. Consulte <a class="reference internal" href="#Icon.options" title="Icon.options"><code class="xref js js-attr docutils literal notranslate"><span class="pre">Icon.options</span></code></a> para conocer cuales son las
+opciones adicionales que debe proporcionar para que la clase sea capaz de
+manejar iconos mutables.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Para crear el icono, use preferente la función <a class="reference internal" href="#L.utils.createMutableIconClass" title="L.utils.createMutableIconClass"><code class="xref js js-func docutils literal notranslate"><span class="pre">L.utils.createMutableIconClass()</span></code></a>.</p>
+</div>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">updater</span><span class="p">(</span><span class="nx">o</span><span class="p">)</span> <span class="p">{</span>
+   <span class="kr">const</span> <span class="nx">content</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s2">&quot;.content&quot;</span><span class="p">);</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">tipo</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;content &quot;</span> <span class="o">+</span> <span class="nx">o</span><span class="p">.</span><span class="nx">tipo</span><span class="p">;</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">numadj</span><span class="p">)</span> <span class="nx">content</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">=</span> <span class="nx">o</span><span class="p">.</span><span class="nx">numadj</span><span class="p">;</span>
+   <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">Icon</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">divIcon</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">className</span><span class="o">:</span> <span class="s2">&quot;icon&quot;</span><span class="p">,</span>
+      <span class="nx">iconSize</span><span class="o">:</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+      <span class="nx">iconAnchor</span><span class="o">:</span> <span class="p">[</span><span class="mf">12.5</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span>
+      <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;images/boliche.svg&quot;</span><span class="p">,</span>
+      <span class="nx">updater</span><span class="o">:</span> <span class="nx">updater</span><span class="p">,</span>
+      <span class="nx">converter</span><span class="o">:</span> <span class="k">new</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                            <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
+                            <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">)</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kr">const</span> <span class="nx">icon</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Icon</span><span class="p">();</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="Icon.ready">
+<code class="descclassname">Icon.</code><code class="descname">ready</code><a class="headerlink" href="#Icon.ready" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Boolean</p>
+<p>Informa de si la clase de icono se encuentra lista para utilizarse.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Icon.onready">
+<code class="descclassname">Icon.</code><code class="descname">onready</code><span class="sig-paren">(</span><em>success</em>, <em>fail</em><span class="sig-paren">)</span><a class="headerlink" href="#Icon.onready" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Define qué hacer cuando la clase de icono esté lista para usarse.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>success</strong> (<em>function</em>) – Define la acción que se realizará en caso de que la creación de la clase de icono haya tenido éxito.</li>
+<li><strong>fail</strong> (<em>function</em>) – Define la acción a realizar en caso de que la creación del icono haya fallado.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Icon.options">
+<code class="descclassname">Icon.</code><code class="descname">options</code><a class="headerlink" href="#Icon.options" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Icon.Options</p>
+<p>Opciones para la clase <code class="xref py py-class docutils literal notranslate"><span class="pre">Icon</span></code>. A las que reconoce la clase
+<a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#divicon">L.DivIcon</a> de Leaflet
+añade algunas más.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Icon.Options">
+<code class="descclassname">Icon.</code><code class="descname">Options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Icon.Options" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Opciones adicionales para la clase <code class="xref py py-class docutils literal notranslate"><span class="pre">Icon</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>params</strong> (<em>Options</em>) – Define cuáles son las opciones de dibujo del icono. El valor de esta opción, sin embargo, se calcula a partir de la información proporcionada en el objeto <a class="reference internal" href="#L.utils.Converter" title="L.utils.Converter"><code class="xref js js-class docutils literal notranslate"><span class="pre">L.utils.Converter()</span></code></a> por lo que <strong>no</strong> debe facilitarse.</li>
+<li><strong>html</strong> (<em>HTMLElement|String|DocumentFragment|Document</em>) – Plantilla para el dibujo del icono.</li>
+<li><strong>url</strong> (<em>String</em>) – URL donde se escuentra la plantilla para el dibujo. Es una opción alternativa a la anteior.</li>
+<li><strong>converter</strong> (<em>Converter</em>) – Objeto que define la conversión entre los datos asociados a la marca y las opciones de dibujo.</li>
+<li><strong>updater</strong> (<em>function</em>) – Función que actualiza el dibujo usando los nuevos valores de las opciones de dibujo. Debe construirse de forma que se tenga en cuenta que se pasarán sólo las opciones que cambiaron desde el último dibujado y que, por tanto, sólo deben cambiarse los detalles del dibujo que dependen de las opciones pasadas y dejar inalterados el resto de detalles. El contexto de la función es el elemento HTML que representa al icono.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -337,9 +455,329 @@ información requerida en el objeto.</p>
 
 </dd></dl>
 
+</div>
+<div class="section" id="marcas">
+<h2>3.2.2. Marcas<a class="headerlink" href="#marcas" title="Enlazar permanentemente con este título">¶</a></h2>
 <dl class="class">
+<dt id="Marker">
+<em class="property">class </em><code class="descname">Marker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Extiende la clase <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#marker">L.Marker</a>
+a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
+Consulte cuáles son las <code class="xref py py-attr docutils literal notranslate"><span class="pre">Marker#options</span></code> opciones que lo habiliten}.</p>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Marker</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">Marker</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+   <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">mutable</span><span class="o">:</span> <span class="s2">&quot;feature.properties&quot;</span><span class="p">,</span>
+      <span class="nx">filter</span><span class="o">:</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">grayFilter</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kr">const</span> <span class="nx">marca</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Marker</span><span class="p">([</span><span class="mf">37.07</span><span class="p">,</span><span class="o">-</span><span class="mf">5.98</span><span class="p">],</span> <span class="p">{</span><span class="nx">icon</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Icon</span><span class="p">()});</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="Marker.store">
+<code class="descclassname">Marker.</code><code class="descname">store</code><a class="headerlink" href="#Marker.store" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Array.&lt;Marker&gt;</p>
+<p>Almacena todas las marcas creadas de este tipo</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.reset">
+<code class="descclassname">Marker.</code><code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker.reset" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Vacía <code class="xref py py-attr docutils literal notranslate"><span class="pre">Marker.store</span></code> de marcas.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.register">
+<code class="descclassname">Marker.</code><code class="descname">register</code><span class="sig-paren">(</span><em>name</em>, <em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.register" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Registra una corrección en el sistema de correcciones de la marca.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) – Nombre que identifica a la corrección.</li>
+<li><strong>obj</strong> (<em>Object</em>) – Objeto que define la corrección</li>
+<li><strong>obj.attr</strong> (<em>String</em>) – Propiedad sobre el que opera la corrección. Puede usarse la notación de punto para propiedades anidadas.</li>
+<li><strong>obj.func</strong> (<em>function</em>) – Función que determina si se hace corrección o no. Cuando la función corrige el array actúa eliminado valores y para ello se ejecuta repetidamente sobre todos los elementos del <em>array</em>. Usa como contexto la marca a la que pertenece el objeto que contiene el <em>array</em>, y recibe tres parámetros: el primero es el índice del elemento que se comprueba, el segundo el array mismo y el tercero un objeto con las opciones aplicables de corrección. Debe devolver <code class="docutils literal notranslate"><span class="pre">true</span></code> (el elemento debe eliminarse) o <code class="docutils literal notranslate"><span class="pre">false</span></code> (no debe hacerlo). La función también puede añadir nuevos elementos, en vez de eliminar los existentes. Vea la información sobre el argumento <em>add</em> para saber más sobre ello.</li>
+<li><strong>obj.add</strong> (<em>Boolean</em>) – <code class="docutils literal notranslate"><span class="pre">true</span></code> si la corrección añade elementos al array, y cualquier otro valor asimilable a <code class="docutils literal notranslate"><span class="pre">false</span></code> si su intención es eliminar elementos. Si los añade, la función deberá devolver un <em>array</em> con los elementos a añadir y sólo se ejecuta una vez, por lo que su primer argumento (que representa el índice del elemento) vale <code class="docutils literal notranslate"><span class="pre">null</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjpue&quot;</span><span class="p">,</span> <span class="p">{</span>
+                  <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+                  <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">puesto</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">adj</span><span class="p">[</span><span class="nx">idx</span><span class="p">].</span><span class="nx">pue</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+                  <span class="p">},</span>
+               <span class="p">})</span>
+      <span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;vt+&quot;</span><span class="p">,</span> <span class="p">{</span>
+                  <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+                  <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">getData</span><span class="p">();</span>
+                     <span class="c1">//Se deberían obtener las vacantes telefónicas de estos datos...</span>
+                     <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;Interino&quot;</span><span class="p">,</span> <span class="s2">&quot;Interino&quot;</span><span class="p">];</span>
+                  <span class="p">},</span>
+                  <span class="nx">add</span><span class="o">:</span> <span class="kc">true</span>
+               <span class="p">});</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.correct">
+<code class="descclassname">Marker.</code><code class="descname">correct</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker.correct" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Aplica una corrección a las marcas de una clase.</p>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;adjpue&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">puesto</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;11590107&quot;</span><span class="p">,</span> <span class="s2">&quot;00590059&quot;</span><span class="p">]})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.uncorrect">
+<code class="descclassname">Marker.</code><code class="descname">uncorrect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker.uncorrect" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Elimina una correccón de las marcas de una clase.</p>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">marca</span><span class="p">.</span><span class="nx">uncorrect</span><span class="p">(</span><span class="s2">&quot;adjpue&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.registerF">
+<code class="descclassname">Marker.</code><code class="descname">registerF</code><span class="sig-paren">(</span><em>name</em>, <em>attrs</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.registerF" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Registra para una clase de marcas un filtro.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) – Nombre del filtro.</li>
+<li><strong>attrs</strong> (<em>Array.&lt;String&gt;</em>) – Nombre de las propiedades de los datos cuyos valores afectan al filtro.</li>
+<li><strong>func</strong> (<em>function</em>) – Función que filtra. Debe devolver <code class="docutils literal notranslate"><span class="pre">true</span></code> (sí filtra) o <code class="docutils literal notranslate"><span class="pre">false</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.filter">
+<code class="descclassname">Marker.</code><code class="descname">filter</code><span class="sig-paren">(</span><em>name</em>, <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.filter" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Habilita un filtro para las marcas de una clase</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) – Nombre del filtro.</li>
+<li><strong>params</strong> (<em>Object</em>) – Opciones para el filtrado.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.unfilter">
+<code class="descclassname">Marker.</code><code class="descname">unfilter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.unfilter" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Deshabilita un filtro para las marcas de una clase</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) – Nombre del filtro.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.invoke">
+<code class="descclassname">Marker.</code><code class="descname">invoke</code><span class="sig-paren">(</span><em>method</em>, <em>...param</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.invoke" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Ejecuta un método para todas las marcas almacenadas en store.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>String</em>) – Nombre del métodos</li>
+<li><strong>param</strong> (<em>*</em>) – Parámetros que se pasan al método</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.refresh">
+<code class="descclassname">Marker.</code><code class="descname">refresh</code><span class="sig-paren">(</span><em>force</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.refresh" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Refresca el dibujo de la marca.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>force</strong> (<em>L.LayerGroup</em>) – Si se pasa la capa y la marca, aunque no filtrada, no se encuentra en el mapa, fuerza su adición a la misma.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Marker.options">
+<code class="descclassname">Marker.</code><code class="descname">options</code><a class="headerlink" href="#Marker.options" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Marker.Options</p>
+<p>Opciones para <a class="reference internal" href="#Marker" title="Marker"><code class="xref js js-class docutils literal notranslate"><span class="pre">Marker()</span></code></a>. A las generales que permite <a class="reference external" href="https://leafletjs.com/reference-1.4.0.html#marker">L.Marker</a> de Leaflet
+añade algunas más</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Marker.Options">
+<code class="descclassname">Marker.</code><code class="descname">Options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker.Options" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Optiones adicionales de la clase <a class="reference internal" href="#Marker" title="Marker"><code class="xref js js-class docutils literal notranslate"><span class="pre">Marker()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>opts.mutable</strong> (<em>String</em>) – Nombre de la propiedad a la que se conectan los datos de las marcas. Si es una propiedad anidada puede usarse la notación de punto. Por ejemplo, <code class="docutils literal notranslate"><span class="pre">feature.properties</span></code>.</li>
+<li><strong>opts.filter</strong> (<em>L.LayerGroup|String|function</em>) – Habilita un <code class="xref py py-class docutils literal notranslate"><span class="pre">sistema</span> <span class="pre">de</span> <span class="pre">filtros</span></code> para la clase de marca. Puede adoptar tres valores distintos:  * La capa a la que se agregan las marcas de esta clase. En este caso, el efecto del filtro será eliminar del mapa las marcas filtradas. * Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que pertenezcan las marcas filtradas. * Una función de transformación que se aplicará al elemento HTML que representa en el mapa cada marca filtrada. El contexto de esta función será el propio elemento HTML.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="correcciones">
+<h2>3.2.3. Correcciones<a class="headerlink" href="#correcciones" title="Enlazar permanentemente con este título">¶</a></h2>
+<dl class="class">
+<dt id="CorrSys">
+<em class="property">class </em><code class="descname">CorrSys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CorrSys" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Implemeta un sistema para realizar correcciones sobre los atributos
+<em>array</em> de un objeto. Las correcciones consisten bien en filtrar sus elementos,
+bien en añadir nuevos.</p>
+<p>El sistema de correcciones estará constituido por varias correcciones, cada
+una de las cuales afectará a un atributo del objeto. Varias correcciones
+podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
+varios atributos.</p>
+<p>Las <a class="reference internal" href="#Marker" title="Marker"><code class="xref js js-class docutils literal notranslate"><span class="pre">clases</span> <span class="pre">de</span> <span class="pre">marcas</span> <span class="pre">definidas</span> <span class="pre">como</span> <span class="pre">mutables</span></code></a> definen
+automáticamente una opción <code class="docutils literal notranslate"><span class="pre">corr</span></code> que es un objeto de este tipo, de modo
+que cuando se usan métodos que definen o aplican correcciones obre las marcas
+de la clase (<a class="reference internal" href="#Marker.register" title="Marker.register"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.register()</span></code></a>, <a class="reference internal" href="#Marker.correct" title="Marker.correct"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.correct()</span></code></a>,
+<a class="reference internal" href="#Marker.uncorrect" title="Marker.uncorrect"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.uncorrect()</span></code></a>) se utiliza este objeto.`</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Al construir mapas, esta clase no debería usarse directamente. Para
+detalles de su implementación recurra a los comentarios incluidos en el
+código fuente.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="Correctable">
+<em class="property">class </em><code class="descname">Correctable</code><span class="sig-paren">(</span><em>arr</em>, <em>sc</em><span class="sig-paren">)</span><a class="headerlink" href="#Correctable" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>La clase permite apuntar sobre el array qué elementos han sido filtrados
+por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál corrección.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>arr</strong> (<em>Array</em>) – El array original.</li>
+<li><strong>sc</strong> (<em>Object</em>) – Parte del <a class="reference internal" href="#CorrSys" title="CorrSys"><code class="xref js js-class docutils literal notranslate"><span class="pre">sistema</span> <span class="pre">de</span> <span class="pre">correcciones</span></code></a> definido para la marca en la que está el array que se aplica exclusivamente al array.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="Correctable.total">
+<code class="descclassname">Correctable.</code><code class="descname">total</code><a class="headerlink" href="#Correctable.total" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Number</p>
+<p>Longitud del array corregido, descontados los valores anulados.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Correctable.walk">
+<code class="descclassname">Correctable.</code><code class="descname">walk</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Correctable.walk" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Generador que recorre el <em>array</em> y devuelve información sobre el valor
+de los elementos y cuáles son las correcciones que los eliminan.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Correctable.CorrValue">
+<code class="descclassname">Correctable.</code><code class="descname">CorrValue</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Correctable.CorrValue" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> (<em>*</em>) – El valor del elemento o <code class="docutils literal notranslate"><span class="pre">null</span></code>, si alguna corrección lo eliminó.</li>
+<li><strong>filters</strong> (<em>Array.&lt;String&gt;</em>) – Los nombres de las correcciones que eliminan el elemento.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="filtros">
+<h2>3.2.4. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h2>
+<dl class="class">
+<dt id="FilterSys">
+<em class="property">class </em><code class="descname">FilterSys</code><span class="sig-paren">(</span><em>style</em><span class="sig-paren">)</span><a class="headerlink" href="#FilterSys" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Implementa un sistema de filtros para las marcas.
+Las <a class="reference internal" href="#Marker" title="Marker"><code class="xref js js-class docutils literal notranslate"><span class="pre">clases</span> <span class="pre">de</span> <span class="pre">marcas</span> <span class="pre">definidas</span> <span class="pre">como</span> <span class="pre">mutables</span></code></a> definen
+una propiedad <code class="docutils literal notranslate"><span class="pre">filter</span></code> que es un objeto de este tipo, de modo que los métodos
+que definen o aplican filtros a las marcas de la clase (<a class="reference internal" href="#Marker.registerF" title="Marker.registerF"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.registerF()</span></code></a>,
+<a class="reference internal" href="#Marker.filter" title="Marker.filter"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.filter()</span></code></a>, <a class="reference internal" href="#Marker.unfilter" title="Marker.unfilter"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.unfilter()</span></code></a>),
+utilizan este objeto.</p>
+<p>Construye un sistema de filtros</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>style</strong> (<em>function|L.LayerGroup|string</em>) – Estilo de filtrado. Consulte la opción <code class="docutils literal notranslate"><span class="pre">filter</span></code> de las <a class="reference internal" href="#Marker.options" title="Marker.options"><code class="xref js js-attr docutils literal notranslate"><span class="pre">optiones</span> <span class="pre">de</span> <span class="pre">Marker</span></code></a> para conocer cuáles son sus valores posibles.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Al construir mapas, esta clase no debería usarse directamente. Para
+detalles de su implementación recurra a los comentarios incluidos en el
+código fuente.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="otras-utilidades">
+<h2>3.2.5. Otras utilidades<a class="headerlink" href="#otras-utilidades" title="Enlazar permanentemente con este título">¶</a></h2>
+<dl class="function">
 <dt id="L.utils.noFilteredIconCluster">
-<em class="property">class </em><code class="descclassname">L.utils.</code><code class="descname">noFilteredIconCluster</code><span class="sig-paren">(</span><em>cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.noFilteredIconCluster" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<code class="descclassname">L.utils.</code><code class="descname">noFilteredIconCluster</code><span class="sig-paren">(</span><em>cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.noFilteredIconCluster" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Redefine <code class="docutils literal notranslate"><span class="pre">iconCreateFunction</span></code> basándose en la definición original de
 <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>
 para que el número del clúster sólo cuente los centros no filtrados.</p>
@@ -376,7 +814,7 @@ tal escala si ya no lo está.</p>
 
 <dl class="function">
 <dt id="L.utils.load">
-<code class="descclassname">L.utils.</code><code class="descname">load</code><span class="sig-paren">(</span><em>params</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.load" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<code class="descclassname">L.utils.</code><code class="descname">load</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.load" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Realiza peticiones <a class="reference external" href="https://developer.mozilla.org/es/docs/Web/Guide/AJAX">AJAX</a>. Las peticiones
 serán asíncronas, a menos que no se proporcionen función de <em>callback</em> ni
 <em>failback</em>.</p>
@@ -391,7 +829,7 @@ serán asíncronas, a menos que no se proporcionen función de <em>callback</em>
 <li><strong>params.params</strong> (<em>Object</em>) – Parámetros que se envían en la petición</li>
 <li><strong>params.callback</strong> (<em>function</em>) – Función que se ejecutará si la petición tiene éxito. La función tendrá como único argumento el objeto <a class="reference external" href="https://developer.mozilla.org/es/docs/Web/API/XMLHttpRequest">XMLHttpRequest</a>.</li>
 <li><strong>params.failback</strong> (<em>function</em>) – Función que se ejecutará cuando la petición falle. También admite como argumento un objeto <code class="docutils literal notranslate"><span class="pre">XMLHttpRequest</span></code>.</li>
-<li><strong>context</strong> (<em>Object</em>) – Objeto que usará como contexto las funciones de <em>callback</em> y <em>failback</em>.</li>
+<li><strong>params.context</strong> (<em>Object</em>) – Objeto que usará como contexto las funciones de <em>callback</em> y <em>failback</em>.</li>
 </ul>
 </td>
 </tr>
