@@ -1,5 +1,18 @@
 |API|
 *****
 
+Utilidades
+==========
+
+.. js:autofunction:: L.utils.createMutableIconClass
+
+.. js:autoclass:: L.utils.Converter
+   :members:
+
+.. js:autoclass:: L.utils.noFilteredIconCluster
+
+.. js:autofunction:: L.utils.grayFilter
+
+.. js:autofunction:: L.utils.load
 
 .. |API| replace:: :abbr:`API (Application Programming Interface)`

@@ -1,30 +1,57 @@
+/**
+ * Constructor del mapa
+ * @name MapAAdjOfer
+ * @class
+ * @param {String} id  Identificador del elemento HTML
+ *    donde se incrustará el mapa.
+ * @param {String} pathToRootDir  Ruta relativa desde el directorio en que
+ *    se encuentra la página web al directorio ``dist``.
+ * @classdesc Implementa  un mapa que muestra la adjudicación de vacantes provisionales
+ *    y la oferta educativa de cada centro, organizado según especialidades de los
+ *    cuerpos 590 y 591. El mapa ofrece:
+ *    <ul>
+ *    <li>La ubicación de los centros y información relativa a su oferta educativa,
+ *       plantillas orgánicas y de funcionamiento y vacantes anuales.
+ *    <li>Filtros según distintos criterios para eliminar aquellos centros irrelevantes.
+ *    <li>Cálculo de rutas con su distancia y sus tiempos estimados de viaje desde un origen
+ *       arbitrario.
+ *    <li>Cálculo de las isocronas.
+ *    </ul>
+ */
+// TODO:: El path debe incluir "dist".
 const MapaAdjOfer = (function() {
    "use strict";
 
-   /**
-    * Constructor de mapa
-    *
-    * @param {string} id  Identificador del elemento HTML
-    *    donde se incrustará el mapa.
-    *
-    * @param {string} pathToRootDir  Ruta relativa desde el directorio en que
-    *    se encuentra la página web al directorio ``dist``.
-    */
    function MapaAdjOfer(id, pathToRootDir) {
+      /** @lends MapaAdjOfer.prototype */
       Object.defineProperties(this, {
+         /**
+          * Identificador del elemento HTML donde se ubica el mapa
+          * @private
+          * @type {String}
+          */
          _idmap: {
             value: id,
             writable: false,
             enumerable: false,
             configurable: false
          },
+         /**
+          * Ruta a la raiz desde el directorio donde su ubica la página.
+          * @private
+          * @type  {String}
+          */
          _path: {
             value: pathToRootDir,
             writable: false,
             enumerable: false,
             configurable: false
          },
-         // Funciónes que se dispararán al acabar de cargar datos.
+         /**
+          * Guarda las funciones que se desean ejecutar al acabar de cargar los datos.
+          * @private
+          * @type {Array}
+          */
          _events: {
             value: [],
             writable: false,
@@ -33,6 +60,11 @@ const MapaAdjOfer = (function() {
          }
       });
 
+      /**
+       * Iconos disponibles
+       * @memberof MapaAdjOfer.prototype
+       * @type {Icon}
+       */
       this.Iconos = createIcons.call(this);
       loadMap.call(this);
       createMarker.call(this);
@@ -40,12 +72,12 @@ const MapaAdjOfer = (function() {
 
 
    /**
-    * Permite agregar centros al mapa.
+    * Agregar centros al mapa.
+    * @memberof MapaAdjOfer.prototype
     *
-    * @param {string} estilo    Estilo del icono.
+    * @param {String} estilo    Estilo del icono.
     * @param {Object} datos     Datos en formato GeoJSON.
     *
-    * TODO:: En vez del icono habría que pasar el nombre del estilo.
     */
    MapaAdjOfer.prototype.agregarCentros = function(estilo, datos) {
       const Icon = this.Iconos[estilo];
@@ -67,8 +99,9 @@ const MapaAdjOfer = (function() {
 
    /**
     * Cambia el estilo del icono.
+    * @memeberof MapaAdjOfer.prototype
     *
-    * @param {string} estilo  Nuevo estilo para el icono.
+    * @param {String} estilo  Nuevo estilo para el icono.
     */
    MapaAdjOfer.prototype.cambiarIcono = function(estilo) {
       const Icono = this.Iconos[estilo];
@@ -77,8 +110,9 @@ const MapaAdjOfer = (function() {
 
    /**
     * Define una función que se ejecutará al acabar de agregar datos.
+    * @memeberof MapaAdjOfer.prototype
     *
-    * @param {function} func   La función.
+    * @param {Function} func   La función.
     */
    MapaAdjOfer.prototype.lanzarTrasDatos = function(func) {
       this._events.push(func);
@@ -87,11 +121,17 @@ const MapaAdjOfer = (function() {
 
    /**
     * Elimina todas las funciones que se disparan al acabar de agregar datos.
+    * @memberof MapaAdjOfer.prototype
     */
    MapaAdjOfer.prototype.flush = function() {
       this._event.length = 0;
    } 
 
+   /**
+    * Carga el mapa y crea la capa de cluster donde se agregan los centros.
+    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @private
+    */
    function loadMap() {
       this.map = L.map(this._idmap).setView([37.07, -6.27], 9);
       this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
@@ -99,7 +139,12 @@ const MapaAdjOfer = (function() {
         maxZoom: 18
       }).addTo(this.map);
 
-      // Capa que agrupa las marcas.
+      /**
+       * Capa donde se agregan las marcas
+       * @memberof MapaAdjOfer.prototype
+       * @type {L.MarkerClusterGroup}
+       *
+       */
       this.cluster = L.markerClusterGroup({
          showCoverageOnHover: false,
          // Al llegar a nivel 14 de zoom se ven todas las marcas.
@@ -109,8 +154,18 @@ const MapaAdjOfer = (function() {
       }).addTo(this.map);
    }
 
-
+   /**
+    * Crea la clase de marca para los centros y le
+    * añade las correcciones y filtros definidos para ella.
+    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @private
+    */
    function createMarker() {
+      /**
+       * Clase de marca para los centros educativos.
+       * @memberof MapAdjOfer.prototype
+       * @type {Marker}
+       */
       this.Centro = L.Marker.extend({
          options: {
             mutable: "feature.properties.data",
@@ -123,6 +178,11 @@ const MapaAdjOfer = (function() {
       createFilters.call(this);
    }
 
+   /**
+    * Registra las correcciones disponibles.
+    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @private
+    */
    function createCorrections() {
       // Elimina enseñanzas que no son bilingües
       this.Centro.register("bilingue", {
@@ -134,7 +194,7 @@ const MapaAdjOfer = (function() {
          }
       });
 
-      // Añade las vacantes telefónicas a las adjudicaciones.
+      // Añade vacantes telefónicas a las adjudicaciones.
       this.Centro.register("vt+", {
          attr: "adj",
          add: true,
@@ -166,6 +226,11 @@ const MapaAdjOfer = (function() {
       });
    }
 
+   /**
+    * Registra los filtros definidios para este tipo de mapa.
+    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @private
+    */
    function createFilters() {
       // Filtra según cantidad de adjudicaciones.
       this.Centro.registerF("adj", {
@@ -186,7 +251,11 @@ const MapaAdjOfer = (function() {
    }
 
 
-   // Definición de los distintos estilos para iconos.
+   /**
+    * Define los distintos tipos de iconos disponibles
+    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @private
+    */
    function createIcons() {
       // Los dos iconos CSS comparten todo, excepto el estilo CSS.
       const converterCSS = new L.utils.Converter(["numvac", "tipo"])
@@ -277,19 +346,15 @@ const MapaAdjOfer = (function() {
          }
 
 
-         /**
-          * Devuelve blanco o negro dependiendo de cuál contraste mejor con el
-          * color RGB suministrado como argumento
-          */
+         // Devuelve blanco o negro dependiendo de cuál contraste mejor con el
+         // color RGB suministrado como argumento
          function blancoNegro(rgb) {
             var y = 2.2;
 
             return (0.2126*Math.pow(rgb[0]/255, y) + 0.7152*Math.pow(rgb[1]/255, y) + 0.0722*Math.pow(rgb[2]/255, y) > Math.pow(0.5, y))?"#000":"#fff";
          }
 
-         /**
-          * Convierte un array de tres enteros (RGB) en notación hexadecimal.
-          */
+         // Convierte un array de tres enteros (RGB) en notación hexadecimal.
          function rgb2hex(rgb) {
             return "#" + rgb.map(dec => ("0" + dec.toString(16)).slice(-2)).join("");
          }

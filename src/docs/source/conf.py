@@ -39,7 +39,8 @@ release = '0.1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.todo"
+    "sphinx.ext.todo",
+    "sphinx_js"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -174,3 +175,5 @@ epub_title = project
 epub_exclude_files = ['search.html']
 
 todo_include_todos = True
+
+js_source_path = "../../dist"

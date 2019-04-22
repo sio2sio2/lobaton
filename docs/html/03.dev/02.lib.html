@@ -85,7 +85,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../02.user/index.html">2. Documentación de usuario</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="01.map.html">3.1. Creación de mapas</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">3.2. <abbr title="Application Programming Interface">API</abbr></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3.2. <abbr title="Application Programming Interface">API</abbr></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utilidades">3.2.1. Utilidades</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -156,6 +159,255 @@
             
   <div class="section" id="api">
 <h1>3.2. <abbr title="Application Programming Interface">API</abbr><a class="headerlink" href="#api" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="section" id="utilidades">
+<h2>3.2.1. Utilidades<a class="headerlink" href="#utilidades" title="Enlazar permanentemente con este título">¶</a></h2>
+<dl class="function">
+<dt id="L.utils.createMutableIconClass">
+<code class="descclassname">L.utils.</code><code class="descname">createMutableIconClass</code><span class="sig-paren">(</span><em>name</em>, <em>options</em>, <em>updater</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.createMutableIconClass" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Facilita la construcción de clases de iconos. Cada clase está asociada
+a un estilo de icono distinto.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) – Nombre identificativo para la clase de icono.</li>
+<li><strong>options</strong> (<em>Object</em>) – Opciones de construcción de la clase.</li>
+<li><strong>options.css</strong> (<em>string</em>) – Para un icono creado con CSS, el archivo .css. que define el aspecto.</li>
+<li><strong>options.html</strong> (<em>string|DocumentFragment|Document</em>) – HTML que define la plantilla del icono. Se puede pasar como:  * Una cadena que contenga directamente el código HTML. * Un <code class="docutils literal notranslate"><span class="pre">DocumentFragment</span></code>, que sería lo que se obtiene como contenido de un <code class="docutils literal notranslate"><span class="pre">&lt;template&gt;</span></code>. * Un <code class="docutils literal notranslate"><span class="pre">Document</span></code>, que sería lo que se obtiene de haber hecho una petición AJAX y quedarse cn la respuesta XML.</li>
+<li><strong>options.url</strong> (<em>string</em>) – Alternativamente a la opción anterior, la URL de un archivo donde está definido el icono (p.e. un SVG).</li>
+<li><strong>options.converter</strong> (<a class="reference internal" href="#L.utils.Converter" title="L.utils.Converter"><em>L.utils.Converter</em></a>) – Objeto <a class="reference external" href="mailto:{&#37;&#52;&#48;link">{<span>&#64;</span>link</a> L.utils.Converter} para la conversión de los datos en opciones de dibujo.</li>
+<li><strong>updater</strong> (<em>function</em>) – Función que actualiza el aspecto del icono a partir de los nuevos valores que tengan las opciones de dibujo. Toma las opciones de dibujo (o una parte de ellas) y modifica el elemento DIV (o SVG. etc.) del icono para que adquiera un aspecto adecuado. Debe escribirse teniendo presente que pueden no pasarse todas las opciones de dibujo, sino sólo las que se modificaron desde la última vez que se dibujó el icono. Por tanto, debe escribirse la función para realizar modificaciones sobre el aspecto preexistente del icono, en vez de escribirse para recrear el icono desde la plantilla</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="L.utils.Converter">
+<em class="property">class </em><code class="descclassname">L.utils.</code><code class="descname">Converter</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Permite definir cómo un objeto se obtiene
+a partir de las propiedades de otro.</p>
+<p>Construye conversores entre objetos de distinto tipo.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>params</strong> (<em>Array.&lt;String&gt;</em>) – Enumera las nombres de las propiedades que tiene el objeto de destino.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">converter</span> <span class="o">=</span> <span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">Converter</span><span class="p">([</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;tipo&quot;</span><span class="p">])</span>
+                            <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;numadj&quot;</span><span class="p">,</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="nx">a</span> <span class="p">=&gt;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">total</span><span class="p">)</span>
+                            <span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="L.utils.Converter.define">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">define</code><span class="sig-paren">(</span><em>param</em>, <em>properties</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter.define" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Define cómo obtener una propiedad del objeto resultante.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first simple">
+<li><strong>param</strong> (<em>String</em>) – El nombre de la propiedad.</li>
+<li><strong>properties</strong> (<em>Array.&lt;String&gt;|String</em>) – Los nombres de las propiedades del objeto original que contribuyen a formar el valor de la propiedad del objeto resultante. Si la propiedad es una sola, puede evitarse el uso del <em>array</em> y escribir directamente el nombre. Si se omite este argumento, se sobreentiende que el nombre de la propiedad en el objeto original y el resultante es el mismo.</li>
+<li><strong>func</strong> (<em>function</em>) – La función conversora. Debe definirse de modo que reciba como argumentos los valores de las propiedades que se enumeran en <code class="docutils literal notranslate"><span class="pre">properties</span></code>, conservando el orden.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first last"><strong>L.utils.Converter</strong> – El propio objeto de conversión o null, si la propiedad que se intenta definir, no se registró al crear el objeto.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="L.utils.Converter.defined">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">defined</code><a class="headerlink" href="#L.utils.Converter.defined" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Informa de si todas las propiedades habilitadas tienen definida una conversión</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.Converter.disable">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">disable</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter.disable" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Deshabilita una propiedad del objeto resultante. Esto significa
+que cuando se obre la conversión del objeto, nunca se intentará
+obtener el valor de esta propiedad.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first simple">
+<li><strong>param</strong> (<em>string</em>) – Nombre de la propiedad.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first last"><strong>L.utils.Converter</strong> – El propio objeto.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.Converter.enable">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">enable</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter.enable" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Habilita una propiedad del objeto resultante.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first simple">
+<li><strong>param</strong> (<em>string</em>) – Nombre de la propiedad.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first last"><strong>L.utils.Converter</strong> – El propio objeto.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="L.utils.Converter.enabled">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">enabled</code><a class="headerlink" href="#L.utils.Converter.enabled" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Array.&lt;String&gt;</p>
+<p>Las propiedades habilitadas para el objeto resultante.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.Converter.isDefined">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">isDefined</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter.isDefined" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Informa de si la propiedad tiene definida la conversión.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first simple">
+<li><strong>param</strong> (<em>String</em>) – El nombre de la propiedad.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first last"><strong>Boolean</strong> –</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="L.utils.Converter.params">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">params</code><a class="headerlink" href="#L.utils.Converter.params" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p><strong>type:</strong> Array.&lt;String&gt;</p>
+<p>Las propiedades definidas para el objeto resultante.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.Converter.run">
+<code class="descclassname">L.utils.Converter.</code><code class="descname">run</code><span class="sig-paren">(</span><em>o</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.Converter.run" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Lleva a cabo la conversión del objeto suministrado. Sólo se
+obtienen las propiedades que estén habilitadas y para las que
+se pueda realizar la conversión, porque exista toda la
+información requerida en el objeto.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first simple">
+<li><strong>o</strong> (<em>Object</em>) – El objeto original</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Devuelve:</th><td class="field-body"><p class="first last"><strong>Object</strong> – El objeto resultante.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="L.utils.noFilteredIconCluster">
+<em class="property">class </em><code class="descclassname">L.utils.</code><code class="descname">noFilteredIconCluster</code><span class="sig-paren">(</span><em>cluster</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.noFilteredIconCluster" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Redefine <code class="docutils literal notranslate"><span class="pre">iconCreateFunction</span></code> basándose en la definición original de
+<a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">L.MarkerClusterGroup</a>
+para que el número del clúster sólo cuente los centros no filtrados.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cluster</strong> (<em>L.MarkerCluster</em>) – El cluster sobre el que se aplica la función.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.grayFilter">
+<code class="descclassname">L.utils.</code><code class="descname">grayFilter</code><span class="sig-paren">(</span><em>filtered</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.grayFilter" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Pone en escala de grises un icono filtrado o elimina
+tal escala si ya no lo está.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filtered</strong> (<em>boolean</em>) – Si el icono está filtrado o no.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="L.utils.load">
+<code class="descclassname">L.utils.</code><code class="descname">load</code><span class="sig-paren">(</span><em>params</em>, <em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#L.utils.load" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Realiza peticiones <a class="reference external" href="https://developer.mozilla.org/es/docs/Web/Guide/AJAX">AJAX</a>. Las peticiones
+serán asíncronas, a menos que no se proporcionen función de <em>callback</em> ni
+<em>failback</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>params</strong> (<em>Object</em>) – Objeto que contiene los parámetros para realizar la petición.</li>
+<li><strong>params.url</strong> (<em>String</em>) – URL de la petición.</li>
+<li><strong>params.method</strong> (<em>String</em>) – Método HTTP de petición. Por defecto, será <code class="docutils literal notranslate"><span class="pre">GET</span></code>, si no se envía parámetros y <code class="docutils literal notranslate"><span class="pre">POST</span></code>, si sí se hace.</li>
+<li><strong>params.params</strong> (<em>Object</em>) – Parámetros que se envían en la petición</li>
+<li><strong>params.callback</strong> (<em>function</em>) – Función que se ejecutará si la petición tiene éxito. La función tendrá como único argumento el objeto <a class="reference external" href="https://developer.mozilla.org/es/docs/Web/API/XMLHttpRequest">XMLHttpRequest</a>.</li>
+<li><strong>params.failback</strong> (<em>function</em>) – Función que se ejecutará cuando la petición falle. También admite como argumento un objeto <code class="docutils literal notranslate"><span class="pre">XMLHttpRequest</span></code>.</li>
+<li><strong>context</strong> (<em>Object</em>) – Objeto que usará como contexto las funciones de <em>callback</em> y <em>failback</em>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">load</span><span class="p">({</span>
+   <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;image/centro.svg&#39;</span><span class="p">,</span>
+   <span class="nx">callback</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">xhr</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Éxito&quot;</span><span class="p">);</span> <span class="p">},</span>
+   <span class="nx">failback</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">xhr</span><span class="p">)</span> <span class="p">{</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">);</span> <span class="p">},</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
 </div>
 
 

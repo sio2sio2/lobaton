@@ -5,32 +5,32 @@
    L.utils = {};
 
    /**
-    * Realiza peticiones AJAX.
+    * Realiza peticiones `AJAX
+    * <https://developer.mozilla.org/es/docs/Web/Guide/AJAX>`_. Las peticiones
+    * serán asíncronas, a menos que no se proporcionen función de *callback* ni
+    * *failback*.
     * @memberof L.utils
     *
-    * La petición será siempree asíncrona a menos que no se proporcionen
-    * funciones de *callback* y *failback*.
-    * 
     * @param {Object} params Objeto que contiene los parámetros para realizar
     *    la petición.
     * @param {String} params.url URL de la petición.
     * @param {String} params.method  Método HTTP de petición. Por defecto, será
-    *    ``GET``, si no se envía parámetros y ``POST``, si sí se hace.
+    * ``GET``, si no se envía parámetros y ``POST``, si sí se hace.
     * @param {Object} params.params Parámetros que se envían en la petición
     * @param {Function} params.callback   Función que se ejecutará si la
-    *    petición tiene éxito. La función tendrá como único argumento el objeto
-    *    {@link https://developer.mozilla.org/es/docs/Web/API/XMLHttpRequest XMLHttpRequest}
+    * petición tiene éxito. La función tendrá como único argumento el objeto
+    * `XMLHttpRequest <https://developer.mozilla.org/es/docs/Web/API/XMLHttpRequest>`_.
     * @param {Function} params.failback   Función que se ejecutará cuando
-    *    la petición falle. También admite como argumento un objeto
-    *    ``XMLHttpRequest``.
+    * la petición falle. También admite como argumento un objeto
+    * ``XMLHttpRequest``.
     * @param {Object} context Objeto que usará como contexto las funciones
-    *    de *callback* y *failback*.
+    * de *callback* y *failback*.
     *
     * @example
     *
     * load({
     *    url: 'image/centro.svg',
-    *    callback: funcion(xhr) { console.log("Éxito"); },
+    *    callback: function(xhr) { console.log("Éxito"); },
     *    failback: function(xhr) { console.log("Error"); },
     * });
     *
@@ -90,14 +90,13 @@
     * @param {string} options.css   Para un icono creado con CSS, el archivo .css.
     *    que define el aspecto.
     * @param {string|DocumentFragment|Document} options.html  HTML que define la
-    *    plantilla del icono. Se puede pasar como:
-    *    <ul>
-    *    <li>Una cadena que contenga directamente el código HTML.
-    *    <li>Un <code>DocumentFragment</code>, que sería lo que se obtiene como
-    *        contenido de un <code>&lt;template&gt;</code>.
-    *    <li>Un <code>Document</code>, que sería lo que se obtiene de haber hecho
-    *    una petición AJAX y quedarse cn la respuesta XML.
-    *    </ul>
+    * plantilla del icono. Se puede pasar como:
+    *    
+    * * Una cadena que contenga directamente el código HTML.
+    * * Un ``DocumentFragment``, que sería lo que se obtiene como
+    *   contenido de un ``<template>``.
+    * * Un ``Document``, que sería lo que se obtiene de haber hecho
+    *   una petición AJAX y quedarse cn la respuesta XML.
     *
     * @param {string} options.url   Alternativamente a la opción anterior,
     *    la URL de un archivo donde está definido el icono (p.e. un SVG).
@@ -153,11 +152,10 @@
    
    /**
     * Redefine ``iconCreateFunction`` basándose en la definición original de
-    * {@link https://github.com/Leaflet/Leaflet.markercluster
-    * L.MarkerClusterGroup} para que el número del clúster sólo cuente los
-    * centros no filtrados.
+    * `L.MarkerClusterGroup <https://github.com/Leaflet/Leaflet.markercluster>`_
+    * para que el número del clúster sólo cuente los centros no filtrados.
     *
-    * @param {L.MarkerCluster} El cluster sobre el que se aplica la función.
+    * @param {L.MarkerCluster} cluster El cluster sobre el que se aplica la función.
     */
    L.utils.noFilteredIconCluster = function(cluster) {
 		const childCount = cluster.getChildCount(),
@@ -183,10 +181,10 @@
     *
     * @class
     * @param {Array.<String>} params Enumera las nombres de las propiedades que tiene
-    *    el objeto de destino.
+    * el objeto de destino.
     *
     * @classdesc Permite definir cómo un objeto se obtiene
-    *    a partir de las propiedades de otro.
+    * a partir de las propiedades de otro.
     *
     * @example
     *
@@ -518,13 +516,13 @@
     *
     * @example
     *
-    *    const o = new Options({a: 1, b: 2, c: 3});
-    *    o.updated  // false, ya que se fijaron valores nuevos.
-    *    o.a = 0    // Fijamos un valor para a
-    *    o.d = 7    // No tiene efecto. Con strict provocará un error.
-    *    o.modified // {a: 1}. Sólo devuelve los valores actualizados.
-    *    o.reset()
-    *    o.updated  // true. Resetear marca el objeto como actualizado.
+    * const o = new Options({a: 1, b: 2, c: 3});
+    * o.updated  // false, ya que se fijaron valores nuevos.
+    * o.a = 0    // Fijamos un valor para a
+    * o.d = 7    // No tiene efecto. Con strict provocará un error.
+    * o.modified // {a: 1}. Sólo devuelve los valores actualizados.
+    * o.reset()
+    * o.updated  // true. Resetear marca el objeto como actualizado.
     *
     */
    const Options = (function() {
@@ -1376,14 +1374,14 @@
        */
 
       /**
-       * Construye el <code>Correctable</code>.
+       * Construye el ``Correctable``.
        * @name Correctable
        * @class
        * @classdesc La clase permite apuntar sobre el array qué elementos han sido filtrados
-       *    por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál corrección.
+       * por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál corrección.
        * @param {Array} arr El array original.
        * @param {Object} sc Parte del {@link CorrSys sistema de correcciones} definido para la
-       *    marca en la que está el array que se aplica exclusivamente al array.
+       * marca en la que está el array que se aplica exclusivamente al array.
        */
       const Correctable = (function() {
          /** @lends Correctable.prototype */
@@ -1605,7 +1603,7 @@
        * varios atributos.
        *
        * Las {@link Marker marcas definidas como mutables} definen
-       * automáticamente una opción <code>corr</code> que es un objeto de este tipo:
+       * automáticamente una opción ``corr`` que es un objeto de este tipo.
        *
        */
       const CorrSys = (function() {
