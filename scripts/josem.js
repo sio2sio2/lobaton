@@ -67,12 +67,12 @@ function displaySidebar() {
 }
 
 function aplicaCorreccion(cor, params) {
-   g.Centro.apply(cor, params);
+   g.Centro.correct(cor, params);
    g.Centro.invoke("refresh");
 }
 
 function deshaceCorreccion(cor) {
-   g.Centro.unapply(cor);
+   g.Centro.uncorrect(cor);
    g.Centro.invoke("refresh");
 }
 
