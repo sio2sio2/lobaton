@@ -1070,7 +1070,6 @@
        *    para realizar su tarea.
        */
       apply: function(name) {
-         console.log("asfasf");
          const property = this.options.corr.getProp(name),
                sc       = this.options.corr[property],
                func     = sc[name],
@@ -1236,7 +1235,6 @@
              *    falso si no se hizo porque ya estaba aplicada.
              */
             apply: function(marker, name) {
-               console.log("asfasf2");
                const func = this._sc[name],
                      add  = func.prop.add,
                      params = func.prop.params;

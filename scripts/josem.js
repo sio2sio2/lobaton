@@ -44,6 +44,22 @@ window.onload = function() {
       }
    });
 
+   //Filtros
+
+   //Vamos a enlazar los checkboxes para que efectúen el filtrado o no de los correspondientes centros
+   document.getElementById("ocultar_centros_oferta").addEventListener("change", function(e) {
+      filtrarCentrosSinOferta(this.checked);
+   });
+
+   document.getElementById("ocultar_centros_adj").addEventListener("change", function(e) {
+      filtrarCentrosSinAdjudicaciones(this.checked);
+   });
+
+   //Por defecto, el filtrado de centros con enseñanzas mínimas estará activo
+   filtrarCentrosSinAdjudicaciones(false);
+   filtrarCentrosSinOferta(true);
+
+
    // Esta funcionalidad hace que la barra lateral (sidebar) se abra y cierre pulsando los botones oportunos
    $('#sidebarCollapse').on('click', toogleSidebar);
    $('.close').on('click', toogleSidebar);
@@ -81,6 +97,26 @@ function sanitizeNombreCorreccion(cor) {
       cor = cor.slice(0, -2);
    }
    return cor;
+}
+
+function filtrarCentrosSinAdjudicaciones(mostrar){
+   if(mostrar){
+      g.Centro.filter("adj", {min: 1});
+   }
+   else {
+      g.Centro.unfilter("adj");
+   }
+   g.Centro.invoke("refresh");
+}
+
+function filtrarCentrosSinOferta(mostrar){
+   if(mostrar){
+      g.Centro.filter("oferta", {min: 1});
+   }
+   else {
+      g.Centro.unfilter("oferta");
+   }
+   g.Centro.invoke("refresh");
 }
 
 function poblarSelectores() {

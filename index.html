@@ -243,6 +243,33 @@
             </div>
           </template>
 
+          <div class="section-cardbox">
+            <div class="section-cardbox-header" data-toggle="collapse" href="#ajustes">
+              <span>Ajustes</span>
+            </div>
+            <div id="ajustes" class="section-cardbox-content collapse">
+              <form autocomplete="off" id="form_filtros">
+                <fieldset class="form-group" name="campos_ajustes">
+                  <legend>Ajustes generales</legend>
+                  <div class="form-group row">
+                    <label class="etiqueta col-form-label" for="ocultar_centros_oferta">Ocultar centros sin oferta</label>
+                    <div class="custom-switch custom-switch-xs pl-0 ">
+                      <input name="ocultar_centros_oferta" class="custom-switch-input filtro" id="ocultar_centros_oferta" type="checkbox" checked="checked">
+                      <label class="custom-switch-btn" for="ocultar_centros_oferta"></label>
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label class="etiqueta col-form-label" for="ocultar_centros_adj">Ocultar centros sin adjudicaciones</label>
+                    <div class="custom-switch custom-switch-xs pl-0 ">
+                      <input name="ocultar_centros_adj" class="custom-switch-input filtro" id="ocultar_centros_adj" type="checkbox" >
+                      <label class="custom-switch-btn" for="ocultar_centros_adj"></label>
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+
           <div class="bottom">
 
           </div>          
