@@ -16,7 +16,7 @@ Marcas
 ======
 
 .. js:autoclass:: Marker
-   :members: store, reset, register, correct, uncorrect, registerF, filter, unfilter, invoke, refresh, options, Options
+   :members: store, reset, register, correct, uncorrect, registerF, filter, unfilter, invoke, refresh, getData, options, Options
 
 Correcciones
 ============

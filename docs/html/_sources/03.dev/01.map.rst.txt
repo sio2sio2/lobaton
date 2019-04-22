@@ -237,7 +237,8 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
      LeafLet_.
 
    * El valor de de la propiedad se tomará como los datos asociados a la marca
-     y de hecho, tal valor será el que devuelva el método de marca ``.getData()``.
+     y de hecho, tal valor será el que devuelva el método de marca
+     :js:meth:`Marker.getData`.
 
      .. warning:: Si en algún momento requiere consultar los datos y estos
         han sufrido alguna corrección, tenga presente que :ref:`las propiedades
@@ -395,7 +396,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
    .. _dev-map-converter-adj:
 
    Para definir cómo transformar ``data`` en ``opts``, la librería provee de una
-   clase ``L.utils.Converter``::
+   clase :js:class:`L.utils.Converter`::
 
       const converter = new L.utils.Converter(["numadj", "tipo"])
                            .define("numadj", "adj", a => a.length)
@@ -431,7 +432,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          converter.define("tipo", "tipo", t => t);
 
-   Como el método ``.define()`` devuelve el objeto mismo, es posible hacer
+   Como el método :js:meth:`L.utils.Converter.define` devuelve el objeto mismo, es posible hacer
    encadenamiento y convertir las tres instrucciones en una sola.
 
    Hay, no obstante, dos puntualizaciones que hacer:
@@ -524,7 +525,7 @@ La inserción de los datos en la capa, genera para cada uno de ellos la marca qu
 definimos en el método ``.pointToLayer()``. Ahora bien, ¿qué mecanismos tenemos
 para acceder a estas marcas?
 
-- La clase ``Centro`` dispone de un atributo ``store``, que es un *array*
+- La clase ``Centro`` dispone de un atributo :js:attr:`store <Marker.store>`, que es un *array*
   compuesto por todas las marcas que se han creado de esa clase::
 
       for(const c in Centro.store) console.log("Hola, soy una marca de centro", c);
@@ -540,7 +541,7 @@ para acceder a estas marcas?
      centro.on("click", e => console.log("Soy la marca que acabas de pulsar", e.target));
 
 - Como atajo cuando se quiere aplicar un método a todas las marcas de la clase,
-  puede usar el método de clase ``.invoke``::
+  puede usar el método de clase :js:meth:`Marker.invoke`::
 
    Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
 
@@ -650,7 +651,7 @@ los elementos que no representan adjudicaciones a personal en prácticas o
 interino.
 
 .. warning:: La aplicación de la corrección no altera automáticamente el aspecto
-   de las marcas. Para hacerlo, debe aplicarse el método ``.refresh()`` sobre
+   de las marcas. Para hacerlo, debe aplicarse el método :js:class:`Marker.refresh` sobre
    las marcas::
 
       Centro.invoke("refresh");
