@@ -1301,7 +1301,7 @@
                func     = sc[name],
                params   = func.prop.params;
          let   arr;
-
+         
          // La resolución de issue #22, hace que esto ocurra sólo
          // si se registra la corrección después de haber añadido la marca.
          if(!(arr = this.options.corr.isCorrectable(property, this))) {
