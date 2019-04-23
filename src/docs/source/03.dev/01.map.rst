@@ -561,7 +561,7 @@ realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
 la librería:
 
 * Consulte `en línea el resultado del ejemplo
-  <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
+  <https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.minima.html>`_.
 
 Correcciones
 ============
@@ -848,7 +848,7 @@ redibujado de marca se hace automáticamente.
 .. rubric:: Ejemplo de aplicación
 
 * Consulte `en línea la variante del ejemplo anterior que añade una
-  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_
+  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.corr.html>`_
 
 Variantes
 *********
