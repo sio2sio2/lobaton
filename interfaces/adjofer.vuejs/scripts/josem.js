@@ -1,7 +1,7 @@
 var g;
 
 window.onload = function() {
-   g = new MapaAdjOfer("map", "./dist");
+   g = new MapaAdjOfer("map", "../../dist");
    g.lanzarTrasDatos(cargaCorrecciones);
    //cargaCorrecciones();
 

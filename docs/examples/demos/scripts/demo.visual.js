@@ -18,7 +18,7 @@ window.onload = function() {
       });
    }
 
-   const g = new MapaAdjOfer("map", "../../dist");
+   const g = new MapaAdjOfer("map", "../../../dist");
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
    g.Centro.correct("bilingue", {bil: ["Inglés"]});
