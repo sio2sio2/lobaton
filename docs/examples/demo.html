@@ -1,25 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
-   <title>DivIcon variable</title>
+<html lang="es">
    <meta charset="UTF-8">
+   <title>Prueba de iconos mutables</title>
    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <!-- Leaflet -->
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
          crossorigin="">
    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
             integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
             crossorigin=""></script>
+
    <!-- Plugin: Añade botón para maximizar el mapa -->
    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet'>
-   <link id="iconstyle" rel="stylesheet" href="dist/images/icon2.css">
+
    <!-- Plugin: Agrupa marcas contiguas -->
    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
-   <script src="../dist/leafext.js"></script>
-   <script src="scripts/cluster.js"></script>
 
+   <!-- Extensión para el soporte de iconos mutables -->
+   <script src="../../dist/leafext.js"></script>
+
+   <!-- Particularidades de esta página -->
+   <script src="scripts/demo.visual.js"></script>
+   <script src="../../dist/maps/adjofer/map.js"></script>
    <style>
       /*<![CDATA[*/
       html { height: 100%; }
@@ -27,20 +34,41 @@
          margin: 0; padding: 0;
          height: 100%;
       }
+      #selector {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         height: 4em;
+      }
       #map {
         margin: 0;
         padding: 0;
-        height: 100%;
+        height: calc(100% - 4em);
+      }
+
+      .filtered {
+         filter: grayscale(100%);
       }
       /*]]>*/
    </style>
-   <link rel="stylesheet" href="styles/screen.css">
-
-   <div id="progress"><div id="progress-bar"></div></div>
-   <div id="map"></div>
-   <!-- Elementos del icono para decorar con CSS images/icon[12].css -->
+   <!-- HTML para los iconos que se decoran con CSS -->
    <template>
       <div class="content"><span></span></div>
       <div class="arrow"></div>
    </template>
+
+   <form id="selector" action="">
+      <select name="estilo">
+         <option value="piolin">Icono (px en el CSS)</option>
+         <option value="chupachups">Icono (% en el CSS)</option>
+         <option value="solicitud">Antiguo SVG de solicitud</option>
+         <option value="boliche" selected>Antiguo SVG de centro</option>
+      </select>
+      <select name="especialidad">
+         <option value="../../json/590104.json" selected>590104</option>
+         <option value="../../json/590107.json">590107</option>
+      </select>
+   </form>
+   <div id="map"></div>
+
 </html>

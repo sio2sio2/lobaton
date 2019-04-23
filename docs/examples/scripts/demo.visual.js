@@ -18,7 +18,7 @@ window.onload = function() {
       });
    }
 
-   const g = new MapaAdjOfer("map", "../../../dist");
+   const g = new MapaAdjOfer("map", "../../dist");
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
    g.Centro.correct("bilingue", {bil: ["Inglés"]});
@@ -40,10 +40,11 @@ window.onload = function() {
       const marca = e.layer;
       marca.on("click", function(e) {
          const icon = e.target.options.icon;
-         console.log("DEBUG - ident", e.target.feature.properties.name);
+         console.log("DEBUG - ident", e.target.getData().id.nom);
          console.log("DEBUG - marca", e.target);
          console.log("DEBUG - datos", e.target.getData());
          console.log("DEBUG - filtrado", e.target.filtered);
+         console.log("DEBUG - oferta", Array.from(e.target.getData().oferta));
       });
    });
 

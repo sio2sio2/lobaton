@@ -561,7 +561,7 @@ realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
 la librería:
 
 * Consulte `en línea el resultado del ejemplo
-  <https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.minima.html>`_.
+  <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
 
 Correcciones
 ============
@@ -676,8 +676,21 @@ correcciones debe tenerse en cuenta lo siguiente
    conocer de ellos si está eliminado o no.
 
 ``for .. of``
-   Este modo de recorrer el *array* es la única excepción: devuelve en cada
-   iteración todos los elementos no eliminados.
+   Devuelve también todos los elementos, eliminados o no, pero cada elemento no
+   es el elemento original, sino un nuevo objeto que se caracteriza por lo
+   siguiente:
+
+   * Si el elemento original era un objeto, devuelve un objeto con las mismas
+     propiedades al que se ha añadido otra llamada ``filters`` que es un *array*
+     con los nombres de las correcciones que filtran el valor. EN consecuencia,
+     un ``filters`` vacío supone que el valor no se ha filtrado.
+
+   * Si el elemento original no era un objeto, sino un tipo primitivo, se
+     devuelve un objeto en cuyo atributo ``value`` se almacena el valor
+     original del elemento. También dispone del atributo ``filters``.
+
+   En ambos casos se dispone de un método ``isPrimitive`` para saber si el
+   elemento original era o no un objeto en su origen.
 
 ``.total``
    Devuelve el número total de elementos, descontados los eliminados. Por tanto,
@@ -687,14 +700,6 @@ correcciones debe tenerse en cuenta lo siguiente
       const converter = new L.utils.Converter(["numadj", "tipo"])
                               .define("numadj", "adj", a => a.total)
                               .define("tipo");
-
-``.walk()``
-   Que es un método generador que en cada iteración devuelve un
-   objeto en cuya propiedad ``value`` se encuentra el valor del elemento o
-   ``null`` si el elemento se eliminó, y en cuya propiedad ``filters`` se
-   almacenan en un array los nombres de las correcciones que eliminaron el
-   elemento. El método es útil, si queremos mostrar una listado de los elementos
-   del array y queremos dar información también de los filtrados.
 
 Reversión
 ---------
@@ -848,7 +853,7 @@ redibujado de marca se hace automáticamente.
 .. rubric:: Ejemplo de aplicación
 
 * Consulte `en línea la variante del ejemplo anterior que añade una
-  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.corr.html>`_
+  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_
 
 Variantes
 *********

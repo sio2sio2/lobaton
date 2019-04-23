@@ -1384,6 +1384,50 @@
 
    const CorrSys = (function() {
 
+      /**
+       * @name Value
+       * @hideconstructor
+       * @class
+       * @classdesc Genera un valor que permite conocer si está filtrado o no.
+       * Si el valor es un objeto, simplemente, devuelve otro que añade la propiedad
+       * ``filters`` que contiene en un Array los nombres de las correcciones que han filtrado el valor.
+       * Si el valor es un tipo primitivo, genera un objeto que almacena en la propiedad ``value`` el
+       * valor original y en ``filters`` la lista de correcciones que lo filtran.
+       */
+      const Value = (function() {
+         function Value(value, filters) {
+            Object.defineProperty(this, "__primitive", {
+               value: typeof value !== "object" || value === null,
+               writable: false,
+               configurable: false,
+               enumerable: false
+            });
+            if(this.isPrimitive()) this.value = value;
+            else {
+               if(value.filters !== undefined) console.warn("El valor original del array posee un atributo filters y se perderá");
+               Object.assign(this, value);
+            }
+            Object.defineProperty(this, "filters", {
+               value: filters,
+               writable: false,
+               configurable: false,
+               enumerable: false
+            });
+         }
+
+         Value.prototype.isPrimitive = function() { return this.__primitive };
+         Value.prototype.valueOf = function() {
+            if(this.isPrimitive()) return this.value;
+            else return this;
+         }
+         Value.prototype.toString = function() {
+            if(this.isPrimitive()) return this.value.toString();
+            else return Object.prototype.toString.call(this);
+         }
+
+         return Value;
+      })();
+
       /*
        * Convierte un array en un array con esteroides. Básicamente, el array
        * (llamémoslo *A*) pasa a tener un atributo *corr*, que es un objeto cuyas
@@ -1437,22 +1481,6 @@
              * @property {Array.<String>} filters  Los nombres de las correcciones que eliminan el elemento.
              */
 
-            /**
-             * Generador que recorre el *array* y devuelve información sobre el valor
-             * de los elementos y cuáles son las correcciones que los eliminan.
-             * @generator
-             *
-             * @yields {Correctable.CorrValue}
-             */
-            walk: function* () {
-               for(let i=0; i<this.length; i++) {
-                  const filters = this.filters(i);
-                  yield {
-                     value: filters.length>0?null:this[i],
-                     filters: filters
-                  }
-               }
-            },
             /**
              * Aplica una determinada corrección sobre el array.
              *
@@ -1564,14 +1592,15 @@
             return this._count;
          }
 
-         // ¿Cómo narices se incluye esto en la documentación.
+         // TODO: ¿Cómo narices se incluye esto en la documentación.
          /**
-          * Iterador que excluye los valores anulados.
+          * Iterador que genera un objeto Value para cada elemento del array
+          * a fin de que se pueda saber si el valor está o no filtrado.
           * @generator
           */
          function* iterator() {
-            for(const e of this.walk()) {
-               if(e.value !== null) yield e.value;
+            for(let i=0; i<this.length; i++) {
+               yield new Value(this[i], this.filters(i));
             }
          }
 

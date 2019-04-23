@@ -288,15 +288,16 @@ const MapaAdjOfer = (function() {
       // 1 una enseñanza deseable y 1/3 una que no lo es.
       converterBol.define("numofer", "oferta", function(oferta) {
          let res = 0;
-         for(const ens of oferta.walk()) {
-            if(!ens.value) continue
-            res += ens.value.mar?3:1;
+         for(const ens of oferta) {
+            if(ens.filters.length>0) continue
+            res += ens.mar?3:1;
          }
          return Math.round(res/3);
       });
 
       converterBol.define("bil", "oferta", function(oferta) {
-         const idiomas = Array.from(oferta.walk()).map(ens => ens.value && ens.value.idi)
+         // Array.from(oferta) y no oferta, para usar el iterador y tener disponible "filters".
+         const idiomas = Array.from(oferta).map(ens => ens.filters.length===0 && ens.idi)
                                                   // Eliminamos valores nulos y valores repetidos.
                                                   .filter((idi, i, arr) => idi && arr.indexOf(idi) === i)
 

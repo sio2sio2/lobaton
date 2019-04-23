@@ -728,7 +728,7 @@ que ajusten su aspecto al valor de sus datos, esto es, que son capaces de
 realizar <a class="reference internal" href="#dev-map-util"><span class="std std-ref">el primer punto con que expusimos la utilidad</span></a> de
 la librería:</p>
 <ul class="simple">
-<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.minima.html">en línea el resultado del ejemplo</a>.</li>
+<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html">en línea el resultado del ejemplo</a>.</li>
 </ul>
 </div>
 <div class="section" id="correcciones">
@@ -847,8 +847,21 @@ se hayan eliminado o no. En general, todas las funciones que se aplican al
 esta forma. En consecuenta, recorrerán todos los elementos, pero no se podrá
 conocer de ellos si está eliminado o no.</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">..</span> <span class="pre">of</span></code></dt>
-<dd>Este modo de recorrer el <em>array</em> es la única excepción: devuelve en cada
-iteración todos los elementos no eliminados.</dd>
+<dd><p class="first">Devuelve también todos los elementos, eliminados o no, pero cada elemento no
+es el elemento original, sino un nuevo objeto que se caracteriza por lo
+siguiente:</p>
+<ul class="simple">
+<li>Si el elemento original era un objeto, devuelve un objeto con las mismas
+propiedades al que se ha añadido otra llamada <code class="docutils literal notranslate"><span class="pre">filters</span></code> que es un <em>array</em>
+con los nombres de las correcciones que filtran el valor. EN consecuencia,
+un <code class="docutils literal notranslate"><span class="pre">filters</span></code> vacío supone que el valor no se ha filtrado.</li>
+<li>Si el elemento original no era un objeto, sino un tipo primitivo, se
+devuelve un objeto en cuyo atributo <code class="docutils literal notranslate"><span class="pre">value</span></code> se almacena el valor
+original del elemento. También dispone del atributo <code class="docutils literal notranslate"><span class="pre">filters</span></code>.</li>
+</ul>
+<p class="last">En ambos casos se dispone de un método <code class="docutils literal notranslate"><span class="pre">isPrimitive</span></code> para saber si el
+elemento original era o no un objeto en su origen.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">.total</span></code></dt>
 <dd><p class="first">Devuelve el número total de elementos, descontados los eliminados. Por tanto,
 la <a class="reference internal" href="#dev-map-converter-adj"><span class="std std-ref">conversión de adj en numadj</span></a> debimos haberla
@@ -859,13 +872,6 @@ hecho así:</p>
 </pre></div>
 </div>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">.walk()</span></code></dt>
-<dd>Que es un método generador que en cada iteración devuelve un
-objeto en cuya propiedad <code class="docutils literal notranslate"><span class="pre">value</span></code> se encuentra el valor del elemento o
-<code class="docutils literal notranslate"><span class="pre">null</span></code> si el elemento se eliminó, y en cuya propiedad <code class="docutils literal notranslate"><span class="pre">filters</span></code> se
-almacenan en un array los nombres de las correcciones que eliminaron el
-elemento. El método es útil, si queremos mostrar una listado de los elementos
-del array y queremos dar información también de los filtrados.</dd>
 </dl>
 </div>
 <div class="section" id="reversion">
@@ -1028,7 +1034,7 @@ crea los iconos para los clusters y pasarla a través de la función
 </div>
 <p class="rubric">Ejemplo de aplicación</p>
 <ul class="simple">
-<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demos/demo.corr.html">en línea la variante del ejemplo anterior que añade una
+<li>Consulte <a class="reference external" href="https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html">en línea la variante del ejemplo anterior que añade una
 corrección y un filtro</a></li>
 </ul>
 </div>
