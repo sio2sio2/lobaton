@@ -18,11 +18,10 @@
  *    <li>Cálculo de las isocronas.
  *    </ul>
  */
-// TODO:: El path debe incluir "dist".
 const MapaAdjOfer = (function() {
    "use strict";
 
-   function MapaAdjOfer(id, pathToRootDir) {
+   function MapaAdjOfer(id, pathToDistDir) {
       /** @lends MapaAdjOfer.prototype */
       Object.defineProperties(this, {
          /**
@@ -42,7 +41,7 @@ const MapaAdjOfer = (function() {
           * @type  {String}
           */
          _path: {
-            value: pathToRootDir,
+            value: pathToDistDir,
             writable: false,
             enumerable: false,
             configurable: false
@@ -437,7 +436,7 @@ const MapaAdjOfer = (function() {
          piolin: L.utils.createMutableIconClass("piolin", {
             iconSize: null,
             iconAnchor: [12.5, 34],
-            css:  this._path + "/dist/adjofer/icons/piolin.css",
+            css:  this._path + "/adjofer/icons/piolin.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -445,7 +444,7 @@ const MapaAdjOfer = (function() {
          chupachups: L.utils.createMutableIconClass("chupachups", {
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
-            css:  this._path + "/dist/adjofer/icons/chupachups.css",
+            css:  this._path + "/adjofer/icons/chupachups.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -453,7 +452,7 @@ const MapaAdjOfer = (function() {
          solicitud: L.utils.createMutableIconClass("solicitud", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  this._path + "/dist/adjofer/icons/solicitud.svg",
+            url:  this._path + "/adjofer/icons/solicitud.svg",
             converter: converterSol,
             updater: function(o) {
                var text = this.querySelector("text");
@@ -468,7 +467,7 @@ const MapaAdjOfer = (function() {
          boliche: L.utils.createMutableIconClass("boliche", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  this._path + "/dist/adjofer/icons/boliche.svg",
+            url:  this._path + "/adjofer/icons/boliche.svg",
             converter: converterBol,
             updater: updaterBoliche,
          }),

@@ -1,11 +1,7 @@
 var g;
 
 window.onload = function() {
-   g = new MapaAdjOfer("map", ".");
-   /*g.fire(function() {
-      //console.log("DEBUG: Esto se lanza al acabar de cargar los centros.");
-      cargaCorrecciones();
-   });*/
+   g = new MapaAdjOfer("map", "./dist");
    g.lanzarTrasDatos(cargaCorrecciones);
    //cargaCorrecciones();
 
