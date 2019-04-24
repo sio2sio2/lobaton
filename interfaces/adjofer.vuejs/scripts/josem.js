@@ -205,7 +205,7 @@ function cargaCorrecciones(){
       nombre: "Adjudicaciones",
       correccion_id: "puesto",
       correccion_name: "adjpue[]",
-      descripcion: "Elimina las adjudicaciones que no sean de los puestos:",
+      descripcion: "Elimina las adjudicaciones de los puestos:",
       values: Object.keys(g.general.puestos).map(function(key, index){
          return {
             opcion_id: key,
