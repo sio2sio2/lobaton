@@ -1495,10 +1495,10 @@
                      add  = func.prop.add,
                      params = func.prop.params;
 
-               // La corrección ya estaba aplicada: la desaplicamos.
-               if(this.corr.hasOwnProperty(name)) this.unapply(name);
-
                if(add) {
+                  // La corrección ya estaba aplicada: la desaplicamos.
+                  if(this.corr.hasOwnProperty(name)) this.unapply(name);
+
                   const values = func.call(marker, null, this, params);
                   let num = values.length;
                   if(num === 0) return false;
@@ -1519,17 +1519,21 @@
                      for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, i, this, params);
                   }
 
+                  return true;
                }
                else {
-                  const prev = this.corr[name];  // Estado previo.
-                  this.corr[name] = this.map((e, i) => func.call(marker, i, this, params));
-                  //this.corr[name] = new Array(this.length);
-                  //for(let i=0; i<this.length; i++) this.corr[name][i] = func.call(marker, this.length[i], params);
-                  if(equals(prev, this.corr[name])) return false;  // El filtro no provocó cambios.
-                  else this._count = undefined;
-               }
+                  let ret = false;
+                  if(!this.corr.hasOwnProperty(name)) this.corr[name] = new Array(this.length);
 
-               return true;
+                  for(let i=0; i<this.length; i++) {
+                     const prev = this.corr[name][i];
+                     this.corr[name][i] = func.call(marker, i, this, params);
+                     if(prev ^ this.corr[name][i]) ret = true;  // La corrección cambia sus efectos.
+                  }
+
+                  if(ret) this._count = undefined;
+                  return ret;
+               }
             },
             /**
              * Deshace una determinada corrección hecha previamente.
