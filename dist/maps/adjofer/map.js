@@ -123,7 +123,7 @@ const MapaAdjOfer = (function() {
          const layer = L.geoJSON(datos, {
             pointToLayer: (f, p) => new this.Centro(p, {
                icon: new Icon(),
-               title: f.properties.name
+               title: f.properties.id.nom
             })
          });
 
