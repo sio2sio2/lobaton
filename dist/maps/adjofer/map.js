@@ -216,7 +216,7 @@ const MapaAdjOfer = (function() {
        */
       this.Centro = L.Marker.extend({
          options: {
-            mutable: "feature.properties.data",
+            mutable: "feature.properties",
             filter: this.cluster,
             //filter: "filtered",
             //filter: L.utils.grayFilter

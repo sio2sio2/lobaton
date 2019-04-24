@@ -26,6 +26,14 @@ window.onload = function() {
    g.Centro.filter("adj", {min: 1});
    g.Centro.filter("oferta", {min: 1});
 
+   // Acciones que se desencadenan al seleccionar/deseleccionar un centro
+   g.cluster.on("markerselect", function(e) {
+      console.log("Se ha seleccionado el centro " + e.newsel.getData().id.nom);
+   });
+   g.cluster.on("markerdeselect", function(e, obj) {
+      console.log("Se ha deseleccionado el centro " + e.oldsel.getData().id.nom);
+   });
+
    console.log("DEBUG", `Centro añadidos por ahora: ${g.Centro.store.length}`);
 
    g.lanzarTrasDatos(function() {
@@ -36,14 +44,6 @@ window.onload = function() {
       // Al pulsar click sobre una marca, se selecciona el centro.	
       g.Centro.invoke("on", "click", function(e) {
          g.cluster.seleccionado = g.cluster.seleccionado === this?null:this;
-      });
-
-      // Acciones que se desencadenan al seleccionar/deseleccionar un centro
-      g.cluster.on("markerselect", function(e) {
-         console.log("Se ha seleccionado el centro " + e.newsel.getData().id.nom);
-      });
-      g.cluster.on("markerdeselect", function(e, obj) {
-         console.log("Se ha deseleccionado el centro " + e.oldsel.getData().id.nom);
       });
    });
 
