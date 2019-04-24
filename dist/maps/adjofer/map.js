@@ -21,6 +21,43 @@
 const MapaAdjOfer = (function() {
    "use strict";
 
+   // Issue #25
+   /**
+    * Crea una propiedad a la que se asocia un tipo de evento,
+    * de manera que cuando se le da valor a la propiedad se lanzan
+    * las acciones asociadas al evento *on*, y cuando se da valor null
+    * se lanzan las acciones asociadas al evento *off*.
+    *
+    * @this El objeto al que se asocia el atributo.
+    * @param {String} attr  El nombre del atributo que se creará.
+    * @param {String} tipo_on  Nombre del tipo *on* del evento.
+    * @param {String} tipo_off  Nombre del tipo *off* del evento.
+    */
+   function crearAttrEvent(attr, tipo_on, tipo_off) {
+      if(this.fire === undefined) throw new Error("El objeto no puede lanzar eventos");
+      Object.defineProperties(this, {
+         [attr]: {
+            get: function() { return this["_" + attr]; },
+            set: function(value) {
+               if(value === null || value === undefined) {
+                  this.fire(tipo_off, {oldsel: this[attr], newsel: null});
+               }
+               else this.fire(tipo_on, {oldsel: this[attr], newsel: value});
+               this["_" + attr] = value;
+            },
+            configurable: false,
+            enumerable: true
+         },
+         ["_" + attr]: {
+            value: null,
+            writable: true,
+            configurable: false,
+            enumerable: false
+         }
+      });
+   }
+   // Fin issue #25;
+
    function MapaAdjOfer(id, pathToDistDir) {
       /** @lends MapaAdjOfer.prototype */
       Object.defineProperties(this, {
@@ -56,7 +93,7 @@ const MapaAdjOfer = (function() {
             writable: false,
             enumerable: false,
             configurable: false
-         }
+         },
       });
 
       /**
@@ -157,6 +194,12 @@ const MapaAdjOfer = (function() {
          spiderfyOnMaxZoom: false,
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
+
+      // Issue #25
+      crearAttrEvent.call(this.map, "origen", "originadd", "origindel");
+      crearAttrEvent.call(this.cluster, "seleccionado", "markerselect", "markerdeselect");
+      // Fin issue #25
+
    }
 
    /**
@@ -179,6 +222,8 @@ const MapaAdjOfer = (function() {
             //filter: L.utils.grayFilter
          }
       });
+
+      
       createCorrections.call(this);
       createFilters.call(this);
    }

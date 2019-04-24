@@ -33,6 +33,18 @@ window.onload = function() {
       //Ahora sí hay centros, asi que sí debemos refrescar
       g.Centro.correct("vt+", {});
       g.Centro.invoke("refresh");
+      // Al pulsar click sobre una marca, se selecciona el centro.	
+      g.Centro.invoke("on", "click", function(e) {
+         g.cluster.seleccionado = g.cluster.seleccionado === this?null:this;
+      });
+
+      // Acciones que se desencadenan al seleccionar/deseleccionar un centro
+      g.cluster.on("markerselect", function(e) {
+         console.log("Se ha seleccionado el centro " + e.newsel.getData().id.nom);
+      });
+      g.cluster.on("markerdeselect", function(e, obj) {
+         console.log("Se ha deseleccionado el centro " + e.oldsel.getData().id.nom);
+      });
    });
 
    // A efectos de depuración
