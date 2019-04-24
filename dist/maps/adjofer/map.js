@@ -33,16 +33,13 @@ const MapaAdjOfer = (function() {
     * @param {String} tipo_on  Nombre del tipo *on* del evento.
     * @param {String} tipo_off  Nombre del tipo *off* del evento.
     */
-   function crearAttrEvent(attr, tipo_on, tipo_off) {
+   function crearAttrEvent(attr, tipo) {
       if(this.fire === undefined) throw new Error("El objeto no puede lanzar eventos");
       Object.defineProperties(this, {
          [attr]: {
             get: function() { return this["_" + attr]; },
             set: function(value) {
-               if(value === null || value === undefined) {
-                  this.fire(tipo_off, {oldsel: this[attr], newsel: null});
-               }
-               else this.fire(tipo_on, {oldsel: this[attr], newsel: value});
+               this.fire(tipo, {oldval: this[attr], newval: value});
                this["_" + attr] = value;
             },
             configurable: false,
@@ -196,8 +193,8 @@ const MapaAdjOfer = (function() {
       }).addTo(this.map);
 
       // Issue #27
-      crearAttrEvent.call(this.map, "origen", "originadd", "origindel");
-      crearAttrEvent.call(this.cluster, "seleccionado", "markerselect", "markerdeselect");
+      crearAttrEvent.call(this.map, "origen", "originset");
+      crearAttrEvent.call(this.cluster, "seleccionado", "markerselect");
       // Fin issue #27
 
    }

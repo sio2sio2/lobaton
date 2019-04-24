@@ -28,10 +28,8 @@ window.onload = function() {
 
    // Acciones que se desencadenan al seleccionar/deseleccionar un centro
    g.cluster.on("markerselect", function(e) {
-      console.log("Se ha seleccionado el centro " + e.newsel.getData().id.nom);
-   });
-   g.cluster.on("markerdeselect", function(e, obj) {
-      console.log("Se ha deseleccionado el centro " + e.oldsel.getData().id.nom);
+      if(e.newval) console.log("Se ha seleccionado el centro " + e.newval.getData().id.nom);
+      else console.log("Se ha deseleccionado el centro " + e.oldval.getData().id.nom);
    });
 
    console.log("DEBUG", `Centro añadidos por ahora: ${g.Centro.store.length}`);
