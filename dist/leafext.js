@@ -1521,12 +1521,12 @@
 
                }
                else {
+                  const prev = this.corr[name];  // Estado previo.
                   this.corr[name] = this.map((e, i) => func.call(marker, i, this, params));
                   //this.corr[name] = new Array(this.length);
                   //for(let i=0; i<this.length; i++) this.corr[name][i] = func.call(marker, this.length[i], params);
-                  // Si la corrección ha filtrado algún valor:
-                  if(this.corr[name].some(e => e)) this._count = undefined;
-                  else return false;
+                  if(equals(prev, this.corr[name])) return false;  // El filtro no provocó cambios.
+                  else this._count = undefined;
                }
 
                return true;
