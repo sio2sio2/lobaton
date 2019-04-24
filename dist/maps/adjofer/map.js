@@ -21,7 +21,7 @@
 const MapaAdjOfer = (function() {
    "use strict";
 
-   // Issue #25
+   // Issue #27
    /**
     * Crea una propiedad a la que se asocia un tipo de evento,
     * de manera que cuando se le da valor a la propiedad se lanzan
@@ -56,7 +56,7 @@ const MapaAdjOfer = (function() {
          }
       });
    }
-   // Fin issue #25;
+   // Fin issue #27;
 
    function MapaAdjOfer(id, pathToDistDir) {
       /** @lends MapaAdjOfer.prototype */
@@ -195,10 +195,10 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
-      // Issue #25
+      // Issue #27
       crearAttrEvent.call(this.map, "origen", "originadd", "origindel");
       crearAttrEvent.call(this.cluster, "seleccionado", "markerselect", "markerdeselect");
-      // Fin issue #25
+      // Fin issue #27
 
    }
 
