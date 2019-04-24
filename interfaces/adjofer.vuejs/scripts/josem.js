@@ -27,15 +27,21 @@ window.onload = function() {
       cor = sanitizeNombreCorreccion(e.target.name);
 
       if ($("input[name='" + e.target.name + "']").filter(":checked").length > 0) {
+         /*
+            Recorreremos todos los valores activos de la corrección cambiada. 
+            Recordar que una misma corrección puede tener varios valores posibles aplicados (bilingÑuismo en inglés y francés, etc.)
+         */
          let params = {
             [$(this).closest("fieldset").attr("name")]: $("input[name='" + e.target.name + "']").filter(":checked").map(function () {
                   return $(this).val();
             }).get()
          };
 
+         // Aplicamos la corrección
          aplicaCorreccion(cor, params);
       }
       else {
+         // O la deshacemos
          deshaceCorreccion(cor);
       }
    });
@@ -57,23 +63,23 @@ window.onload = function() {
 
 
    // Esta funcionalidad hace que la barra lateral (sidebar) se abra y cierre pulsando los botones oportunos
-   $('#sidebarCollapse').on('click', toogleSidebar);
-   $('.close').on('click', toogleSidebar);
+   document.getElementById("sidebarCollapse").addEventListener('click', toogleSidebar);
+   document.getElementById("close").addEventListener('click', toogleSidebar);
 }
 
 /**
 * Función que se encarga de mostrar u ocultar la barra lateral
 */
 function toogleSidebar() {
-   $('#sidebar').toggleClass('active');
-   $('#sidebarCollapse').toggleClass('invisible');
+   document.getElementById('sidebar').classList.toggle('active');
+   document.getElementById('sidebarCollapse').classList.toggle('invisible');
 }
 
 /**
  * Esta función muestra la barra lateral si estaba oculta, y no hace nada si estaba visible
  */
 function displaySidebar() {
-   if ( ! $('#sidebarCollapse').hasClass('invisible')) {
+   if ( ! document.getElementById('sidebarCollapse').classList.contains('invisible')) {
       toogleSidebar();
    }
 }
@@ -199,7 +205,7 @@ function cargaCorrecciones(){
       nombre: "Adjudicaciones",
       correccion_id: "puesto",
       correccion_name: "adjpue[]",
-      descripcion: "Elimina las adjudicaciones que no sean de los puestos:",
+      descripcion: "Elimina las adjudicaciones de los puestos:",
       values: Object.keys(g.general.puestos).map(function(key, index){
          return {
             opcion_id: key,
