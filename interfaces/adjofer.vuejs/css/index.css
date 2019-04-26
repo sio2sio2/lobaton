@@ -81,10 +81,6 @@ body, html, #map {
     width: 80%;
 }
 
-.info-oferta, .puesto-pce {
-    padding-left: 2em;
-}
-
 .section-cardbox-header:after {
     font-family: 'Font Awesome 5 Free';
     content: "\f068";
@@ -99,6 +95,36 @@ body, html, #map {
 .bottom {
     height: 100px;
 }
+
+
+/* ---------------------------------------------------
+    Estilos específicos del sidebar para el mapa
+----------------------------------------------------- */
+
+.info-oferta, .puesto-pce, .textoFiltrado {
+    padding-left: 2em;
+}
+
+.filtrado h5, .filtrado p.puesto-pce {
+    text-decoration: line-through;
+}
+
+.nombrePuesto {
+    font-size: 1.05rem;
+}
+
+.listaSinPadding {
+    padding-left: 0.5rem;
+}
+
+.textoFiltrado {
+    margin-bottom: 0;
+}
+
+.div-puesto {
+    margin-bottom: 2em;
+}
+
 
 /* 
     ##Device = Laptops, Desktops

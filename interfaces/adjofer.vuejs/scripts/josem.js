@@ -1,4 +1,7 @@
 var g;
+// menuCorrecciones será un array con las opciones que serán mostradas en el menú de correcciones/filtrado
+// Se declara aquí ya que en algunos momentos es necesario acceder a la información textual de las mismas
+var menuCorrecciones = [];
 
 window.onload = function() {
    g = new MapaAdjOfer("map", "../../dist");
@@ -148,8 +151,6 @@ function poblarSelectores() {
 }
 
 function cargaCorrecciones(){
-   // menuCorrecciones será un array con las opciones que serán mostradas en el menú de correcciones/filtrado
-   let menuCorrecciones = [];
 
    /* 
    Registramos manualmente los idiomas por los que queremos que se pueda filtrar. 
@@ -259,9 +260,28 @@ function displayInfoCentro(centro) {
                decodificaCentro: function(codCentro){
                      let c;
                      for(c of centro.constructor.store) {  // centro.constructor === g.Centro
-                     if(c.getData().id.cod === codCentro) break;
+                        if(c.getData().id.cod === codCentro) break;
                      }
                      return c.getData().id.nom;
+               },
+               /*
+                * Devuelve el nombre de un puesto dado su código
+                */
+               nombrePuesto: function(codPuesto){
+                  return g.general.puestos[codPuesto];
+               },
+               /*
+               * Devuelve el nombre de un filtro dado su atributo name en html del menú
+               */
+               detallaFiltros: function(filtro){
+                  let nombre;
+                  for (cor of menuCorrecciones){
+                     if(sanitizeNombreCorreccion(cor.correccion_name) === filtro) {
+                        nombre = cor.nombre;
+                        break;
+                     }
+                  }
+                  return nombre;
                }
             }
          });
