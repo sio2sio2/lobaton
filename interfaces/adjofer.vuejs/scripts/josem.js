@@ -172,6 +172,8 @@ function poblarSelectores() {
 
 function cargaCorrecciones(){
 
+   // Inicializamos las correcciones para cargarlas de nuevo
+   menuCorrecciones = [];
    /* 
    Registramos manualmente los idiomas por los que queremos que se pueda filtrar. 
    Dichos idiomas no pueden obtenerse de ningún listado, por lo que si el día de mañana
