@@ -230,11 +230,24 @@
                   Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
                 </div>
                 <div class="card-body" v-if="datosCentro.adj.length">
+                  <ul class="listaSinPadding">
                     <template v-for="plaza in datosCentro.adj">
-                      <h5 class="card-title">Puesto <abbr>{{plaza.pue}}</abbr></h5>
-                      <p class="card-text puesto-pce" v-if="plaza.col==='J'">({{plaza.col}}) {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet. {{plaza.pet}}).</p>
-                      <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc: {{plaza.esc}} (pet. {{plaza.pet}}).</p>
+                      <li class="div-puesto" v-bind:class="{'filtrado': plaza.filters.length}">
+                        <h5 class="card-title">{{plaza.pue}} <span class="nombrePuesto">({{plaza.pue | nombrePuesto}})</span></h5>
+                        <p class="card-text puesto-pce" v-if="plaza.col==='J'">({{plaza.col}}) {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet. {{plaza.pet}}).</p>
+                        <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc: {{plaza.esc}} (pet. {{plaza.pet}}).</p>
+                        <div class="textoFiltrado" v-if="plaza.filters.length">
+                          Filtrado por
+                          <ul>
+                            <template v-for="filtro in plaza.filters">
+                              <li>{{filtro | detallaFiltros}}</li>
+                            </template>
+                          </ul>
+                        </div>
+                      </li>
+                      
                     </template>
+                  </ul>
                 </div>
                 <div class="card-body" v-else>
                   <p class="card-text puesto-pce">Sin adjudicaciones</p>
