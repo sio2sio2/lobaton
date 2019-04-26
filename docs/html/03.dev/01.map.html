@@ -707,10 +707,13 @@ marca de <a class="reference external" href="https://leafletjs.com/">Leaflet</a>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">centro</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;click&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Soy la marca que acabas de pulsar&quot;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">));</span>
 </pre></div>
 </div>
+<p>Las marcas mutables, además, tienen definido un tipo «<em>dataset</em>» que se desencadena cuando
+se asocian los datos a la marca.</p>
 </li>
-<li><p class="first">Como atajo cuando se quiere aplicar un método a todas las marcas de la clase,
+<li><p class="first">Como atajo, cuando se quiere aplicar un método a todas las marcas de la clase,
 puede usar el método de clase <a class="reference internal" href="02.lib.html#Marker.invoke" title="Marker.invoke"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.invoke()</span></code></a>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;click&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Soy la marca que acabas de pulsar&quot;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">));</span>
+<span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Justamente ahora me acaba de asociar unos datos&quot;</span><span class="p">));</span>
 </pre></div>
 </div>
 </li>

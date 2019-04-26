@@ -121,7 +121,10 @@ const MapaAdjOfer = (function() {
             pointToLayer: (f, p) => new this.Centro(p, {
                icon: new Icon(),
                title: f.properties.id.nom
-            })
+            }),
+            // Para cada centro que creemos hay que añadir a los datos
+            // la propiedad que indica si la marca está o no seleccionada.
+            onEachFeature: (f, l) => l.changeData({sel: false})  // Aplicación de issue #33
          });
 
          this.cluster.addLayer(layer);
@@ -192,11 +195,24 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
+
       // Issue #27
       crearAttrEvent.call(this.map, "origen", "originset");
       crearAttrEvent.call(this.cluster, "seleccionado", "markerselect");
       // Fin issue #27
 
+      // Aplicación de issue #33: Cambiamos la marca
+      // al seleccionarla o deseleccionarla.
+      this.cluster.on("markerselect", function(e) {
+         if(e.oldval) {
+            e.oldval.changeData({sel: false});
+            e.oldval.refresh();
+         }
+         if(e.newval) {
+            e.newval.changeData({sel: true});
+            e.newval.refresh();
+         }
+      });
    }
 
    /**
@@ -321,10 +337,11 @@ const MapaAdjOfer = (function() {
       const converterSol = new L.utils.Converter(["peticion"]).define("peticion");
 
       // Los boliches tienen mucha miga...
-      const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar"])
+      const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar", "sel"])
                                  .define("tipo", "mod.dif", t => t || "normal")
                                  .define("numvac", "adj", a => a.total)
-                                 .define("ofervar", "mod.cam", c => c || 0);
+                                 .define("ofervar", "mod.cam", c => c || 0)
+                                 .define("sel");
 
       // Para calcular la cantidad de oferta se considera
       // 1 una enseñanza deseable y 1/3 una que no lo es.
@@ -468,6 +485,17 @@ const MapaAdjOfer = (function() {
                   }
                   if(o.tipo === "dificil") e.setAttribute("fill", "#c13");
                   else e.setAttribute("fill", "#13b"); 
+               }
+            }
+
+            if(o.sel !== undefined) {
+               e = content.querySelector(".selected");
+               if(!o.sel) {
+                  if(e) defs.appendChild(e);
+               }
+               else if(!e) {
+                  e = defs.querySelector(".selected");
+                  content.prepend(e);
                }
             }
          }
