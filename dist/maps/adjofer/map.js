@@ -192,6 +192,15 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
+
+      // TODO: Debería cambiarse la issue #5 para que la adición
+      // de los datos a la marca sea un tipo de evento. Así, podría
+      // aplicarse esta adición, usándolo.
+      this.cluster.on("layeradd", function(e) {
+         const centro = e.layer;
+         if(!centro.getData().hasOwnProperty("selected")) centro.changeData({selected: false});
+      });
+
       // Issue #27
       crearAttrEvent.call(this.map, "origen", "originset");
       crearAttrEvent.call(this.cluster, "seleccionado", "markerselect");

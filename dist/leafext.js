@@ -1283,6 +1283,27 @@
          return true;
       },
       /**
+       * Actualiza el icono asociado a la marca con los datos suministrados.
+       * @private
+       * @param {Object] data  Los datos con los que se quiere actualizar el icono.
+       */
+      _updateIcon: function(data) {
+         const icon = this.options.icon;
+         if(icon.options.params) icon.options.params.change(icon.options.converter.run(data));
+      },
+      // Issue #33
+      /**
+       * Modifica arbitrariamente los datos asociados a la marca.
+       * @param {Object} data  Datos que se quieren añadir a los datos preexistentes.
+       *
+       * @return {Object} El resultado de haber realizado la fusión.
+       */
+      changeData: function(data) {
+         this._updateIcon(data);
+         return Object.assign(this.getData(), data);
+      },
+      // Fin issue #33
+      /**
        * Devuelve los datos asociados a la marca.
        */
       getData: function() {  // Devuelve los datos asociados a la marca.
@@ -1316,10 +1337,7 @@
          if(filter) for(const f of filter.getFilters(property)) this.applyF(f);
          // Fin issue #5
 
-         // Cambia las opciones de dibujo en función de los datos corregidos
-         const icon = this.options.icon;
-         const data = {[property]: arr};
-         if(icon.options.params) icon.options.params.change(icon.options.converter.run(data));
+         this._updateIcon({[property]: arr});
          return true;
       },
       /**
@@ -1342,8 +1360,7 @@
          if(filter) for(const f of filter.getFilters(property)) this.unapplyF(f);
          // Fin issue #5
 
-         const icon = this.options.icon;
-         if(icon.options.params) icon.options.params.change(icon.options.converter.run({[property]: arr}));
+         this._updateIcon({[property]: arr});
          return true;
       },
       // Issue #5
