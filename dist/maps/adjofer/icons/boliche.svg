@@ -38,6 +38,9 @@
       <!-- Tipo de centro: compensatoria o difícil desempeño -->
       <!-- dificil #c13 -->
       <circle class="tipo" cx="69" cy="74" r="9" fill="#13b" />
+
+      <!-- Círculo de selección -->
+      <path class="selected" d="M 6 42 a 38 38 0 1 1 0 0.00001" stroke-width="6" stroke="red" fill-opacity="0" />
    </defs>
 
    <g class="content">

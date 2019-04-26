@@ -1229,8 +1229,21 @@
             enumerable: false
          });
 
-         function setFeature(value) {
-            this["_" + feature] = value;
+         Object.defineProperty(this, feature, {
+            get: function() { return this["_" + feature]; },
+            set: function(value) {
+               this["_" + feature] = value;
+               // Creamos este tipo de evento que se lanza
+               // al asociar la marca a los datos.
+               this.fire("dataset");
+            },
+            configurable: false,
+            enumerable: false
+         });
+
+         // Se pasan los arrays de los datos a correctables
+         // y se aplican a la nueva marca filtros y correcciones aplicados.
+         this.on("dataset", function(e) {
             this._prepare();
             // Issue #5
             // Aplicamos a los nuevos datos los filtros ya aplicadas
@@ -1243,13 +1256,6 @@
             for(const name in corr.getCorrections()) {
                if(corr.getOptions(name).params) this.apply(name);
             }
-         }
-
-         Object.defineProperty(this, feature, {
-            get: function() { return this["_" + feature]; },
-            set: setFeature,
-            configurable: false,
-            enumerable: false
          });
          // Fin issue #22
 
