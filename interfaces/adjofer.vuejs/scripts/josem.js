@@ -6,7 +6,8 @@ var menuCorrecciones = [];
 window.onload = function() {
    g = new MapaAdjOfer("map", "../../dist");
    g.lanzarTrasDatos(function(){
-      //Si había algún centro mostrado, lo ocultamos. Esto es útil tras cambiar de especialidad sobre todo
+      //Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos. Esto es útil tras cambiar de especialidad sobre todo
+      g.cluster.seleccionado = null;
       ocultarInfoCentro();
 
       //Lo primero que haremos tras cargar los datos será cargar las correcciones oportunas
@@ -65,6 +66,7 @@ window.onload = function() {
 
       //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
       if (g.cluster.seleccionado !== null){
+         console.log("filtrandooo");
          displayInfoCentro(g.cluster.seleccionado);
       }
    });
