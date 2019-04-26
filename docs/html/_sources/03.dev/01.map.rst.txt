@@ -540,10 +540,14 @@ para acceder a estas marcas?
 
      centro.on("click", e => console.log("Soy la marca que acabas de pulsar", e.target));
 
-- Como atajo cuando se quiere aplicar un método a todas las marcas de la clase,
+  Las marcas mutables, además, tienen definido un tipo "*dataset*" que se desencadena cuando
+  se asocian los datos a la marca.
+
+- Como atajo, cuando se quiere aplicar un método a todas las marcas de la clase,
   puede usar el método de clase :js:meth:`Marker.invoke`::
 
    Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+   Centro.invoke("on", "dataset", e => console.log("Justamente ahora me acaba de asociar unos datos"));
 
 - Tenga presente que cuando añade una marca a una capa cuya clase derive de
   L.FeatureGroup_, como L.GeoJSON_ o L.MarkerClusterGroup_, se dispara el evento
