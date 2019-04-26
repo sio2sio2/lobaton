@@ -5,19 +5,34 @@ var menuCorrecciones = [];
 
 window.onload = function() {
    g = new MapaAdjOfer("map", "../../dist");
-   g.lanzarTrasDatos(cargaCorrecciones);
-   //cargaCorrecciones();
+   g.lanzarTrasDatos(function(){
+      //Si había algún centro mostrado, lo ocultamos. Esto es útil tras cambiar de especialidad sobre todo
+      ocultarInfoCentro();
 
-   g.cluster.on("layeradd", function(e) {
-      const marca = e.layer;
-      marca.addEventListener("click", function(e) {
-         //Mostramos la barra si estaba oculta
-         displaySidebar();
-         displayInfoCentro(e.target);
-         // Para una mejor visibilidad, al cargar la información del centro, colapsamos los filtros
-         collapseFiltros();
+      //Lo primero que haremos tras cargar los datos será cargar las correcciones oportunas
+      cargaCorrecciones();
+
+      //Cada vez que se seleccione un centro, marcaremos el mismo como seleccionado, lo que lanzará el evento markerselect
+      g.Centro.invoke("on", "click", function(e) {
+         g.cluster.seleccionado = g.cluster.seleccionado === this?null:this;
       });
    });
+
+   //En el momento en el que se seleccione uno de los centros
+   g.cluster.on("markerselect", function(e) {
+      if(e.newval){
+         //Mostramos la barra si estaba oculta
+         displaySidebar();
+         displayInfoCentro(e.newval);
+         // Para una mejor visibilidad, al cargar la información del centro, colapsamos los filtros
+         collapseFiltros();
+      }
+      else {
+         ocultarInfoCentro();
+      }
+   });
+   
+   
 
    x = g;
 
@@ -46,6 +61,11 @@ window.onload = function() {
       else {
          // O la deshacemos
          deshaceCorreccion(cor);
+      }
+
+      //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
+      if (g.cluster.seleccionado !== null){
+         displayInfoCentro(g.cluster.seleccionado);
       }
    });
 
@@ -285,6 +305,12 @@ function displayInfoCentro(centro) {
                }
             }
          });
+   }
+}
+
+function ocultarInfoCentro() {
+   if( document.querySelector('div#template-centro') !== null && !document.querySelector('div#template-centro').classList.contains("invisible")) {
+      document.querySelector('div#template-centro').classList.toggle('invisible');
    }
 }
 
