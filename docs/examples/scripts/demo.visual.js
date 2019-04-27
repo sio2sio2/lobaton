@@ -22,7 +22,7 @@ window.onload = function() {
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
    g.Centro.correct("bilingue", {bil: ["Inglés"]});
-   g.Centro.correct("adjpue", {puesto: ["11590107", "00590059"]});
+   g.Centro.correct("adjpue", {puesto: ["00590059"]});
    g.Centro.filter("adj", {min: 1});
    g.Centro.filter("oferta", {min: 1});
 

@@ -247,6 +247,7 @@ const MapaAdjOfer = (function() {
     * @private
     */
    function createCorrections() {
+      const self = this;
       // Elimina enseñanzas que no son bilingües
       this.Centro.register("bilingue", {
          attr: "oferta",
@@ -254,7 +255,26 @@ const MapaAdjOfer = (function() {
          func: function(idx, oferta, opts) {
             if(!opts.bil || opts.bil.length === 0) return false;
             return opts.bil.indexOf(oferta[idx].idi) === -1
-         }
+         },
+         // Sólo son pertinentes los puestos bilingües.
+         chain: [{
+            corr: "adjpue",
+            func: function(opts) {
+               console.log("DEBUG", self);
+               const map = {  // TODO: Esto debería estar sacarse de la base de datos y estar en el geoJSON
+                  "Francés": 10,
+                  "Inglés": 11,
+                  "Alemán": 12
+               };
+               const cod = Object.keys(map)
+                                 .filter(idi => opts.bil.indexOf(idi) !== -1)
+                                 .map(e => map[e]);
+               //Puestos a eliminar.
+               const puestos = Object.keys(self.general.puestos)
+                                     .filter(pue => !cod.some(c => pue.startsWith(c)));
+               return puestos.length>0?{puesto: puestos}:false;
+            }
+         }]
       });
 
       // Añade vacantes telefónicas a las adjudicaciones.
