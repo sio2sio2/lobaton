@@ -110,7 +110,7 @@ function displaySidebar() {
 }
 
 function aplicaCorreccion(cor, params) {
-   g.Centro.correct(cor, params);
+   g.Centro.correct(cor, params, true);
    g.Centro.invoke("refresh");
 }
 
