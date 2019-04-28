@@ -548,6 +548,21 @@ Consulte cuáles son las <code class="xref py py-attr docutils literal notransla
 </dd></dl>
 
 <dl class="function">
+<dt id="Marker.getAutoCorrect">
+<code class="descclassname">Marker.</code><code class="descname">getAutoCorrect</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.getAutoCorrect" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene para una corrección, qué otras correcciones la aplicaron
+automáticamente y con qué opciones.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Devuelve:</th><td class="field-body"><strong>Object</strong> – Un objeto en que las claves son los nombres de las correcciones responsables y los valores con qué opciones se aplicó la corrección.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="Marker.registerF">
 <code class="descclassname">Marker.</code><code class="descname">registerF</code><span class="sig-paren">(</span><em>name</em>, <em>attrs</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.registerF" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Registra para una clase de marcas un filtro.</p>
@@ -727,7 +742,7 @@ por cuáles correcciones y qué nuevos elementos han sido añadidos y por cuál 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
 <li><strong>arr</strong> (<em>Array</em>) – El array original.</li>
-<li><strong>sc</strong> (<em>Object</em>) – Parte del <a class="reference internal" href="#CorrSys" title="CorrSys"><code class="xref js js-class docutils literal notranslate"><span class="pre">sistema</span> <span class="pre">de</span> <span class="pre">correcciones</span></code></a> definido para la marca en la que está el array que se aplica exclusivamente al array.</li>
+<li><strong>sc</strong> (<em>Object</em>) – Parte del <a class="reference internal" href="#CorrSys" title="CorrSys"><code class="xref js js-class docutils literal notranslate"><span class="pre">sistema</span> <span class="pre">de</span> <span class="pre">correcciones</span></code></a> que se aplica exclusivamente al array.</li>
 </ul>
 </td>
 </tr>

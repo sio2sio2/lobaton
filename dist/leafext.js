@@ -950,6 +950,21 @@
          Marker.register = registerCorrMarker;
          Marker.correct = doCorrMarker;
          Marker.uncorrect = undoCorrMarker;
+         // Issue #37
+         /**
+          * Obtiene para una corrección, qué otras correcciones la aplicaron
+          * automáticamente y con qué opciones.
+          * @memberof Marker
+          *
+          * @params {String} name   El nombre de una corrección.
+          *
+          * @returns {Object} Un objeto en que las claves son los nombres de las correcciones
+          * responsables y los valores con qué opciones se aplicó la corrección.
+          */
+         Marker.getAutoCorrect = function(name) {
+            return this.prototype.options.corr.getAutoParams(name);
+         }
+         // Fin issue #37
          // Issue #5
          if(options.filter) options.filter = new FilterSys(options.filter);
          // No puede definirse en prototypeExtra:
@@ -1055,15 +1070,17 @@
     * @method Marker.correct
     *
     * @params {String} name   Nombre de la corrección.
-    * @params {Object} params  Opciones de aplicacion de la corrección.
+    * @params {Object} params Opciones de aplicacion de la corrección.
     * @params {Array.<String>} prev  Si se encadenan correcciones, las
     * correcciones previas en la cadena. Este parámetro sólo debe usarlo
     * internamente la libreria.
+    * @params {Boolean} auto  Si ``true``, aplica las correcciones
+    * en cadena, si estas se han definino.
     *
     * @example
     * Centro.correct("adjpue", {puesto: ["11590107", "00590059"]})
     */
-   function doCorrMarker(name, params) {
+   function doCorrMarker(name, params, auto) {
       const corr = this.prototype.options.corr;
       try {
          // Si la correción ya está aplicada, sólo no se aplica en
@@ -1074,7 +1091,7 @@
          return false;
       }
 
-      corr.setParams(name, params);
+      corr.initialize(name, params, auto);
       for(const marker of this.store) marker.apply(name);
 
       return this;
@@ -1356,6 +1373,7 @@
          }
 
          // Issue #37
+         if(!opts.auto) return ret;
          for(const chain of opts.chain) {
             const newname = name + " " + chain.corr,
                   opts = corr.getOptions(newname);
@@ -1402,6 +1420,7 @@
          }
 
          // Issue #37
+         if(!opts.auto) return ret;
          for(const chain of opts.chain) {
             const newname = name + " " + chain.corr,
                   opts = corr.getOptions(newname);
@@ -2018,6 +2037,30 @@
             }
          }
 
+
+         /**
+          * Inicializa la corrección, fijando las opciones y si se deben
+          * aplicar automáticamente las correcciones definidas en su cadena.
+          * @params {String} name  El nombre de la corrección.
+          * @params {Object} opts  Opciones de corrección.
+          * @params {Boolean} auto Si ``true``, se aplicaráb las correciones de la cadena.
+          *
+          * @returns {CorrSys} El propio objeto.
+          */
+         CorrSys.prototype.initialize = function(name, opts, auto) {
+            this.setParams(name, opts);
+            const sc = this[this.getProp(name)];
+            try {
+               sc[name].prop.auto = !!auto;
+            }
+            catch(error) {
+               console.warn("¿Está intentando inicializar una corrección encadenada?");
+               throw error;
+            }
+
+            return this;
+         }
+
          /**
           * Comprueba si la cadena forma un bucle
           *
@@ -2040,16 +2083,21 @@
           * 
           * @param {String} name  El nombre de la corrección.
           *
-          * @returns {Array}  Las opciones aplicadas.
+          * @returns {Object}  Un objeto en que las claves son las correcciones originales
+          * que provocaron las correccines y los valores las opciones de corrección.
           */
-         CorrSys.prototype.getChainedParams = function(name) {
+         CorrSys.prototype.getAutoParams = function(name) {
             const sc = this[this.getProp(name)];
             if(!sc) throw new Error(`${name}: corrección no registrada`);
 
             name = this._normalizeName(name);
-             
             const params = sc[name].prop.chain_params;
-            return Object.keys(params).map(c => params[c]);
+
+            let res = {};
+            for(const n in params) {
+               res[n.split(" ")[0]] = params[n];
+            }
+            return res;
          }
          // FIn issue #37
 
