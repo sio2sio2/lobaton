@@ -260,7 +260,6 @@ const MapaAdjOfer = (function() {
          chain: [{
             corr: "adjpue",
             func: function(opts) {
-               console.log("DEBUG", self);
                const map = {  // TODO: Esto debería estar sacarse de la base de datos y estar en el geoJSON
                   "Francés": 10,
                   "Inglés": 11,

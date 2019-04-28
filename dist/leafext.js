@@ -1332,56 +1332,48 @@
        *  @private
        *
        *  @param {String} name   Nombre de la corrección
-       *  @param {String} prename  Nombres de los eslabones previos en la cadena de correcciones.
-       *  separados por espacios.
        */
-      apply: function(name, prename) {
+      apply: function(name) {
          const corr     = this.options.corr,
-               property = corr.getProp(name),
-               sc       = corr[property],
-               func     = sc[name],
-               params   = prename?corr.getOptions(name).chain_params[prename]:corr.getOptions(name).params;
+               opts     = corr.getOptions(name),
+               params   = opts.params;
          let   arr, ret;
          
          // La resolución de issue #22, hace que esto ocurra sólo
          // si se registra la corrección después de haber añadido la marca.
-         if(!(arr = corr.isCorrectable(property, this))) {
-            corr._prepare(this.getData(), property);
-            arr = getProperty(this.getData(), property);
+         if(!(arr = corr.isCorrectable(opts.attr, this))) {
+            corr._prepare(this.getData(), opts.attr);
+            arr = getProperty(this.getData(), opts.attr);
          }
 
-         if(ret = arr.apply(this, name, prename)) {
+         if(ret = arr.apply(this, name)) {
             // Issue #5
             const filter = this.options.filter;
-            if(filter) for(const f of filter.getFilters(property)) this.applyF(f);
+            if(filter) for(const f of filter.getFilters(opts.attr)) this.applyF(f);
             // Fin issue #5
 
-            this._updateIcon({[property]: arr});
+            this._updateIcon({[opts.attr]: arr});
          }
 
          // Issue #37
-         prename = prename || "";
-         for(const chain of corr.getOptions(name).chain) {
-            const chain_opts = corr.getOptions(chain.corr),
-                  chain_params = chain_opts.chain_params,
-                  longname = prename?prename + " " + name:name;
+         for(const chain of opts.chain) {
+            const newname = name + " " + chain.corr,
+                  opts = corr.getOptions(newname);
             // Es la primera vez que se aplica la corrección
             // sobre alguna de las marcas, por lo que no están calculados los parámetros
-            if(chain_params[longname] === undefined) {
-               if(chain_opts.add) {
+            if(opts.params === undefined) {
+               if(opts.add) {
                   console.warn(`${corr}: No puede ser el eslabón de una cadena porque es una corrección adictiva`);
-                  chain_params[longname] = false;
+                  opts.params = corr.setParams(newname, false);
                }
-               if(prename.split(" ").indexOf(chain.corr) !== -1) {
+               if(corr.looped(name, chain.corr)) {
                   console.debug(`${corr}: Corrección ya aplicada en la cadena de correciones. Se salta para evitar refencias circulares.`);
-                  chain_params[longname] = false;
+                  opts.params = corr.setParams(newname, false);
                }
-               chain_params[longname] = chain.func(params);
+               opts.params = corr.setParams(newname, chain.func(params));
             }
 
-            if(chain_params[longname] !== false) {
-               ret = this.apply(chain.corr, longname) || ret;
-            }
+            if(opts.params !== false) ret = this.apply(newname) || ret;
          }
          // Fin issue #37
 
@@ -1393,33 +1385,28 @@
        * @private
        *
        * @param {String} name    Nombre de la corrección.
-       * @param {Array.<String>} prename   Nombre de los previos en la cadena de correcciones.
        */
-      unapply: function(name, prename) {  // Elimina la corrección.
+      unapply: function(name) {  // Elimina la corrección.
          const corr     = this.options.corr,
-               property = corr.getProp(name),
-               sc       = corr[property],
-               func     = sc[name],
-               arr      = getProperty(this.getData(), property);
+               opts     = corr.getOptions(name),
+               arr      = getProperty(this.getData(), opts.attr);
          let ret;
 
-         if(ret = arr.unapply(name, prename)) {
+         if(ret = arr.unapply(name)) {
             // Issue #5
             const filter = this.options.filter;
-            if(filter) for(const f of filter.getFilters(property)) this.unapplyF(f);
+            if(filter) for(const f of filter.getFilters(opts.attr)) this.unapplyF(f);
             // Fin issue #5
 
-            this._updateIcon({[property]: arr});
+            this._updateIcon({[opts.attr]: arr});
          }
 
          // Issue #37
-         prename = prename || "";
-         for(const chain of corr.getOptions(name).chain) {
-            const chain_opts = corr.getOptions(chain.corr),
-                  chain_params = chain_opts.chain_params,
-                  longname = prename?prename + " " + name:name;
-            if(!chain_params[longname]) continue;  // No se aplicó.
-            ret = this.unapply(chain.corr, longname) || ret;
+         for(const chain of opts.chain) {
+            const newname = name + " " + chain.corr,
+                  opts = corr.getOptions(newname);
+            if(!opts.params) continue;  // No se aplicó.
+            ret = this.unapply(newname) || ret;
          }
          // Fin issue #37
 
@@ -1565,21 +1552,18 @@
              *
              * @param {Marker} marker  Marca a la que pertenece el :class:`Correctable`
              * @param {String} name    El nombre de la corrección.
-             * @param {String} prename  Nombres de los eslabones previos en la cadena de correcciones.
              *
              * @returns {boolean}  ``true`` Si la correción
              *    provocó algún cambio en el array.
              */
-            apply: function(marker, name, prename) {
-               const func = this._sc[name],
-                     add  = func.prop.add,
-                     params = prename?func.prop.chain_params[prename]:func.prop.params;
+            apply: function(marker, name) {
+               const opts = this._sc.getOptions(name);
 
-               if(add) {
+               if(opts.add) {
                   // La corrección ya estaba aplicada: la desaplicamos.
                   if(this.corr.hasOwnProperty(name)) this.unapply(name);
 
-                  const values = func.call(marker, null, this, params);
+                  const values = opts.func.call(marker, null, this, opts.params);
                   let num = values.length;
                   if(num === 0) return false;
                   Array.prototype.push.apply(Object.getPrototypeOf(this), values);
@@ -1591,36 +1575,25 @@
                   // Las correcciones que eliminan valores,
                   // pueden eliminar los valores añadidos.
                   for(const n in this.corr) {
-                     // Issue #37
-                     let prename = "",
-                         lastname = n;
-                     const lastSpace = n.lastIndexOf(" ");
-
-                     if(lastSpace !== -1) {
-                        prename = n.substring(0, lastSpace);
-                        lastname = n.substring(lastSpace+1);
-                     }
-                     // Fin issue #37.
+                     const opts = this._sc.getOptions(n);
 
                      this.corr[n].length = this.length;
-                     if(this._sc[lastname].prop.add) continue;  // Es una corrección que añade valores.
+                     if(opts.add) continue;  // Es una corrección que añade valores.
 
-                     const func = this._sc[lastname];
-                     //const params = marker.options.corr.getOptions(n).params;
-                     const params = prename?func.prop.chain_params[prename]:func.prop.params;
-                     for(let i=this.length-num; i<this.length; i++) this.corr[n][i] = func.call(marker, i, this, params);
+                     for(let i=this.length-num; i<this.length; i++) {
+                        this.corr[n][i] = opts.func.call(marker, i, this, opts.params);
+                     }
                   }
 
                   return true;
                }
                else {
                   let ret = false;
-                  if(prename) name = prename + " " + name;  // Issue #37
                   if(!this.corr.hasOwnProperty(name)) this.corr[name] = new Array(this.length);
 
                   for(let i=0; i<this.length; i++) {
                      const prev = this.corr[name][i];
-                     this.corr[name][i] = func.call(marker, i, this, params);
+                     this.corr[name][i] = opts.func.call(marker, i, this, opts.params);
                      if(prev ^ this.corr[name][i]) ret = true;  // La corrección cambia sus efectos.
                   }
 
@@ -1632,14 +1605,14 @@
              * Deshace una determinada corrección hecha previamente.
              *
              * @param {String} name Nombre de la corrección.
-             * @param {String} prename  Nombres de los eslabones previos en la cadena de correcciones.
              *
              * @returns {Boolean}  ``true`` si eliminar la corrección
              *    provocó cambios en el *array*.
              */
-            unapply: function(name, prename) {
+            unapply: function(name) {
+               const opts = this._sc.getOptions(name);
 
-               if(!prename && this._sc[name].prop.add) {
+               if(opts.add) {
                   if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
                   const arr = this.corr[name];
                   delete this.corr[name];
@@ -1661,7 +1634,6 @@
                   for(const name in this.corr) this.corr[name].splice(a, b-a);
                }
                else {
-                  if(prename) name = prename + " " + name;
                   if(!this.corr.hasOwnProperty(name)) return false; // No se había aplicado.
                   const arr = this.corr[name];
                   delete this.corr[name];
@@ -1708,7 +1680,6 @@
             if(!(arr instanceof Array)) throw new TypeError("El objeto no es un array");
             const obj = Object.assign(Object.create(arr), Prototype);
             Object.defineProperties(obj, {
-               // Sistema parcial de correcciones (sólo las correcciones que se aplican sobre el array).,
                "_sc": {
                   value: sc,
                   writable: false,
@@ -1831,6 +1802,34 @@
             return this;
          }
 
+
+         // Issue #37
+         /**
+          * Normaliza el nombre. Las correcciones encadenadas forman su nombre
+          * encadenando todos los eslabones de la cadena y separándolos por espacio.
+          * Por ejemplo, "*bilingue adjpue*" es la corrección *adjpue* que aplica
+          * automáticamente otra corrección llamda bilingue. En este ejemplo,
+          * el nombre normalizado es "*adjpue*" y el prenombre "*bilingue*"
+          * @method CorrSys#_normalizeName
+          * @private
+          *
+          * @param {String} name El nombre que se quiere normalizar,
+          * @param {Boolean} prename Si se quiere obtener también el prenombre.
+          *
+          * @returns {String|Array.<String>}  El nombre normalizado o un array
+          * con el nombre normalizado y el prenombre si el argumento ``prename`` era
+          * ``true``.
+          */
+         CorrSys.prototype._normalizeName = function(name, prename) {
+            const lastSpace = name.lastIndexOf(" ");
+            if(lastSpace === -1) return prename?["", name]:name;
+            else {
+               const res = name.substring(lastSpace+1);
+               return prename?[name.substring(0, lastSpace), res]:res;
+            }
+         }
+         // Fin #issue 37
+
          /**
           * Informa de si la propiedad de una marca es corregible.
           * @method CorrSys.prototype.isCorrectable
@@ -1910,7 +1909,7 @@
                   console.error("La propiedad no es un Array");
                   continue
                }
-               o[name] = new Correctable(o[name], this[attr]);
+               o[name] = new Correctable(o[name], this);
             }
          }
 
@@ -1923,32 +1922,51 @@
           * @returns {string} El nombre de la propiedad en notación de punto.
           */
          CorrSys.prototype.getProp = function(name) {
+            name = this._normalizeName(name);
             for(const prop in this) {
                if(this[prop].hasOwnProperty(name)) return prop;
             }
          }
 
          /**
-          * @typedef  {Object} OptionsCorr
-          * @property {String}  name          Nombre de la corrección.
-          * @property {Boolean} add           true, si la corrección agrega valores.
-          * @property {Object}  params        Opciones con que se ha aplicado la corrección.
+          * @typedef {Object} CorrSys.OptionsCorr
+          * @property {?String}  prename  Eslabones previos de la cadena de correcciones.
+          * @property {String}   name     Nombre de la corrección (sin eslabones previos).
+          * @property {Boolean}  add      true, si la corrección agrega valores.
+          * @property {Object}   params   Opciones de aplicación de la corrección.
+          * @property {Array}    chain    Array con las correcciones que desenacadena
+          * @property {String}   attr     El nombre de la propiedad sobre la que actúa la corrección.
+          * @property {Function} func     La función de corrección.
+          * automáticamente la corrección.
           */
 
-         // Issue #23
+         // Issue #23 - Modificado por issue #37.
          /**
           * Devuelve las características de una corrección
-          * (nombre, si es adictiva, con qué opciones se aplicó y la cadena de correcciones).
-          * @method CorrSys#getOptions
+          * @method CorrSys.prototype.getOptions
           *
           * @param {String} name  Nombre de la corrección.
           *
           * @returns {OptionsCorr}
           */
          CorrSys.prototype.getOptions = function(name) {
-            const sc = this[this.getProp(name)];
-            if(!sc) throw new Error(`${name}: corrección no registrada`);
-            return sc[name].prop;
+            let ret, prename;
+            [prename, name] = this._normalizeName(name, true);
+
+            const property = this.getProp(name);
+            if(!property) throw new Error(`${name}: corrección no registrada`);
+            const sc = this[property];
+
+            ret = {attr: property, func: sc[name]}
+            Object.assign(ret, ret.func.prop);
+
+            if(prename) {
+               ret.params = ret.chain_params[prename];
+               ret.prename = prename;
+            }
+            delete ret.chain_params;
+
+            return ret;
          }
 
          /**
@@ -1958,27 +1976,33 @@
           * @params {String} name   Nombre de la corrección.
           * @params {Object} opts   Opciones de aplicación de la corrección.
           *
-          * @returns {CorrSys}   El propio objeto.
+          * @returns {Object}   Las propias opciones.
           */
          CorrSys.prototype.setParams = function(name, opts) {
-            this.getOptions(name).params = opts;
-            this._delChainParams(name)  // Issue # 37
+            const sc = this[this.getProp(name)];
+            if(!sc) throw new Error(`${name}: corrección no registrada`);
 
-            return this;
-         }
-         // Fin issue #23
+            let prename;
+            [prename, name] = this._normalizeName(name, true);
 
-         // Issue #37
-         CorrSys.prototype._delChainParams = function(name, prename) {
-            const longname = prename?prename + " " + name:name;
-            for(const chain of this.getOptions(name).chain) {
-               const opts = this.getOptions(chain.corr);
-               if(opts.chain_params.hasOwnProperty(longname)) {
-                  delete opts.chain_params[longname];
-                  this._delChainParams(chain.corr, longname);
+            if(prename) {
+               if(opts !== null) sc[name].prop.chain_params[prename] = opts;
+               else delete sc[name].prop.chain_params[prename];
+            }
+            else sc[name].prop.params = opts;
+
+            // Si se borran los opciones de corrección (se fijan a null), se deben
+            // borrar recursivamente las opciones calculadas del resto de la cadena.
+            if(opts === null) {
+               for(const chain of sc[name].prop.chain) {
+                  if(this.looped(name, chain.corr)) continue;
+                  this.setParams(name + " " + chain.corr, null);
                }
             }
+
+            return opts;
          }
+         // Fin issue #23
 
          /**
           * Resetea el objeto.
@@ -1992,6 +2016,40 @@
                const corrs = this.getCorrections();
                for(const name in corrs) corrs[name].prop.chain_params = {}
             }
+         }
+
+         /**
+          * Comprueba si la cadena forma un bucle
+          *
+          * @param {String}  chain  Los nombres de las correcciones que forman la cadena.
+          * @oaram {?String} name   La nueva corrección que se desea añadir a la cadena.
+          * Si no se define, se entenderá que *chain* ya lo incorpora.
+          *
+          * @returns {Boolean} ``true``, si se forma bucle.
+          */
+         CorrSys.prototype.looped = function(chain, name) {
+            chain = chain.split(" ");
+            if(!name) name = chain.pop();
+
+            return chain.indexOf(name) !== -1;
+         }
+
+         /**
+          * Devuelve todos las opciones con las que se ha aplicado automáticamente
+          * una corrección.
+          * 
+          * @param {String} name  El nombre de la corrección.
+          *
+          * @returns {Array}  Las opciones aplicadas.
+          */
+         CorrSys.prototype.getChainedParams = function(name) {
+            const sc = this[this.getProp(name)];
+            if(!sc) throw new Error(`${name}: corrección no registrada`);
+
+            name = this._normalizeName(name);
+             
+            const params = sc[name].prop.chain_params;
+            return Object.keys(params).map(c => params[c]);
          }
          // FIn issue #37
 
