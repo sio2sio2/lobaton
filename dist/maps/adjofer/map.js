@@ -306,6 +306,90 @@ const MapaAdjOfer = (function() {
             return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
          }
       });
+
+      // Elimina adjudicaciones no telefónicas.
+      this.Centro.register("vt", {
+         attr: "adj",
+         // Las peticiones telefónicas son las que tiene pet=null
+         func: (idx, adj, opts) => adj[idx].pet !== null
+      });
+
+      // Elimina adjudicaciones que no responden a vacantes iniciales.
+      this.Centro.register("vi", {
+         attr: "adj",
+         // opts= {}
+         func: function(idx, adj, opts) {
+            const puesto = adj[idx].pue,
+                  vi = this.getData().pla[puesto].vi;
+            let i, num = 0;
+            for(i=0; i<=idx; i++) {
+               if(adj[i].pue === puesto) num++;
+            }
+            return i>vi;
+         }
+      });
+
+      // Elimina las enseñanzas no deseables.
+      this.Centro.register("deseable", {
+         attr: "oferta",
+         func: (idx, oferta, opts) => !oferta[idx].mar
+      });
+
+      // Elimina las enseñanzas que no sean del turno indicado.
+      this.Centro.register("turno", {
+         attr: "oferta",
+         // opts= {turno: 1, inv: true}  => 1: mañana, 2: tarde: 3, ambos.
+         func: function(idx, oferta, opts) {
+            if(oferta[idx].tur === null) return false; // Semipresenciales
+            const map = {
+               "matutino": 1,
+               "vespertino": 2,
+               "ambos": 3
+            }
+            // ESO y BAC noo tiene turno,
+            // pero si es enseñanza de adultos es por la tarde.
+            const turno = map[oferta[idx].tur || (oferta[idx].adu?"vespertino":"matutino")];
+
+            return !!(opts.inv ^ !(turno & opts.turno));
+         }
+      });
+
+      // Pasa el tiempo de servicio a un pseudoescalafon
+      function ts2esc(ts) {
+         return ((new Date()).getFullYear() + "0000") - ts.map(e => String(e).padStart(2, "0")).join("");
+      }
+
+      // Cuando se almacene en la base de datos el tiempo de servicio
+      // de los funcionarios de carrera, habrá que calcular esto.
+      function esc2ts(esc) {
+         return [0];
+      }
+
+      // Elimina las adjudicaciones que sean más prioritarias
+      // que el adjudicatario de referencia que se defina.
+      this.Centro.register("adjref", {
+         attr: "adj",
+         // opts= {ts: [10, 3, 22], esc: 20104120, col: DB}
+         // a=años, m=meses, d=dias, esc=escalafon, col=colectibo
+         func: function(idx, adj, opts) {
+            let col = String(self.general.colectivos[opts.col].o),
+                 ts = ts2esc(opts.ts || esc2ts(opts.esc)),
+                esc = String(opts.esc).padStart(8, "0") || "00000000";
+
+            const ref = col + ts + esc;
+
+            col = String(self.general.colectivos[adj[idx].col].o);
+            // En realidad, en el geojson también debería haber un ts y esc.
+            // pero no lo hay por un descuido al hacer la base de datos.
+            esc = adj[idx].esc;
+            if(esc.length) value = ts2esc(esc) + "00000000";
+            else esc = "00000000" + esc;
+
+            const este = col + esc;
+
+            return este < ref;
+         }
+      });
    }
 
    /**
