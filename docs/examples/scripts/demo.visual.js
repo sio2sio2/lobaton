@@ -55,6 +55,7 @@ window.onload = function() {
          console.log("DEBUG - datos", e.target.getData());
          console.log("DEBUG - filtrado", e.target.filtered);
          console.log("DEBUG - oferta", Array.from(e.target.getData().oferta));
+         console.log("DEBUG - adj", Array.from(e.target.getData().adj));
       });
    });
 

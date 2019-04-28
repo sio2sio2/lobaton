@@ -1558,7 +1558,8 @@
              * @returns {Array} Array con los nombres
              */
             filters: function(idx) {
-               return Object.keys(this.corr).filter(n => this.corr[n][idx]);
+               return Object.keys(this.corr).filter(n => this.corr[n][idx])
+                                            .map(c => this._sc.getOriginal(c));
             },
             /**
              * @typedef {Object} Correctable.CorrValue
@@ -2095,9 +2096,22 @@
 
             let res = {};
             for(const n in params) {
-               res[n.split(" ")[0]] = params[n];
+               res[this.getOriginal(n)] = params[n];
             }
             return res;
+         }
+
+         /**
+          * Devuelve la correccion original que desencadenó
+          * la corrección que se consulta.
+          *
+          * @name {String} name  El nombre de la corrección.
+          *
+          * @returns {String} La corrección que originariamente
+          * desencadenó la corrección suministrada.
+          */
+         CorrSys.prototype.getOriginal = function(name) {
+            return name.split(" ")[0];
          }
          // FIn issue #37
 
