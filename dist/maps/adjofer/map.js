@@ -354,50 +354,64 @@ const MapaAdjOfer = (function() {
          }
       });
 
-      // Pasa el tiempo de servicio a un pseudoescalafon
-      function ts2esc(ts) {
-         return ((new Date()).getFullYear() + "0000") - ts.map(e => String(e).padStart(2, "0")).join("");
+      // Función para comprobar el adjudicatario de referencia.
+      function adjref(idx, adj, opts) {
+         // Pasa el tiempo de servicio a un pseudoescalafon:
+         // Debe cumplir que a mayor tiempo de servicio, menor escalafón.
+         function ts2esc(ts) {
+            const hoy = new Date();
+
+            return hoy.getFullYear() +
+                   String(hoy.getMonth()).padStart(2, "0") +
+                   String(hoy.getDate()).padStart(2, "0") -
+                   ts.map(e => String(e).padStart(2, "0")).join("");
+         }
+
+         // Calcula un escalafón intercolectivo. Está constituido por la
+         // concatenación de:
+         // - Una primera parte que identifica la prioridad del colectivo.
+         //   (1, el más prioritario; 2 el segundo, etc.)
+         // - Un escalafón que se calcula del siguiente modo:
+         //     + El propio escalafón, si es un func. de carrera que no ha
+         //       cogido nunca excedencia.
+         //     + Para interinos, funcionarios sin escalafón o funcionarios
+         //       que en algún momento cogieron excedencia, un
+         //       escalafón obtenido con ts2esc().
+         function escEquiv(opts) {
+            let esc = opts.esc,
+                ts = opts.ts,
+                col = String(self.general.colectivos[opts.col].o);
+
+            // TODO: En el geojson los interinos deberían tener su ts
+            // en la propiedad ts; y los funcionarios tener un esc y un ts.
+            if(opts.col === "J") {
+               if(esc && esc.length) {  // Precaución: los interinos tiene ts en esc.
+                  ts = esc;
+                  esc = undefined;
+               }
+            }
+            else if(ts !== undefined) {  // Func. de carrera con dato de ts.
+               const aa = (new Date()).getFullYear() - esc.substring(0, 4) - 1;
+               // Esto significa que nunca ha cogido excendencia
+               if(aa === ts[0]) ts = undefined;
+            }
+
+            if(ts !== undefined) esc = ts2esc(ts);
+
+            return Number(col + esc);
+         }
+
+         if(!opts.hasOwnProperty("_ref")) opts._ref = escEquiv(opts);
+         return escEquiv(adj[idx]) > opts._ref;
       }
-
-      // Cuando se almacene en la base de datos el tiempo de servicio
-      // de los funcionarios de carrera, habrá que calcular esto.
-      function esc2ts(esc) {
-         return [0];
-      }
-
-      // Escalafón equivalente: Concatenación de colectivo+ts+esc.
-      // Cumple que cuanto menor es, más prioritaria es la adjudicación.
-      function escEquiv(opts) {
-         let col = String(self.general.colectivos[opts.col].o),
-              ts = ts2esc(opts.ts || esc2ts(opts.esc)),
-             esc = String(opts.esc || "").padStart(8, "0");
-
-         return Number(col + ts + esc);
-      }
-
 
       // Elimina las adjudicaciones que sean más prioritarias
       // que el adjudicatario de referencia que se defina.
       this.Centro.register("adjref", {
          attr: "adj",
-         // opts= {ts: [10, 3, 22], esc: 20104120, col: DB}
-         // a=años, m=meses, d=dias, esc=escalafon, col=colectibo
-         func: function(idx, adj, opts) {
-            // Así no necesitamos calcularlo 
-            if(!opts.hasOwnProperty("_escEquiv")) opts._escEquiv = escEquiv(opts);
-
-            const ref = Number(col + ts + esc);
-
-            col = String(self.general.colectivos[adj[idx].col].o);
-            // En realidad, en el geojson también debería haber un ts y esc.
-            // pero no lo hay por un descuido al hacer la base de datos.
-            esc = adj[idx].esc;
-            if(esc.length) esc = ts2esc(esc) + "00000000";
-            else esc = "00000000" + esc;
-            const este = Number(col + esc);
-
-            return este > ref;
-         }
+         // opts= {ts: [10, 3, 22], esc: 20104120, col: "DB"}
+         // ts=tiempo-servicio (aa-mm-dd), esc=escalafon, col=colectivo
+         func: adjref
       });
    }
 
