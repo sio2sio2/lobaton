@@ -206,11 +206,11 @@ const MapaAdjOfer = (function() {
       this.cluster.on("markerselect", function(e) {
          if(e.oldval) {
             e.oldval.changeData({sel: false});
-            e.oldval.refresh();
+            if(this.hasLayer(e.oldval)) e.oldval.refresh();
          }
          if(e.newval) {
             e.newval.changeData({sel: true});
-            e.newval.refresh();
+            if(this.hasLayer(e.newval)) e.newval.refresh();
          }
       });
    }

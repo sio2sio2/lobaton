@@ -2044,7 +2044,7 @@
             if(deep) for(const prop in this) delete this[prop];
             else {
                const corrs = this.getCorrections();
-               for(const name in corrs) corrs[name].prop.chain_params = {}
+               for(const name in corrs) this.setParams(name, null);
             }
          }
 
