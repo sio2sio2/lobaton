@@ -301,10 +301,44 @@ const MapaAdjOfer = (function() {
       // Elimina las adjudicaciones de los puestos suministrados.
       this.Centro.register("adjpue", {
          attr: "adj",
-         // opts= {puesto: ["00590059", "11590107"], inv: true}
+         // opts= {puesto: ["00590059", "11590107"], inv: false}
          func: function(idx, adj, opts) {
             return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
          }
+      });
+
+      // Elimina las enseñanzas suministradas
+      this.Centro.register("ofens", {
+         attr: "oferta",
+         // opts= {ens: ["23GMSMR168", "23GSASI820"], inv: false}
+         func: function(idx, oferta, opts) {
+            return !!(opts.inv ^ (opts.ens.indexOf(oferta[idx].ens) !== -1));
+         },
+         chain: [{
+            corr: "adjpue",
+            // Si alguna de las enseñanzas eliminadas, es la única
+            // que puede impartir un puesto, entonces debe eliminarse tal puesto.
+            func: function(opts) {
+               const ens = self.general.ens;
+               // Interesan las enseñanzas que no se eliminan.
+               if(!opts.inv) opts = {ens: Object.keys(ens).filter(e => opts.ens.indexOf(e) === -1)};
+
+               // Puestos impartidos exclusivamente por las enseñanzas eliminadas.
+               const pue = [];
+               for(let p of self.general.puestos) {
+                  let impartido = false;
+                  for(let e of opts.ens) {
+                     if(ens[e].puestos.indexOf(p) !== -1) {
+                        impartido = true;
+                        break;
+                     }
+                  }
+                  if(!impartido) pue.push(p);
+               }
+
+               return pue.length?{puesto: pue}:false;
+            }
+         }]
       });
 
       // Elimina adjudicaciones no telefónicas.
