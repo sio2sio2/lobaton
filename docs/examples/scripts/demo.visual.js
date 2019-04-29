@@ -19,12 +19,10 @@ window.onload = function() {
    }
 
    const g = new MapaAdjOfer("map", "../../dist");
-   // En este punto, los centros no se han añadido a la capa,
-   // así que no es necesario refrescar.
-   //g.Centro.correct("bilingue", {bil: ["Inglés"]}, true);
-   //g.Centro.correct("adjpue", {puesto: ["00590059"]});
-   //g.Centro.filter("adj", {min: 1});
-   //g.Centro.filter("oferta", {min: 1});
+   // Los filtros se conservan al cargar nuevos datos
+   // así que podemos fijarlos de inicio.
+   g.Centro.filter("adj", {min: 1});
+   g.Centro.filter("oferta", {min: 1});
 
    // Acciones que se desencadenan al seleccionar/deseleccionar un centro
    g.cluster.on("markerselect", function(e) {
@@ -36,7 +34,8 @@ window.onload = function() {
 
    g.lanzarTrasDatos(function() {
       console.log("Se han acabado de cargar los centros");
-      //Ahora sí hay centros, asi que sí debemos refrescar
+      g.Centro.correct("bilingue", {bil: ["Inglés"]});
+      g.Centro.correct("adjpue", {puesto: ["00590059"]});
       g.Centro.correct("vt+", {});
       g.Centro.invoke("refresh");
       // Al pulsar click sobre una marca, se selecciona el centro.	

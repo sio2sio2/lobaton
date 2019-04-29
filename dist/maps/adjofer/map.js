@@ -206,11 +206,11 @@ const MapaAdjOfer = (function() {
       this.cluster.on("markerselect", function(e) {
          if(e.oldval) {
             e.oldval.changeData({sel: false});
-            e.oldval.refresh();
+            if(this.hasLayer(e.oldval)) e.oldval.refresh();
          }
          if(e.newval) {
             e.newval.changeData({sel: true});
-            e.newval.refresh();
+            if(this.hasLayer(e.newval)) e.newval.refresh();
          }
       });
    }
@@ -364,9 +364,41 @@ const MapaAdjOfer = (function() {
       });
 
       // Elimina las enseñanzas no deseables.
+      /*
       this.Centro.register("deseable", {
          attr: "oferta",
          func: (idx, oferta, opts) => !oferta[idx].mar
+      });
+      */
+      // Esta implementación alternativa tiene la ventaja
+      // de que está expresada en términos de enseñanzas (ofens).
+      this.Centro.register("deseable", {
+         attr: "oferta",
+         autochain: true,
+         func: opts => false,
+         chain: [{
+            corr: "ofens",
+            func: function(opts) {
+               // Hay que montar este cirio, porque la característica mar (deseable)
+               // aparece en las enseñanzas de centro, pero no en la relación general
+               // de enseñanzas. Debería corregirse el geojson.
+               const indeseables = [];
+               for(const ens in self.general.ens) {
+                  for(const c of this.store) {
+                     let found = false;
+                     for(const o of c.getData().oferta) {
+                        if(o.ens === ens) {
+                           found = true;
+                           if(!o.mar) indeseables.push(ens);
+                           break;
+                        }
+                     }
+                     if(found) break;
+                  }
+               }
+               return indeseables.length?{ens: indeseables}:false;
+            }
+         }]
       });
 
       // Elimina las enseñanzas que no sean del turno indicado.
