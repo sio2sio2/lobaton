@@ -938,12 +938,16 @@
             writable: false
          }); 
          /**
-          * Vacía :attr:`Marker.store` de marcas.
+          * Vacía :attr:`Marker.store` de marcas y
+          * marca como desaplicadas las correcciones.
           * @memberof Marker
+          *
+          * @param {Boolean} deep  Si ``true``, también desaplica los filtros.
           */
-         Marker.reset = function() { 
+         Marker.reset = function(deep) { 
             this.store.length = 0;
             this.prototype.options.corr.reset();  // Issue #33
+            if(deep) this.prototype.options.filter.reset();  // Issue #40
          }
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
@@ -2037,8 +2041,8 @@
          /**
           * Resetea el objeto.
           *
-          * @param {Boolean} deep  Si ``true`` elimina todas las correcciones registradas;
-          *    de lo contrario, sólo los parámetros calculados para las correcciones encadenadas.
+          * @param {Boolean} deep  Si ``true``, elimina del sistema las correcciones;
+          *    de lo contrario, sólo las marca como desaplicadas.
           */
          CorrSys.prototype.reset = function(deep) {
             if(deep) for(const prop in this) delete this[prop];
@@ -2046,6 +2050,7 @@
                const corrs = this.getCorrections();
                for(const name in corrs) this.setParams(name, null);
             }
+            return this;
          }
 
 
@@ -2318,6 +2323,20 @@
          // a refresh como parámetro.
          markerClass.invoke("refresh", exhideable && !this.hideable && old);
       }
+
+      // Issue #40
+      /**
+       * Resetea el objeto.
+       *
+       * @param {Boolean} deep  Si ``true``, elimina del sistema los filtros;
+       * de lo contrario, sólo los marca como desaplicados.
+       */
+      FilterSys.prototype.reset = function(deep) {
+         if(deep) for(const name in this) delete this[name];
+         else for(const name in this) this.disable(name);
+         return this;
+      }
+      // Fin issue #40
 
       return FilterSys;
    })();
