@@ -365,6 +365,17 @@ const MapaAdjOfer = (function() {
          return [0];
       }
 
+      // Escalafón equivalente: Concatenación de colectivo+ts+esc.
+      // Cumple que cuanto menor es, más prioritaria es la adjudicación.
+      function escEquiv(opts) {
+         let col = String(self.general.colectivos[opts.col].o),
+              ts = ts2esc(opts.ts || esc2ts(opts.esc)),
+             esc = String(opts.esc || "").padStart(8, "0");
+
+         return Number(col + ts + esc);
+      }
+
+
       // Elimina las adjudicaciones que sean más prioritarias
       // que el adjudicatario de referencia que se defina.
       this.Centro.register("adjref", {
@@ -372,22 +383,20 @@ const MapaAdjOfer = (function() {
          // opts= {ts: [10, 3, 22], esc: 20104120, col: DB}
          // a=años, m=meses, d=dias, esc=escalafon, col=colectibo
          func: function(idx, adj, opts) {
-            let col = String(self.general.colectivos[opts.col].o),
-                 ts = ts2esc(opts.ts || esc2ts(opts.esc)),
-                esc = String(opts.esc).padStart(8, "0") || "00000000";
+            // Así no necesitamos calcularlo 
+            if(!opts.hasOwnProperty("_escEquiv")) opts._escEquiv = escEquiv(opts);
 
-            const ref = col + ts + esc;
+            const ref = Number(col + ts + esc);
 
             col = String(self.general.colectivos[adj[idx].col].o);
             // En realidad, en el geojson también debería haber un ts y esc.
             // pero no lo hay por un descuido al hacer la base de datos.
             esc = adj[idx].esc;
-            if(esc.length) value = ts2esc(esc) + "00000000";
+            if(esc.length) esc = ts2esc(esc) + "00000000";
             else esc = "00000000" + esc;
+            const este = Number(col + esc);
 
-            const este = col + esc;
-
-            return este < ref;
+            return este > ref;
          }
       });
    }
