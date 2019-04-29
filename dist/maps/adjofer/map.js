@@ -247,6 +247,7 @@ const MapaAdjOfer = (function() {
     * @private
     */
    function createCorrections() {
+      const self = this;
       // Elimina enseñanzas que no son bilingües
       this.Centro.register("bilingue", {
          attr: "oferta",
@@ -254,7 +255,25 @@ const MapaAdjOfer = (function() {
          func: function(idx, oferta, opts) {
             if(!opts.bil || opts.bil.length === 0) return false;
             return opts.bil.indexOf(oferta[idx].idi) === -1
-         }
+         },
+         // Sólo son pertinentes los puestos bilingües.
+         chain: [{
+            corr: "adjpue",
+            func: function(opts) {
+               const map = {  // TODO: Esto debería estar sacarse de la base de datos y estar en el geoJSON
+                  "Francés": 10,
+                  "Inglés": 11,
+                  "Alemán": 12
+               };
+               const cod = Object.keys(map)
+                                 .filter(idi => opts.bil.indexOf(idi) !== -1)
+                                 .map(e => map[e]);
+               //Puestos a eliminar.
+               const puestos = Object.keys(self.general.puestos)
+                                     .filter(pue => !cod.some(c => pue.startsWith(c)));
+               return puestos.length>0?{puesto: puestos}:false;
+            }
+         }]
       });
 
       // Añade vacantes telefónicas a las adjudicaciones.
@@ -282,10 +301,151 @@ const MapaAdjOfer = (function() {
       // Elimina las adjudicaciones de los puestos suministrados.
       this.Centro.register("adjpue", {
          attr: "adj",
-         // opts= {puesto: ["00590059", "11590107"], inv: true}
+         // opts= {puesto: ["00590059", "11590107"], inv: false}
          func: function(idx, adj, opts) {
             return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
          }
+      });
+
+      // Elimina las enseñanzas suministradas
+      this.Centro.register("ofens", {
+         attr: "oferta",
+         // opts= {ens: ["23GMSMR168", "23GSASI820"], inv: false}
+         func: function(idx, oferta, opts) {
+            return !!(opts.inv ^ (opts.ens.indexOf(oferta[idx].ens) !== -1));
+         },
+         chain: [{
+            corr: "adjpue",
+            // Si alguna de las enseñanzas eliminadas, es la única
+            // que puede impartir un puesto, entonces debe eliminarse tal puesto.
+            func: function(opts) {
+               const ens = self.general.ens;
+               // Interesan las enseñanzas que no se eliminan.
+               if(!opts.inv) opts = {ens: Object.keys(ens).filter(e => opts.ens.indexOf(e) === -1)};
+
+               // Puestos impartidos exclusivamente por las enseñanzas eliminadas.
+               const pue = [];
+               for(let p of self.general.puestos) {
+                  let impartido = false;
+                  for(let e of opts.ens) {
+                     if(ens[e].puestos.indexOf(p) !== -1) {
+                        impartido = true;
+                        break;
+                     }
+                  }
+                  if(!impartido) pue.push(p);
+               }
+
+               return pue.length?{puesto: pue}:false;
+            }
+         }]
+      });
+
+      // Elimina adjudicaciones no telefónicas.
+      this.Centro.register("vt", {
+         attr: "adj",
+         // Las peticiones telefónicas son las que tiene pet=null
+         func: (idx, adj, opts) => adj[idx].pet !== null
+      });
+
+      // Elimina adjudicaciones que no responden a vacantes iniciales.
+      this.Centro.register("vi", {
+         attr: "adj",
+         // opts= {}
+         func: function(idx, adj, opts) {
+            const puesto = adj[idx].pue,
+                  vi = this.getData().pla[puesto].vi;
+            let i, num = 0;
+            for(i=0; i<=idx; i++) {
+               if(adj[i].pue === puesto) num++;
+            }
+            return i>vi;
+         }
+      });
+
+      // Elimina las enseñanzas no deseables.
+      this.Centro.register("deseable", {
+         attr: "oferta",
+         func: (idx, oferta, opts) => !oferta[idx].mar
+      });
+
+      // Elimina las enseñanzas que no sean del turno indicado.
+      this.Centro.register("turno", {
+         attr: "oferta",
+         // opts= {turno: 1, inv: true}  => 1: mañana, 2: tarde: 3, ambos.
+         func: function(idx, oferta, opts) {
+            if(oferta[idx].tur === null) return false; // Semipresenciales
+            const map = {
+               "matutino": 1,
+               "vespertino": 2,
+               "ambos": 3
+            }
+            // ESO y BAC noo tiene turno,
+            // pero si es enseñanza de adultos es por la tarde.
+            const turno = map[oferta[idx].tur || (oferta[idx].adu?"vespertino":"matutino")];
+
+            return !!(opts.inv ^ !(turno & opts.turno));
+         }
+      });
+
+      // Función para comprobar el adjudicatario de referencia.
+      function adjref(idx, adj, opts) {
+         // Pasa el tiempo de servicio a un pseudoescalafon:
+         // Debe cumplir que a mayor tiempo de servicio, menor escalafón.
+         function ts2esc(ts) {
+            const hoy = new Date();
+
+            return hoy.getFullYear() +
+                   String(hoy.getMonth()).padStart(2, "0") +
+                   String(hoy.getDate()).padStart(2, "0") -
+                   ts.map(e => String(e).padStart(2, "0")).join("");
+         }
+
+         // Calcula un escalafón intercolectivo. Está constituido por la
+         // concatenación de:
+         // - Una primera parte que identifica la prioridad del colectivo.
+         //   (1, el más prioritario; 2 el segundo, etc.)
+         // - Un escalafón que se calcula del siguiente modo:
+         //     + El propio escalafón, si es un func. de carrera que no ha
+         //       cogido nunca excedencia.
+         //     + Para interinos, funcionarios sin escalafón o funcionarios
+         //       que en algún momento cogieron excedencia, un
+         //       escalafón obtenido con ts2esc().
+         function escEquiv(opts) {
+            let esc = opts.esc,
+                ts = opts.ts,
+                col = String(self.general.colectivos[opts.col].o);
+
+            // TODO: En el geojson los interinos deberían tener su ts
+            // en la propiedad ts; y los funcionarios tener un esc y un ts.
+            if(opts.col === "J") {
+               if(esc && esc.length) {  // Precaución: los interinos tiene ts en esc.
+                  ts = esc;
+                  esc = undefined;
+               }
+            }
+            else if(ts !== undefined) {  // Func. de carrera con dato de ts.
+               const aa = (new Date()).getFullYear() - esc.substring(0, 4) - 1;
+               // Esto significa que nunca ha cogido excendencia
+               if(aa === ts[0]) ts = undefined;
+            }
+
+            if(ts !== undefined) esc = ts2esc(ts);
+
+            return Number(col + esc);
+         }
+
+         if(!opts.hasOwnProperty("_ref")) opts._ref = escEquiv(opts);
+         return escEquiv(adj[idx]) > opts._ref;
+      }
+
+      // Elimina las adjudicaciones que sean más prioritarias
+      // que el adjudicatario de referencia que se defina.
+      this.Centro.register("adjref", {
+         attr: "adj",
+         // opts= {ts: [10, 3, 22], esc: 20104120, col: "DB"}
+         // ts=tiempo-servicio (aa-mm-dd), esc=escalafon, col=colectivo
+         func: adjref
       });
    }
 

@@ -21,10 +21,10 @@ window.onload = function() {
    const g = new MapaAdjOfer("map", "../../dist");
    // En este punto, los centros no se han añadido a la capa,
    // así que no es necesario refrescar.
-   g.Centro.correct("bilingue", {bil: ["Inglés"]});
-   g.Centro.correct("adjpue", {puesto: ["11590107", "00590059"]});
-   g.Centro.filter("adj", {min: 1});
-   g.Centro.filter("oferta", {min: 1});
+   //g.Centro.correct("bilingue", {bil: ["Inglés"]}, true);
+   //g.Centro.correct("adjpue", {puesto: ["00590059"]});
+   //g.Centro.filter("adj", {min: 1});
+   //g.Centro.filter("oferta", {min: 1});
 
    // Acciones que se desencadenan al seleccionar/deseleccionar un centro
    g.cluster.on("markerselect", function(e) {
@@ -55,6 +55,7 @@ window.onload = function() {
          console.log("DEBUG - datos", e.target.getData());
          console.log("DEBUG - filtrado", e.target.filtered);
          console.log("DEBUG - oferta", Array.from(e.target.getData().oferta));
+         console.log("DEBUG - adj", Array.from(e.target.getData().adj));
       });
    });
 

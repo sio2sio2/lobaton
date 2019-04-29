@@ -759,6 +759,7 @@ corrección de ejemplo que se acaba de enunciar.</li>
 sobre la clase de la marca:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span>
    <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="c1">// opts = {colectivo: [&quot;Interino&quot;]}</span>
    <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">adj</span><span class="p">[</span><span class="nx">idx</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
    <span class="p">}</span>
@@ -773,7 +774,10 @@ sobre la clase de la marca:</p>
 propiedad de los datos <code class="docutils literal notranslate"><span class="pre">adj</span></code>. Como es una corrección que pretende eliminar
 elementos, se ejecutará la función suministrada por <code class="docutils literal notranslate"><span class="pre">func</span></code> para cada uno de
 los elementos del <em>array</em> <code class="docutils literal notranslate"><span class="pre">adj</span></code>, de manera que cuando devuelva <code class="docutils literal notranslate"><span class="pre">true</span></code> se
-eliminará el elemento y cuando devuelva <code class="docutils literal notranslate"><span class="pre">false</span></code>, se conservará.</p>
+eliminará el elemento y cuando devuelva <code class="docutils literal notranslate"><span class="pre">false</span></code>, se conservará. Tal como está
+escrita la función, se desecharán las adjudicaciones a colectivos que se
+encuentren en la lista suministrada a través de las opciones. Además se incluye
+un atributo <em>inv</em> para poder invertir el significado.</p>
 <p>La función usa como contexto la marca sobre la que opera la corrección
 y tiene tres argumentos:</p>
 <dl class="docutils">
@@ -890,6 +894,95 @@ tanto,  si quiere trasladar el cambio al aspecto de los iconos:</p>
 <div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;refresh&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
+</div>
+</div>
+<div class="section" id="encadenamiento">
+<h4>3.1.2.5.4. Encadenamiento<a class="headerlink" href="#encadenamiento" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>En algunos casos, podría darse la circunstancia de que la aplicación de una
+corrección sobre una propiedad supusiera la aplicación automática de la
+aplicación de otra corrección sobre otra propiedad. Un ejemplo real podría ser
+el siguiente: si sólo nos interesan enseñanzas bilingües (corrección sobre
+la oferta educativa), entonces sólo nos deberían interesar las
+adjudicaciones a puestos bilingües (corrección sobre las adjucaciones).
+Como, desgraciadamente, no podemos llevar a la práctica este ejemplo al estar
+utilizando una versión muy simplificada de los datos, implementaremos un
+encadenamiento absurdo, pero que sirve para ilustrar cómo se hace: <em>si nos
+interesan sólo puestos interinos, entonces no nos interesa la enseñanza DAM</em>.</p>
+<p>Sin encadenamiento, la definición de nuestras correcciones sería así:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">adj</span><span class="p">[</span><span class="nx">idx</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+   <span class="p">}</span>
+<span class="p">})</span>
+      <span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;oferta&quot;</span><span class="p">,</span>
+   <span class="c1">// opts = {ens: [&quot;DAM&quot;] }</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">oferta</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">ens</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">oferta</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Como vemos, hemos definido la corrección «<em>of</em>» para que se desechen las
+enseñanzas que coincidan con alguna de las que pasemos a través de las opciones.
+Para el encadenamiento que queremos, podemos hacer la siguiente definición:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;adj&quot;</span><span class="p">,</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">adj</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">inv</span> <span class="o">^</span> <span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">adj</span><span class="p">[</span><span class="nx">idx</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+   <span class="p">},</span>
+<span class="hll">   <span class="nx">chain</span><span class="o">:</span> <span class="p">[</span>
+</span><span class="hll">      <span class="p">{</span>
+</span><span class="hll">         <span class="nx">corr</span><span class="o">:</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span>
+</span><span class="hll">         <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="hll">            <span class="k">if</span><span class="p">(</span><span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">colectivo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">===</span> <span class="s2">&quot;Interino&quot;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="hll">               <span class="k">return</span> <span class="p">{</span><span class="nx">ens</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;DAM&quot;</span><span class="p">]}</span>
+</span><span class="hll">            <span class="p">}</span>
+</span><span class="hll">            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class="hll">         <span class="p">}</span>
+</span><span class="hll">      <span class="p">}</span>
+</span><span class="hll">   <span class="p">]</span>
+</span><span class="p">})</span>
+     <span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="p">{</span>  <span class="c1">// Esto no cambia en absoluto.</span>
+   <span class="nx">attr</span><span class="o">:</span> <span class="s2">&quot;oferta&quot;</span><span class="p">,</span>
+   <span class="c1">// opts = {ens: [&quot;DAM&quot;] }</span>
+   <span class="nx">func</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="nx">oferta</span><span class="p">,</span> <span class="nx">opts</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">ens</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">oferta</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>O sea:</p>
+<ul class="simple">
+<li>Definimos una cadena de correcciones para <em>adjcol</em> a través del parámetro
+<code class="docutils literal notranslate"><span class="pre">chain</span></code>. El encadenamiento sólo define que podrá lanzarse automáticamente
+la corrección <em>of</em></li>
+<li>Se debe definir una función que transforme las opciones de <em>adjcol</em> en
+opciones de <em>of</em>.</li>
+<li>Si los valores de las opciones de <em>adjcol</em>, no provocan ningún efecto, entones
+la función de transformación debe devolver <code class="docutils literal notranslate"><span class="pre">false</span></code>.</li>
+</ul>
+<p>Además al aplicar las correcciones, es necesario añadir un argumento adicional
+que inste a seguir la cadena:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">ccrrect</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivo</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Interino&quot;</span><span class="p">]},</span> <span class="kc">true</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>de los contrario, el encadenamiento nunca se llevará a cabo.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p>Internamiente no se aplica una corrección <em>of</em>, sino un corrección
+«<em>adjcol of</em>», por lo que podemos aplicar de forma independiente una
+corrección <em>of</em>:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">ens</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;SMR&quot;</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<p>Si se desea conocer para una corrección qué otras corrección la han aplicado
+automáticamente y con qué opciones, puede usarse el método
+<a class="reference internal" href="02.lib.html#Marker.getAutoCorrect" title="Marker.getAutoCorrect"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.getAutoCorrect()</span></code></a>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">getAutoCorrect</span><span class="p">(</span><span class="s2">&quot;of&quot;</span><span class="p">);</span>  <span class="c1">// {adjcol: {ens: [&quot;DAM&quot;]}}</span>
+</pre></div>
 </div>
 </div>
 </div>
