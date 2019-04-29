@@ -66,7 +66,6 @@ window.onload = function() {
 
       //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
       if (g.cluster.seleccionado !== null){
-         console.log("filtrandooo");
          displayInfoCentro(g.cluster.seleccionado);
       }
    });
