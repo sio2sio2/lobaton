@@ -1825,6 +1825,7 @@
             obj.func.prop = {
                name: name,
                add: obj.add,
+               default_auto: obj.autochain || false,  // Issue #39
                params: null,  // Issue #23.
                // Issue #37
                chain: obj.chain || [],  // Correcciones que aplica automáticamente esta corrección
@@ -2067,7 +2068,8 @@
             this.setParams(name, opts);
             const sc = this[this.getProp(name)];
             try {
-               sc[name].prop.auto = !!auto;
+               sc[name].prop.auto = sc[name].prop.default_auto;  // Issue #39
+               if(auto !== undefined) sc[name].prop.auto = !!auto;
             }
             catch(error) {
                console.warn("¿Está intentando inicializar una corrección encadenada?");
