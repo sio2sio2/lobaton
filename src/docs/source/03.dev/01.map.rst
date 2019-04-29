@@ -724,14 +724,14 @@ Encadenamiento
 --------------
 En algunos casos, podría darse la circunstancia de que la aplicación de una
 corrección sobre una propiedad supusiera la aplicación automática de la
-aplicación de otra corrección sobre otra propiedad. Un ejemplo real podría ser
-el siguiente: si sólo nos interesan enseñanzas bilingües (corrección sobre
-la oferta educativa), entonces sólo nos deberían interesar las
-adjudicaciones a puestos bilingües (corrección sobre las adjucaciones).
-Como, desgraciadamente, no podemos llevar a la práctica este ejemplo al estar
-utilizando una versión muy simplificada de los datos, implementaremos un
-encadenamiento absurdo, pero que sirve para ilustrar cómo se hace: *si nos
-interesan sólo puestos interinos, entonces no nos interesa la enseñanza DAM*.
+aplicación de otra corrección. Un ejemplo real podría ser el siguiente: si sólo
+nos interesan enseñanzas bilingües (corrección sobre la oferta educativa),
+entonces sólo nos deberían interesar las adjudicaciones a puestos bilingües
+(corrección sobre las adjucaciones).  Como, desgraciadamente, no podemos llevar
+a la práctica este ejemplo al estar utilizando una versión muy simplificada de
+los datos, implementaremos un encadenamiento absurdo, pero que sirve para
+ilustrar cómo se hace: *si nos interesan sólo puestos interinos, entonces no nos
+interesa la enseñanza DAM*.
 
 Sin encadenamiento, la definición de nuestras correcciones sería así::
 
@@ -755,13 +755,14 @@ enseñanzas que coincidan con alguna de las que pasemos a través de las opcione
 Para el encadenamiento que queremos, podemos hacer la siguiente definición:
 
 .. code-block:: javascript
-   :emphasize-lines: 6-16
+   :emphasize-lines: 6-17
 
    Centro.register("adjcol", {
       attr: "adj",
       func: function(idx, adj, opts) {
          return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
       },
+      autochain: false,
       chain: [
          {
             corr: "of",
@@ -785,20 +786,25 @@ Para el encadenamiento que queremos, podemos hacer la siguiente definición:
 
 O sea:
 
-* Definimos una cadena de correcciones para *adjcol* a través del parámetro
+* Definimos una cadena de correcciones para *adjcol* a través del atributo
   ``chain``. El encadenamiento sólo define que podrá lanzarse automáticamente
-  la corrección *of*
+  la corrección *of*.
+* El atributo ``autochain`` permite definir si queremos que el encadenamiento
+  se lleve a cabo al aplicar la corrección (``true``) o si esta decisión se
+  se pospone hasta ese momento.
 * Se debe definir una función que transforme las opciones de *adjcol* en
-  opciones de *of*.
+  opciones de *of*. El contexto de esta función es el tipo de marca (``Centro``
+  en el ejemplo).
 * Si los valores de las opciones de *adjcol*, no provocan ningún efecto, entones
   la función de transformación debe devolver ``false``.
 
-Además al aplicar las correcciones, es necesario añadir un argumento adicional
-que inste a seguir la cadena::
+Además al aplicar las correcciones, podemos incluir un argumento adicional que
+sobreescribe el valor de ``autochain``::
 
    Centro.ccrrect("adjcol", {colectivo: ["Interino"]}, true);
 
-de los contrario, el encadenamiento nunca se llevará a cabo.
+en este caso se llevara a cabo el encadenamiento, a pesar de haber indicado
+``false`` antes.
 
 .. note:: Internamiente no se aplica una corrección *of*, sino un corrección
    "*adjcol of*", por lo que podemos aplicar de forma independiente una
@@ -806,7 +812,7 @@ de los contrario, el encadenamiento nunca se llevará a cabo.
 
       Centro.correct("of", {ens: ["SMR"]})
 
-Si se desea conocer para una corrección qué otras corrección la han aplicado
+Si se desea conocer para una corrección qué otras correcciones la han aplicado
 automáticamente y con qué opciones, puede usarse el método
 :js:meth:`Marker.getAutoCorrect`::
 

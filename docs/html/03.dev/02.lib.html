@@ -484,8 +484,19 @@ Consulte cuáles son las <code class="xref py py-attr docutils literal notransla
 
 <dl class="function">
 <dt id="Marker.reset">
-<code class="descclassname">Marker.</code><code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Marker.reset" title="Enlazar permanentemente con esta definición">¶</a></dt>
-<dd><p>Vacía <code class="xref py py-attr docutils literal notranslate"><span class="pre">Marker.store</span></code> de marcas.</p>
+<code class="descclassname">Marker.</code><code class="descname">reset</code><span class="sig-paren">(</span><em>deep</em><span class="sig-paren">)</span><a class="headerlink" href="#Marker.reset" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Vacía <code class="xref py py-attr docutils literal notranslate"><span class="pre">Marker.store</span></code> de marcas y marca como desaplicadas las correcciones.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Argumentos:</th><td class="field-body"><ul class="first last simple">
+<li><strong>deep</strong> (<em>Boolean</em>) – Si <code class="docutils literal notranslate"><span class="pre">true</span></code>, también desaplica los filtros.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -714,10 +725,15 @@ añade algunas más</p>
 <dd><p>Implemeta un sistema para realizar correcciones sobre los atributos
 <em>array</em> de un objeto. Las correcciones consisten bien en filtrar sus elementos,
 bien en añadir nuevos.</p>
-<p>El sistema de correcciones estará constituido por varias correcciones, cada
-una de las cuales afectará a un atributo del objeto. Varias correcciones
-podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
-varios atributos.</p>
+<p>El sistema de correcciones estará constituido por varias correcciones, cada una
+de las cuales tiene un nombre y afectará a un atributo del objeto.
+Varias correcciones podrán afectar a un mismo atributo, pero una
+corrección no podrá afectar a varios atributos.</p>
+<p>Puede ocurrir también que la aplicación de una corrección desencadene
+automáticamente la aplicación de una o más correcciones que afectan a otros
+atributos. En este caso, si la corrección que se aplica es «bilingue» y la
+corrección que se desencadena automáticamente es «adjpue», la corrección
+automática se identificará como «bilingüe adjpue».</p>
 <p>Las <a class="reference internal" href="#Marker" title="Marker"><code class="xref js js-class docutils literal notranslate"><span class="pre">clases</span> <span class="pre">de</span> <span class="pre">marcas</span> <span class="pre">definidas</span> <span class="pre">como</span> <span class="pre">mutables</span></code></a> definen
 automáticamente una opción <code class="docutils literal notranslate"><span class="pre">corr</span></code> que es un objeto de este tipo, de modo
 que cuando se usan métodos que definen o aplican correcciones obre las marcas

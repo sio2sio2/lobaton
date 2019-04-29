@@ -938,8 +938,7 @@
             writable: false
          }); 
          /**
-          * Vacía :attr:`Marker.store` de marcas y
-          * marca como desaplicadas las correcciones.
+          * Vacía :attr:`Marker.store` de marcas y marca como desaplicadas las correcciones.
           * @memberof Marker
           *
           * @param {Boolean} deep  Si ``true``, también desaplica los filtros.
@@ -1392,7 +1391,8 @@
                   console.debug(`${corr}: Corrección ya aplicada en la cadena de correciones. Se salta para evitar refencias circulares.`);
                   opts.params = corr.setParams(newname, false);
                }
-               opts.params = corr.setParams(newname, chain.func(params));
+               const markerClass = Object.getPrototypeOf(this).constructor;
+               opts.params = corr.setParams(newname, chain.func.call(markerClass, params));
             }
 
             if(opts.params !== false) ret = this.apply(newname) || ret;
@@ -2122,7 +2122,7 @@
           * Devuelve la correccion original que desencadenó
           * la corrección que se consulta.
           *
-          * @name {String} name  El nombre de la corrección.
+          * @param {String} name  El nombre de la corrección.
           *
           * @returns {String} La corrección que originariamente
           * desencadenó la corrección suministrada.
