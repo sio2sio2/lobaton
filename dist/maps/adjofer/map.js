@@ -447,10 +447,19 @@ const MapaAdjOfer = (function() {
          // ts=tiempo-servicio (aa-mm-dd), esc=escalafon, col=colectivo
          func: adjref
       });
+
+      // Elimina enseñanzas que no sean nuevas
+      this.Centro.register("nueva", {
+         attr: "oferta",
+         func: function(idx, oferta, opts) {
+            return oferta[idx].nue === 0;
+         }
+      });
+
    }
 
    /**
-    * Registra los filtros definidios para este tipo de mapa.
+    * Registra los filtros definidos para este tipo de mapa.
     * @this {MapAdjOfer} El objeto que implemnta el mapa
     * @private
     */
@@ -463,12 +472,25 @@ const MapaAdjOfer = (function() {
              return this.getData().adj.total < opts.min;
          }
       });
+
       // Filtra según número de enseñanzas.
       this.Centro.registerF("oferta", {
          attrs: "oferta",
          // opts= {min: 0}
          func: function(opts) {
              return this.getData().oferta.total < opts.min;
+         }
+      });
+
+      // Elimina los tipos facilitados
+      this.Centro.registerF("tipo", {
+         attrs: "mod.dif",
+         // opts= {tipo: 1, inv: false}  //tipo: 1=compensatoria, 2=difícil desempeño, 3=ambos.
+         func: function(opts) {
+            const map  = { "compensatoria": 1, "dificil": 2 },
+                  tipo = map[this.getData().mod.dif] || 0;
+
+            return !!(opts.inv ^ !!(tipo & opts.tipo));
          }
       });
    }

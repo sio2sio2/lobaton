@@ -1753,11 +1753,17 @@
        * *array* de un objeto. Las correcciones consisten bien en filtrar sus elementos,
        * bien en añadir nuevos.
        *
-       * El sistema de correcciones estará constituido por varias correcciones, cada
-       * una de las cuales afectará a un atributo del objeto. Varias correcciones
-       * podrán afectar a un mismo atributo, pero una corrección no podrá afectar a
-       * varios atributos.
+       * El sistema de correcciones estará constituido por varias correcciones, cada una
+       * de las cuales tiene un nombre y afectará a un atributo del objeto.
+       * Varias correcciones podrán afectar a un mismo atributo, pero una
+       * corrección no podrá afectar a varios atributos.
        *
+       * Puede ocurrir también que la aplicación de una corrección desencadene
+       * automáticamente la aplicación de una o más correcciones que afectan a otros
+       * atributos. En este caso, si la corrección que se aplica es "bilingue" y la
+       * corrección que se desencadena automáticamente es "adjpue", la corrección
+       * automática se identificará como "bilingüe adjpue".
+       * 
        * Las :js:class:`clases de marcas definidas como mutables <Marker>` definen
        * automáticamente una opción ``corr`` que es un objeto de este tipo, de modo
        * que cuando se usan métodos que definen o aplican correcciones obre las marcas
@@ -1776,8 +1782,12 @@
           * @param {String} name Nombre de la corrección
           * @param {Object} obj  Objeto que define la corrección. :js:meth:`Marker.register` 
           * para saber cómo es este objeto.
-          * @param {Object} chain  Cadena de correcciones que se aplicarán automáticamente
-          * tras la aplicación de esta corrección.
+          * @param {Array} chain  Correcciones que se aplicarán automáticamente
+          * tras la aplicación de esta corrección. Cada elemento es un objeto con dos atributos,
+          * el nombre de la corrección que se desencadena (``corr``) y la función que
+          * transforma las opciones de la corrección aplicada en opciones de la corrección
+          * desencadena. Si la aplicación concreta de la corrección no debe provocar el
+          * desencadenamiento de la segunda corrección, debe devolverse ``false``.
           *
           * @returns {CorrSys} El propio objeto
           */
