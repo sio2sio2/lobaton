@@ -47,7 +47,7 @@ window.onload = function() {
    });
 
    // A efectos de depuración
-   g.cluster.on("layeradd", function(e) {
+   g.cluster.once("layeradd", function(e) {
       const marca = e.layer;
       marca.on("click", function(e) {
          const icon = e.target.options.icon;

@@ -1202,11 +1202,21 @@
    /** @lends Marker.prototype */
    const prototypeExtra = {
       /**
+       * Informa de si la marca se encuentra en el ``store``
+       * del tipo de marca con la que se creó.
+       */
+      _belongsTo: function() {
+         const store = Object.getPrototypeOf(this).constructor.store;
+         return store.indexOf(this) !== -1;
+      },
+      /**
        * Refresca el dibujo de la marca.
        *
-       * @param {L.LayerGroup} force   Si se pasa la capa y la marca, aunque
-       * no filtrada, no se encuentra en el mapa, fuerza su adición a la
-       * misma.
+       * @param {L.LayerGroup} force   Capa a la que se añade la marca
+       * a la fuerza. Esto es útil cuando se pasa de un estilo de filtro
+       * en que las marcas filtradas se ocultan a otro en que no se hace,
+       * ya la ocultación se implementa expulsando la marca de la capa.
+       * Véase :meth:`FilterSys.setStyle`.
        */
       refresh: function(force) {
          let div = this.getElement();
@@ -1215,13 +1225,16 @@
          if(filter) {
             if(filter.hideable) {
                if(this.filtered) {
-                  // Puede estar en la capa, aunque no se encuentre en el map,
-                  // si la capa es MarkerClusterGroup.
+                  // Si la capa es MarkerClusterGroup. la marca puede estar
+		  // en la capa, aunque no se esté en el mapa.
                   filter.transform.removeLayer(this);
                   div = undefined;
                }
                else {
-                  if(!div) {
+                  // Debe comprobarse si la marca sigue estando
+                  // en el ``store``, para evitar que el refresco añada
+                  // a la capa una marca que ya se desechó con un .reset().
+                  if(!div && this._belongsTo()) {
                      filter.transform.addLayer(this);
                      div = this.getElement();
                   }
@@ -1229,7 +1242,7 @@
             }
             else {
                if(div) filter.transform.call(div, this.filtered);
-               else if(force) {
+               else if(force && this._belongsTo()) {
                   force.addLayer(this);
                   div = this.getElement();
                }
