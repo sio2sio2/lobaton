@@ -18,7 +18,7 @@ window.onload = function() {
       });
    }
 
-   const g = new MapaAdjOfer("map", "../../dist");
+   const g = new MapaAdjOfer("map", "../../dist", true);
    // Los filtros se conservan al cargar nuevos datos
    // así que podemos fijarlos de inicio.
    g.Centro.filter("adj", {min: 1});
@@ -38,10 +38,12 @@ window.onload = function() {
       g.Centro.correct("adjpue", {puesto: ["00590059"]});
       g.Centro.correct("vt+", {});
       g.Centro.invoke("refresh");
+      /* No se hace en la interfaz, porque MapAdjOfer se creó con light=true.
       // Al pulsar click sobre una marca, se selecciona el centro.	
       g.Centro.invoke("on", "click", function(e) {
          g.cluster.seleccionado = g.cluster.seleccionado === this?null:this;
       });
+      */
    });
 
    // A efectos de depuración
