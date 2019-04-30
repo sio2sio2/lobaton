@@ -3,9 +3,14 @@
  * @name MapAAdjOfer
  * @class
  * @param {String} id  Identificador del elemento HTML
- *    donde se incrustará el mapa.
+ * donde se incrustará el mapa.
  * @param {String} pathToRootDir  Ruta relativa desde el directorio en que
- *    se encuentra la página web al directorio ``dist``.
+ * se encuentra la página web al directorio ``dist``.
+ * @param {Boolean} light  Si ``true``, define el comportamiento del evento
+ * *click* como "seleccionar el centro pulsado" y el evento *contextmenu* muestra
+ * un menú contextual que permite generar crear rutas e isocronas. Esto libera de
+ * tener que realizar en la interfaz la definición de cómo seleccionar centro y cómo
+ * crear rutas e isocronas.
  * @classdesc Implementa  un mapa que muestra la adjudicación de vacantes provisionales
  *    y la oferta educativa de cada centro, organizado según especialidades de los
  *    cuerpos 590 y 591. El mapa ofrece:
@@ -55,7 +60,7 @@ const MapaAdjOfer = (function() {
    }
    // Fin issue #27;
 
-   function MapaAdjOfer(id, pathToDistDir) {
+   function MapaAdjOfer(id, pathToDistDir, light) {
       /** @lends MapaAdjOfer.prototype */
       Object.defineProperties(this, {
          /**
@@ -80,6 +85,18 @@ const MapaAdjOfer = (function() {
             enumerable: false,
             configurable: false
          },
+         // Issue #41
+         /**
+          * Interfaz visual ligera.
+          * @type {Boolean}
+          */
+         light: {
+            value: light,
+            wirtable: false,
+            enumerable: true,
+            configurable: false
+         },
+         // Fin issue #41
          /**
           * Guarda las funciones que se desean ejecutar al acabar de cargar los datos.
           * @private
@@ -118,13 +135,27 @@ const MapaAdjOfer = (function() {
          this.general = datos.features[0].properties;
          // Capa intermedia capaz de leer objetos GeoJSON.
          const layer = L.geoJSON(datos, {
-            pointToLayer: (f, p) => new this.Centro(p, {
-               icon: new Icon(),
-               title: f.properties.id.nom
-            }),
-            // Para cada centro que creemos hay que añadir a los datos
-            // la propiedad que indica si la marca está o no seleccionada.
-            onEachFeature: (f, l) => l.changeData({sel: false})  // Aplicación de issue #33
+            pointToLayer: (f, p) => {
+               const centro = new this.Centro(p, {
+                  icon: new Icon(),
+                  title: f.properties.id.nom
+               });
+
+               // Issue #33
+               // Para cada centro que creemos hay que añadir a los datos
+               // la propiedad que indica si la marca está o no seleccionada.
+               centro.on("dataset", e => e.target.changeData({sel: false}));
+
+               // Issue #41
+               if(this.light) centro.once("dataset", e => {
+                  centro.on("click", e => {
+                     this.cluster.seleccionado = this.cluster.seleccionado === e.target?null:e.target
+                  });
+               });
+               // Fin issue #41, #33
+
+               return centro;
+            }
          });
 
          this.cluster.addLayer(layer);
@@ -206,11 +237,11 @@ const MapaAdjOfer = (function() {
       this.cluster.on("markerselect", function(e) {
          if(e.oldval) {
             e.oldval.changeData({sel: false});
-            if(this.hasLayer(e.oldval)) e.oldval.refresh();
+            e.oldval.refresh();
          }
          if(e.newval) {
             e.newval.changeData({sel: true});
-            if(this.hasLayer(e.newval)) e.newval.refresh();
+            e.newval.refresh();
          }
       });
    }
@@ -236,7 +267,6 @@ const MapaAdjOfer = (function() {
          }
       });
 
-      
       createCorrections.call(this);
       createFilters.call(this);
    }
