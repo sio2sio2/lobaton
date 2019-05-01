@@ -4,13 +4,15 @@
  * @class
  * @param {String} id  Identificador del elemento HTML
  * donde se incrustará el mapa.
- * @param {String} pathToRootDir  Ruta relativa desde el directorio en que
+ * @param {Obj} opts Opciones de configuración.
+ * @param {String} opts.path Ruta relativa desde el directorio en que
  * se encuentra la página web al directorio ``dist``.
- * @param {Boolean} light  Si ``true``, define el comportamiento del evento
+ * @param {Boolean} opts.light Si ``true``, define el comportamiento del evento
  * *click* como "seleccionar el centro pulsado" y el evento *contextmenu* muestra
  * un menú contextual que permite generar crear rutas e isocronas. Esto libera de
  * tener que realizar en la interfaz la definición de cómo seleccionar centro y cómo
- * crear rutas e isocronas.
+ * ordenar que se creen rutas e isocronas.
+ * @param {String} opts.ors  La clave para el uso de los servios de OpenRouteService.
  * @classdesc Implementa  un mapa que muestra la adjudicación de vacantes provisionales
  *    y la oferta educativa de cada centro, organizado según especialidades de los
  *    cuerpos 590 y 591. El mapa ofrece:
@@ -44,7 +46,8 @@ const MapaAdjOfer = (function() {
          [attr]: {
             get: function() { return this["_" + attr]; },
             set: function(value) {
-               this.fire(tipo, {oldval: this[attr], newval: value});
+               const old = this[attr];
+               this.fire(tipo, {oldval: old, newval: value});
                this["_" + attr] = value;
             },
             configurable: false,
@@ -60,7 +63,7 @@ const MapaAdjOfer = (function() {
    }
    // Fin issue #27;
 
-   function MapaAdjOfer(id, pathToDistDir, light) {
+   function MapaAdjOfer(id, opts) {
       /** @lends MapaAdjOfer.prototype */
       Object.defineProperties(this, {
          /**
@@ -80,7 +83,7 @@ const MapaAdjOfer = (function() {
           * @type  {String}
           */
          _path: {
-            value: pathToDistDir,
+            value: opts.path,
             writable: false,
             enumerable: false,
             configurable: false
@@ -91,7 +94,7 @@ const MapaAdjOfer = (function() {
           * @type {Boolean}
           */
          light: {
-            value: light,
+            value: opts.light,
             wirtable: false,
             enumerable: true,
             configurable: false
@@ -108,6 +111,14 @@ const MapaAdjOfer = (function() {
             enumerable: false,
             configurable: false
          },
+         // Issue #42
+         ors: {
+            value: opts.ors,
+            writable: true,
+            enumerable: false,
+            configurable: false
+         }
+         // Fin issue #42
       });
 
       /**
@@ -200,10 +211,14 @@ const MapaAdjOfer = (function() {
     * @private
     */
    function loadMap() {
-      this.map = L.map(this._idmap, {
+      const options = {
          center: [37.07, -6.27],
          zoom: 9
-      });
+      }
+
+      if(this.light) Object.assign(options, contextMenuMap.call(this));
+
+      this.map = L.map(this._idmap, options);
 
       this.map.zoomControl.setPosition('topright');
 
@@ -244,6 +259,47 @@ const MapaAdjOfer = (function() {
             e.newval.refresh();
          }
       });
+
+      // Fijar un origen, implica crear una marca sobre
+      // el mapa y destruir la antigua.
+      this.map.on("originset", function(e) {
+         if(e.oldval) e.oldval.removeFrom(this);
+         if(e.newval) e.newval.addTo(this);
+      });
+
+      if(this.ors) {
+         this.ors = new ORS(this, this.ors);
+         Object.defineProperties(this, {
+            _isocronas: {
+               value: undefined,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            },
+            _ruta: {
+               value: undefined,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            }
+         });
+         crearAttrEvent.call(this.map, "isocronas", "isochroneset");
+         crearAttrEvent.call(this.map, "ruta", "routeset");
+
+         this.map.on("isochroneset", e => {
+            if(e.newval) {
+               const origen = e.target.origen;
+               if(origen) {
+                  origen.unbindContextMenu();
+                  origen.bindContextMenu(contextMenuMarker.call(this));
+               }
+            }
+            else {
+               // Elimina las isocronas dibujadas al poner a null el valor.
+               if(e.oldval) this._isocronas.remove();
+            }
+         });
+      }
    }
 
    /**
@@ -290,7 +346,7 @@ const MapaAdjOfer = (function() {
          chain: [{
             corr: "adjpue",
             func: function(opts) {
-               const map = {  // TODO: Esto debería estar sacarse de la base de datos y estar en el geoJSON
+               const map = {  // TODO: Esto debería sacarse de la base de datos y estar en el geoJSON
                   "Francés": 10,
                   "Inglés": 11,
                   "Alemán": 12
@@ -620,52 +676,12 @@ const MapaAdjOfer = (function() {
          const paletaOferta = new Array(5).fill(null);
          const paletaPlazas = new Array(7).fill(null);
 
-         /**
-          * Obtiene una gama de colores RGB distinguibles entre sí.
-          * En principio, si se desea obtener 4 colores, habrá que pasar:
-          * como ratio 1/4, 2/4, 3/4 y 4/4.
-          */
-         function HSLtoRGB(h, s, l) {
-            s = s || .65;
-            l = l || .45;
-
-            var r, g, b;
-
-            if(s == 0){
-               r = g = b = l;
-            }
-            else {
-               function hue2rgb(p, q, t) {
-                  if(t < 0) t += 1;
-                  if(t > 1) t -= 1;
-                  if(t < 1/6) return p + (q - p) * 6 * t;
-                  if(t < 1/2) return q;
-                  if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                  return p;
-               }
-
-               var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-               var p = 2 * l - q;
-               r = hue2rgb(p, q, h + 1/3);
-               g = hue2rgb(p, q, h);
-               b = hue2rgb(p, q, h - 1/3);
-            }
-
-            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-         }
-
-
          // Devuelve blanco o negro dependiendo de cuál contraste mejor con el
          // color RGB suministrado como argumento
          function blancoNegro(rgb) {
             var y = 2.2;
 
             return (0.2126*Math.pow(rgb[0]/255, y) + 0.7152*Math.pow(rgb[1]/255, y) + 0.0722*Math.pow(rgb[2]/255, y) > Math.pow(0.5, y))?"#000":"#fff";
-         }
-
-         // Convierte un array de tres enteros (RGB) en notación hexadecimal.
-         function rgb2hex(rgb) {
-            return "#" + rgb.map(dec => ("0" + dec.toString(16)).slice(-2)).join("");
          }
 
          paletaOferta[0] = "black";
@@ -787,6 +803,274 @@ const MapaAdjOfer = (function() {
             updater: updaterBoliche,
          }),
       }
+   }
+
+   function contextMenuMap() {
+      return {
+         contextmenu: true,
+         contextmenuItems: [
+            {
+               text: "Fijar origen de viaje",
+               callback: e => {
+                  this.map.origen = new L.Marker(e.latlng, {
+                     title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
+                  });
+                  this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+               }
+            },
+            {
+               text: "Centrar el mapa aquí",
+               callback: function(e) { this.panTo(e.latlng); }
+            },
+            "-",
+            {
+               text: "Ampliar escala",
+               icon: this._path + "/maps/adjofer/images/zoom-in.png",
+               callback: function(e) { this.zoomIn(); }
+            },
+            {
+               text: "Reducir escala",
+               icon: this._path + "/maps/adjofer/images/zoom-out.png",
+               callback: function(e) { this.zoomOut(); }
+            }
+         ]
+      }
+   }
+
+   function contextMenuMarker(espera) {
+      const items = [
+         {
+            text: "Geolocalizar este origen",
+            disabled: true,
+            callback: e => console.log("TODO")
+         },
+         {
+            text: "Eliminar este origen",
+            callback: e => this.map.origen = null
+         }
+      ];
+
+      if(espera) {
+         items.push({
+            text: "Generar isocronas",
+            disabled: true
+         });
+      }
+      else if(this.map.isocronas) {
+         items.push({
+            text: "Eliminar isocronas",
+            callback: e => this.map.isocronas = null
+         });
+      }
+      else {
+         items.push({
+            text: "Generar isocronas",
+            callback: e => {
+               this._isocronas = this._isocronas || new this.ors.Isocronas();
+               this._isocronas.create(i => this.map.isocronas = i);
+               this.map.origen.unbindContextMenu();
+               this.map.origen.bindContextMenu(contextMenuMarker.call(this, true));
+            }
+         });
+      }
+
+      return {
+         contextmenu: true,
+         contextmenuInheritItems: false,
+         contextmenuItems: items
+      }
+   }
+
+   // Servicios de OpenRouteService
+   const ORS = (function (adjofer, key) {
+
+      const URLBase = "https://api.openrouteservice.org";
+
+      function failback(xhr) {
+         const response = JSON.parse(xhr.responseText);
+         console.error("Error " + response.error.code + ": " + response.error.message);
+      }
+
+      const Isocronas = (function() {
+         /** @lends MadAdjOfer.prototype */
+
+         const url = URLBase + "/isochrones";
+
+         const defaults = {
+            profile: "driving-car",
+            range_type: "time",
+            interval: 600,
+            range: 3600,
+            location_type: "start",
+            intersections: false,
+         }
+
+         function Isocronas(opts) {
+            try {
+               turf
+            }
+            catch(e) {
+               throw new ReferenceError("No se encuentra cargado turf. ¿Ha olvidado cargar la librería en el HTML?");
+            }
+
+            this.setOptions(opts);
+            this.layer = L.geoJSON(undefined, {
+               style: f => new Object({
+                              color: rgb2hex(HSLtoRGB(f.properties.ratio)),
+                              opacity: 0.6
+                           }),
+               onEachFeature: (f, l) => {
+                  l.bindPopup(`Hasta ${f.properties.value/60} min`);
+                  l.bindContextMenu(contextMenuArea.call(f));
+               }
+            });
+
+            Object.defineProperty(this, "_done", {
+               value: false,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            });
+
+            // Elimina la isocrona al fijar un nuevo origen.
+            adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
+         }
+
+         function contextMenuArea() {
+            return {
+               contextmenu: true,
+               contextmenuInheritItems: false,
+               contextmenuItems: [
+                  {
+                     text: "Eliminar isocronas",
+                     callback: e => adjofer.map.isocronas = null
+                  },
+                  {
+                     text: `Filtrar centros alejados más de ${this.properties.value/60} min`,
+                     disabled: true,
+                     callback: e => null  // TODO:: Por hacer.
+                  }
+               ]
+            }
+         }
+
+         Isocronas.prototype.setOptions = function(opts) {
+            this.options = Object.assign({api_key: key}, defaults, opts);
+            return this;
+         }
+
+         /**
+          * Crea las isocronas, en principio tomando como referencia la marca de origen.
+          *
+          * @param {Function} callback  Función que se ejecutará al generarse las
+          * isocronas sobre el mapa.
+          * @param {Boolean} force  Si  ``true``, borra las isocronas anteriores;
+          * en caso contrario, generará un error.
+          * @param {L.LatLng} point Punto alternativo al de origen.
+          */
+         Isocronas.prototype.create = function(callback, force, point) {
+            if(this._done) {
+               if(force) this.remove();
+               else throw new Error("Imposible crear la isocrona: hay ya una.");
+            }
+
+            if(!point) point = adjofer.map.origen.getLatLng();
+
+            L.utils.load({
+               url: url,
+               method: "GET",
+               params: Object.assign({locations: [point.lng, point.lat].join(",")},
+                                     this.options),
+               callback: crearIsocronas.bind(this, callback),
+               failback: failback
+            });
+
+            return this;
+         }
+
+         /**
+          * Elimina las isocronas.
+          */
+         Isocronas.prototype.remove = function() {
+            if(!this._done) return false;
+            this.layer.clearLayers();
+            this.layer.removeFrom(adjofer.map);
+            this._done = false;
+            return this;
+         }
+
+         function crearIsocronas(callback, xhr) {
+            // Estos polígonos son completamente macizos, es decir,
+            // el referido a la isocrona de 30 minutos, contiene
+            // también las áreas de 10 y 20 minutos.
+            const data = JSON.parse(xhr.responseText);
+            const diff = Object.assign({}, data);
+            diff.features = [];
+            for(let i=0; i<data.features.length; i++) {
+               const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
+                              data.features[0];
+
+               Object.assign(anillo.properties, {
+                  ratio:  1 - i/data.features.length,
+                  area: data.features[i]  // Las área macizas sirven para filtrado.
+               });
+
+               diff.features.push(anillo);
+            }
+
+            this.layer.addData(diff);
+            this.layer.addTo(adjofer.map);
+
+            this._done = true;
+            if(callback) callback(this);
+         }
+
+         return Isocronas;
+      })();
+
+      return {
+         Isocronas: Isocronas
+      }
+
+   });
+
+   // Algunas funciones relacionadas con el color
+
+   // Obtiene una gama de colores RGB distinguibles entre sí.
+   // En principio, si se desea obtener 4 colores, habrá que pasar:
+   // como ratio 1/4, 2/4, 3/4 y 4/4.
+   function HSLtoRGB(h, s, l) {
+      s = s || .65;
+      l = l || .45;
+
+      var r, g, b;
+
+      if(s == 0){
+         r = g = b = l;
+      }
+      else {
+         function hue2rgb(p, q, t) {
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+         }
+
+         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+         var p = 2 * l - q;
+         r = hue2rgb(p, q, h + 1/3);
+         g = hue2rgb(p, q, h);
+         b = hue2rgb(p, q, h - 1/3);
+      }
+
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+   }
+
+   // Convierte un array de tres enteros (RGB) en notación hexadecimal.
+   function rgb2hex(rgb) {
+      return "#" + rgb.map(dec => ("0" + dec.toString(16)).slice(-2)).join("");
    }
 
    return MapaAdjOfer;

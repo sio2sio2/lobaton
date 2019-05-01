@@ -18,7 +18,12 @@ window.onload = function() {
       });
    }
 
-   const g = new MapaAdjOfer("map", "../../dist", true);
+   const g = new MapaAdjOfer("map", {
+      path: "../../dist",
+      light: true,
+      // TODO: Crear mi propia clave.
+      ors: "5b3ce3597851110001cf6248941d2588ac8848c79f7128dd6b3c267a"
+   });
    // Los filtros se conservan al cargar nuevos datos
    // así que podemos fijarlos de inicio.
    g.Centro.filter("adj", {min: 1});
@@ -47,7 +52,7 @@ window.onload = function() {
    });
 
    // A efectos de depuración
-   g.cluster.once("layeradd", function(e) {
+   g.cluster.on("layeradd", function(e) {
       const marca = e.layer;
       marca.on("click", function(e) {
          const icon = e.target.options.icon;
