@@ -13,6 +13,8 @@
  * tener que realizar en la interfaz la definición de cómo seleccionar centro y cómo
  * ordenar que se creen rutas e isocronas.
  * @param {String} opts.ors  La clave para el uso de los servios de OpenRouteService.
+ * @param {Function} opts.chunkProgress   Función que se ejecuta periódicamente
+ * si se demora demasiado la creación de las isoronas.
  * @classdesc Implementa  un mapa que muestra la adjudicación de vacantes provisionales
  *    y la oferta educativa de cada centro, organizado según especialidades de los
  *    cuerpos 590 y 591. El mapa ofrece:
@@ -224,6 +226,7 @@ const MapaAdjOfer = (function() {
 
       this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18
       }).addTo(this.map);
 
@@ -882,7 +885,7 @@ const MapaAdjOfer = (function() {
    }
 
    // Servicios de OpenRouteService
-   const ORS = (function (adjofer, key) {
+   const ORS = (function (adjofer, ors) {
 
       const URLBase = "https://api.openrouteservice.org";
 
@@ -905,6 +908,11 @@ const MapaAdjOfer = (function() {
             intersections: false,
          }
 
+         const isocronas = {
+            interval: 200,
+            delay: 50
+         }
+
          function Isocronas(opts) {
             try {
                turf
@@ -920,8 +928,8 @@ const MapaAdjOfer = (function() {
                               opacity: 0.6
                            }),
                onEachFeature: (f, l) => {
-                  l.bindPopup(`Hasta ${f.properties.value/60} min`);
-                  l.bindContextMenu(contextMenuArea.call(f));
+                  //l.bindPopup(`Hasta ${f.properties.value/60} min`);
+                  l.bindContextMenu(contextMenuArea.call(adjofer, f));
                }
             });
 
@@ -936,17 +944,26 @@ const MapaAdjOfer = (function() {
             adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
          }
 
-         function contextMenuArea() {
+         function contextMenuArea(feature) {
             return {
                contextmenu: true,
                contextmenuInheritItems: false,
                contextmenuItems: [
                   {
+                     text: "Fijar origen de viaje",
+                     callback: e => {
+                        this.map.origen = new L.Marker(e.latlng, {
+                           title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
+                        });
+                        this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+                     }
+                  },
+                  {
                      text: "Eliminar isocronas",
                      callback: e => adjofer.map.isocronas = null
                   },
                   {
-                     text: `Filtrar centros alejados más de ${this.properties.value/60} min`,
+                     text: `Filtrar centros alejados más de ${feature.properties.value/60} min`,
                      disabled: true,
                      callback: e => null  // TODO:: Por hacer.
                   }
@@ -955,7 +972,7 @@ const MapaAdjOfer = (function() {
          }
 
          Isocronas.prototype.setOptions = function(opts) {
-            this.options = Object.assign({api_key: key}, defaults, opts);
+            this.options = Object.assign({api_key: ors.key}, defaults, opts);
             return this;
          }
 
@@ -1000,29 +1017,45 @@ const MapaAdjOfer = (function() {
          }
 
          function crearIsocronas(callback, xhr) {
+            const started = (new Date()).getTime();
             // Estos polígonos son completamente macizos, es decir,
             // el referido a la isocrona de 30 minutos, contiene
             // también las áreas de 10 y 20 minutos.
             const data = JSON.parse(xhr.responseText);
-            const diff = Object.assign({}, data);
-            diff.features = [];
-            for(let i=0; i<data.features.length; i++) {
-               const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
-                              data.features[0];
-
-               Object.assign(anillo.properties, {
-                  ratio:  1 - i/data.features.length,
-                  area: data.features[i]  // Las área macizas sirven para filtrado.
-               });
-
-               diff.features.push(anillo);
-            }
-
-            this.layer.addData(diff);
             this.layer.addTo(adjofer.map);
 
-            this._done = true;
-            if(callback) callback(this);
+            // La ejecución a intervalos se ha tomado del codigo de Leaflet.markercluster
+            let i=0;
+            const process = () => {
+               const start = (new Date()).getTime();
+               for(; i<data.features.length; i++) {
+                  const lapso = (new Date()).getTime() - start;
+
+                  // Al superar el intervalo, rompemos el bucle y
+                  // liberamos la ejecución por un breve periodo.
+                  if(ors.chunkProgress && lapso > isocronas.interval) break;
+
+                  const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
+                                 data.features[0];
+
+                  Object.assign(anillo.properties, {
+                     ratio:  1 - i/data.features.length,
+                     area: data.features[i]  // Las área macizas sirven para filtrado.
+                  });
+
+                  this.layer.addData(anillo);
+               }
+
+               if(ors.chunkProgress) ors.chunkProgress(i, data.features.length,
+                                                       (new Date().getTime() - started));
+
+               if(i === data.features.length) {
+                  this._done = true;
+                  if(callback) callback(this);
+               }
+               else setTimeout(process, isocronas.delay);
+            }
+            process();
          }
 
          return Isocronas;
