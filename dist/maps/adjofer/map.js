@@ -49,8 +49,8 @@ const MapaAdjOfer = (function() {
             get: function() { return this["_" + attr]; },
             set: function(value) {
                const old = this[attr];
-               this.fire(tipo, {oldval: old, newval: value});
                this["_" + attr] = value;
+               this.fire(tipo, {oldval: old, newval: value});
             },
             configurable: false,
             enumerable: true
@@ -614,6 +614,31 @@ const MapaAdjOfer = (function() {
             return !!(opts.inv ^ !!(tipo & opts.tipo));
          }
       });
+
+      // Elimina las marcas que se hallen fuera del área
+      this.Centro.registerF("lejos", {
+         attrs: "no.existe",
+         // opts={area: geojson}
+         func: function(opts) {
+            const latlng = this.getLatLng(),
+                  point = {
+                     type: "Feature",
+                     geometry: {
+                        type: "Point",
+                        coordinates: [latlng.lng, latlng.lat]
+                     }
+                  }
+
+            return !turf.booleanPointInPolygon(point, opts.area);
+         }
+      });
+
+      this.map.on("isochroneset", e => {
+         if(!e.newval && this.Centro.hasFilter("lejos")) {
+            this.Centro.unfilter("lejos");
+            this.Centro.invoke("refresh");
+         }
+      });
    }
 
 
@@ -929,7 +954,7 @@ const MapaAdjOfer = (function() {
                            }),
                onEachFeature: (f, l) => {
                   //l.bindPopup(`Hasta ${f.properties.value/60} min`);
-                  l.bindContextMenu(contextMenuArea.call(adjofer, f));
+                  l.bindContextMenu(contextMenuArea.call(adjofer, l));
                }
             });
 
@@ -944,30 +969,49 @@ const MapaAdjOfer = (function() {
             adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
          }
 
-         function contextMenuArea(feature) {
+         function contextMenuArea(layer) {
+            const items = [
+               {
+                  text: "Fijar origen de viaje",
+                  callback: e => {
+                     this.map.origen = new L.Marker(e.latlng, {
+                        title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
+                     });
+                     this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+                  }
+               },
+               {
+                  text: "Eliminar isocronas",
+                  callback: e => adjofer.map.isocronas = null
+               }
+            ]
+            if(this.Centro.hasFilter("lejos")) {
+               items.push({
+                  text: `Mostrtar centros alejados más de ${layer.feature.properties.value/60} min`,
+                  callback: e => {
+                     this.Centro.unfilter("lejos");
+                     this.Centro.invoke("refresh");
+                     layer.unbindContextMenu();
+                     layer.bindContextMenu(contextMenuArea.call(this, layer));
+                  }
+               })
+            }
+            else {
+               items.push({
+                  text: `Filtrar centros alejados más de ${layer.feature.properties.value/60} min`,
+                  callback: e => {
+                     this.Centro.filter("lejos", {area: layer.feature.properties.area});
+                     this.Centro.invoke("refresh");
+                     layer.unbindContextMenu();
+                     layer.bindContextMenu(contextMenuArea.call(this, layer));
+                  }
+               })
+            }
+
             return {
                contextmenu: true,
                contextmenuInheritItems: false,
-               contextmenuItems: [
-                  {
-                     text: "Fijar origen de viaje",
-                     callback: e => {
-                        this.map.origen = new L.Marker(e.latlng, {
-                           title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
-                        });
-                        this.map.origen.bindContextMenu(contextMenuMarker.call(this));
-                     }
-                  },
-                  {
-                     text: "Eliminar isocronas",
-                     callback: e => adjofer.map.isocronas = null
-                  },
-                  {
-                     text: `Filtrar centros alejados más de ${feature.properties.value/60} min`,
-                     disabled: true,
-                     callback: e => null  // TODO:: Por hacer.
-                  }
-               ]
+               contextmenuItems: items
             }
          }
 

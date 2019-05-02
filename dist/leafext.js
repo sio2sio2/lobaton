@@ -984,6 +984,7 @@
          Marker.filter = filterMarker;
          Marker.unfilter = unfilterMarker;
          Marker.setFilterStyle = setFilterStyleMarker;
+         Marker.hasFilter = hasFilterMarker;
          // Fin issue #5
       }
       return Marker;
@@ -1191,6 +1192,21 @@
       if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
       filter.setStyle(style, this);
+   }
+
+   /**
+    * Comprueba si ls marcas tienen aplicado un filtro.
+    * @method Marker.hasFilter
+    *
+    * @param {String} name    Nombre del filtro.
+    *
+    * @return {Boolean}
+    */
+   function hasFilterMarker(name) {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      return filter.getFilters().indexOf(name) !== -1
    }
    // Fin issue #5
 
