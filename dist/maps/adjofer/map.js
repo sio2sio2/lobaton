@@ -912,7 +912,7 @@ const MapaAdjOfer = (function() {
    // Servicios de OpenRouteService
    const ORS = (function (adjofer, ors) {
 
-      const URLBase = "https://api.openrouteservice.org";
+      const URLBase = "https://api.openrouteservice.org/v2";
 
       function failback(xhr) {
          const response = JSON.parse(xhr.responseText);
@@ -1024,7 +1024,10 @@ const MapaAdjOfer = (function() {
          }
 
          Isocronas.prototype.setOptions = function(opts) {
-            this.options = Object.assign({api_key: ors.key}, defaults, opts);
+            this.options = Object.assign({}, defaults, opts);
+            if(!(this.options.range instanceof Array)) {
+               this.options.range = [this.options.range];
+            }
             return this;
          }
 
@@ -1045,12 +1048,18 @@ const MapaAdjOfer = (function() {
 
             if(!point) point = adjofer.map.origen.getLatLng();
 
+            let params = Object.assign({locations: [[point.lng, point.lat]]},
+                                         this.options);
+
             if(ors.loading) ors.loading();
             L.utils.load({
-               url: url,
-               method: "GET",
-               params: Object.assign({locations: [point.lng, point.lat].join(",")},
-                                     this.options),
+               url: url + "/" + params.profile,
+               headers: { Authorization: ors.key },
+               contentType: "application/json; charset=UTF-8",
+               //method: "GET",
+               //params: Object.assign({locations: [point.lng, point.lat].join(",")},
+               //                      this.options),
+               params: params,
                callback: crearIsocronas.bind(this, callback),
                failback: failback
             });

@@ -37,21 +37,31 @@
     */
    function load(params) {
       const xhr = new XMLHttpRequest();
-      let qs = '', method = "GET"; 
+      let qs = '', 
+          method = (params.method || (params.params?"POST":"GET")).toUpperCase(),
+          contentType = params.contentType ||  "application/x-www-form-urlencoded";
 
       if(params.params) {
-         qs = Object.keys(params.params).map(k => k + "=" + encodeURIComponent(params.params[k])).join('&');
-         method = "POST";
-      }
+         if(method === "GET" || params.contentType === "application/x-www-form-urlencoded") {
+            qs = Object.keys(params.params).map(k => k + "=" + encodeURIComponent(params.params[k])).join('&');
+         }
+         else if(params.contentType.indexOf("application/json") !== -1) {
+            qs = JSON.stringify(params.params);
+         }
+         else throw new Error(`${params.contentType}: Tipo de contenido no soportando`);
 
-      method = (params.method || method).toUpperCase();
-
-      if(method === "GET" && params.params) {
-         params.url = params.url + "?" + qs;
-         qs = "";
+         if(method === "GET") {
+            params.url = params.url + "?" + qs;
+            qs = "";
+         }
       }
 
       xhr.open(method, params.url, !!params.callback);
+      for(const header in params.headers || {}) {
+         xhr.setRequestHeader(header, params.headers[header]);
+      }
+      if(method === "POST") xhr.setRequestHeader("Content-Type", params.contentType);
+
       if(params.callback || params.failback) {
          xhr.onreadystatechange = function() {
              if(xhr.readyState === 4) {
@@ -72,7 +82,6 @@
          }
       }
 
-      if(method === 'POST') xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
       xhr.send(qs);
 
       // Sólo es útil cuando la petición es síncrona.
