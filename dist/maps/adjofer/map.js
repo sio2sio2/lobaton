@@ -887,7 +887,11 @@ const MapaAdjOfer = (function() {
       else if(this.map.isocronas) {
          items.push({
             text: "Eliminar isocronas",
-            callback: e => this.map.isocronas = null
+            callback: e => {
+               this.map.isocronas = null;
+               this.map.origen.unbindContextMenu();
+               this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+            }
          });
       }
       else {
@@ -949,12 +953,12 @@ const MapaAdjOfer = (function() {
             this.setOptions(opts);
             this.layer = L.geoJSON(undefined, {
                style: f => new Object({
-                              color: rgb2hex(HSLtoRGB(f.properties.ratio)),
+                              color: rgb2hex(HSLtoRGB(f.properties.ratio, .75, .30)),
                               opacity: 0.6
                            }),
                onEachFeature: (f, l) => {
                   //l.bindPopup(`Hasta ${f.properties.value/60} min`);
-                  l.bindContextMenu(contextMenuArea.call(adjofer, l));
+                  l.bindContextMenu(contextMenuArea.call(adjofer, l, this.layer));
                }
             });
 
@@ -969,7 +973,10 @@ const MapaAdjOfer = (function() {
             adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
          }
 
-         function contextMenuArea(layer) {
+         function contextMenuArea(area, layer) {
+            // area que se usa para filtrar.
+            let farea = layer.getLayers().filter(a => a.feature.properties.filtrante)[0];
+
             const items = [
                {
                   text: "Fijar origen de viaje",
@@ -983,30 +990,35 @@ const MapaAdjOfer = (function() {
                {
                   text: "Eliminar isocronas",
                   callback: e => adjofer.map.isocronas = null
-               }
-            ]
-            if(this.Centro.hasFilter("lejos")) {
-               items.push({
-                  text: `Mostrtar centros alejados más de ${layer.feature.properties.value/60} min`,
+               },
+               {
+                  text: `Filtrar centros alejados más de ${area.feature.properties.value/60} min`,
+                  disabled: area === farea,
+                  callback: e => {
+                     this.Centro.filter("lejos", {area: area.feature.properties.area});
+                     this.Centro.invoke("refresh");
+                     if(farea) farea.feature.properties.filtrante = false;
+                     area.feature.properties.filtrante = true;
+                     for(const a of layer.getLayers()) {
+                        a.unbindContextMenu();
+                        a.bindContextMenu(contextMenuArea.call(this, a, layer));
+                     }
+                  }
+               },
+               {
+                  text: `Mostrar centros alejados más de ${(farea || area).feature.properties.value/60} min`,
+                  disabled: !farea,
                   callback: e => {
                      this.Centro.unfilter("lejos");
                      this.Centro.invoke("refresh");
-                     layer.unbindContextMenu();
-                     layer.bindContextMenu(contextMenuArea.call(this, layer));
+                     farea.feature.properties.filtrante = false;
+                     for(const area of layer.getLayers()) {
+                        a.unbindContextMenu();
+                        a.bindContextMenu(contextMenuArea.call(this, a, layer));
+                     }
                   }
-               })
-            }
-            else {
-               items.push({
-                  text: `Filtrar centros alejados más de ${layer.feature.properties.value/60} min`,
-                  callback: e => {
-                     this.Centro.filter("lejos", {area: layer.feature.properties.area});
-                     this.Centro.invoke("refresh");
-                     layer.unbindContextMenu();
-                     layer.bindContextMenu(contextMenuArea.call(this, layer));
-                  }
-               })
-            }
+               }
+            ]
 
             return {
                contextmenu: true,
@@ -1037,6 +1049,7 @@ const MapaAdjOfer = (function() {
 
             if(!point) point = adjofer.map.origen.getLatLng();
 
+            if(ors.loading) ors.loading();
             L.utils.load({
                url: url,
                method: "GET",
@@ -1061,6 +1074,8 @@ const MapaAdjOfer = (function() {
          }
 
          function crearIsocronas(callback, xhr) {
+            if(ors.loading) ors.loading();
+
             const started = (new Date()).getTime();
             // Estos polígonos son completamente macizos, es decir,
             // el referido a la isocrona de 30 minutos, contiene

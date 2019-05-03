@@ -21,12 +21,26 @@ window.onload = function() {
    function progresaIsocronas(n, total, lapso) {
       const map = L.DomUtil.get("map"),
             progress = L.DomUtil.get("leaflet-progress") || 
-                       L.DomUtil.create("progress", "leaflet-control", map);
-      progress.id = "leaflet-progress"
+                       L.DomUtil.create("progress", "leaflet-message leaflet-control", map);
+      progress.id = "leaflet-progress";
       progress.setAttribute("value", n/total);
-      if(n === total) setTimeout(function() {
-         L.DomUtil.remove(progress);
-      }, 500);
+      if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
+   }
+
+   function cargaDatos() {
+      let loading;
+      
+      if(loading = L.DomUtil.get("leaflet-loading")) {
+         L.DomUtil.remove(loading);
+      }
+      else {
+         loading = L.DomUtil.create("div", "leaflet-message leaflet-control", 
+                                    L.DomUtil.get("map"));
+         loading.id = "leaflet-loading";
+         const img = document.createElement("img");
+         img.setAttribute("src", "images/ajax-loader.gif");
+         loading.appendChild(img);
+      }
    }
 
    const g = new MapaAdjOfer("map", {
@@ -35,6 +49,7 @@ window.onload = function() {
       // TODO: Crear mi propia clave.
       ors: {
          key: "5b3ce3597851110001cf6248941d2588ac8848c79f7128dd6b3c267a",
+         loading: cargaDatos,
          chunkProgress: progresaIsocronas
       }
    });
