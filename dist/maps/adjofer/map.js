@@ -290,16 +290,16 @@ const MapaAdjOfer = (function() {
          crearAttrEvent.call(this.map, "ruta", "routeset");
 
          this.map.on("isochroneset", e => {
-            if(e.newval) {
-               const origen = e.target.origen;
-               if(origen) {
-                  origen.unbindContextMenu();
-                  origen.bindContextMenu(contextMenuMarker.call(this));
-               }
-            }
+            if(e.newval) this.ors.contador++;
             else {
                // Elimina las isocronas dibujadas al poner a null el valor.
                if(e.oldval) this._isocronas.remove();
+            }
+            
+            const origen = this.map.origen;
+            if(origen) {
+               origen.unbindContextMenu();
+               origen.bindContextMenu(contextMenuMarker.call(this));
             }
          });
       }
@@ -887,11 +887,7 @@ const MapaAdjOfer = (function() {
       else if(this.map.isocronas) {
          items.push({
             text: "Eliminar isocronas",
-            callback: e => {
-               this.map.isocronas = null;
-               this.map.origen.unbindContextMenu();
-               this.map.origen.bindContextMenu(contextMenuMarker.call(this));
-            }
+            callback: e => this.map.isocronas = null
          });
       }
       else {
@@ -1120,9 +1116,12 @@ const MapaAdjOfer = (function() {
          return Isocronas;
       })();
 
-      return {
-         Isocronas: Isocronas
+      const ret = {
+         Isocronas: Isocronas,
+         contador: 0,
       }
+
+      return ret;
 
    });
 
