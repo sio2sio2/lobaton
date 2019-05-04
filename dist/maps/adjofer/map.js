@@ -39,10 +39,10 @@ const MapaAdjOfer = (function() {
     *
     * @this El objeto al que se asocia el atributo.
     * @param {String} attr  El nombre del atributo que se creará.
-    * @param {String} tipo_on  Nombre del tipo *on* del evento.
-    * @param {String} tipo_off  Nombre del tipo *off* del evento.
+    * @param {String} tipo  Nombre del tipo.
+    * @param {*}  value     Valor inicial
     */
-   function crearAttrEvent(attr, tipo) {
+   function crearAttrEvent(attr, tipo, value=null) {
       if(this.fire === undefined) throw new Error("El objeto no puede lanzar eventos");
       Object.defineProperties(this, {
          [attr]: {
@@ -56,7 +56,7 @@ const MapaAdjOfer = (function() {
             enumerable: true
          },
          ["_" + attr]: {
-            value: null,
+            value: value,
             writable: true,
             configurable: false,
             enumerable: false
@@ -302,10 +302,11 @@ const MapaAdjOfer = (function() {
          crearAttrEvent.call(this.map, "isocronas", "isochroneset");
          crearAttrEvent.call(this.map, "direccion", "addressset");  // Issue #46
          crearAttrEvent.call(this.map, "ruta", "routeset");
+         crearAttrEvent.call(this.map, "contador", "counteradd", 0);
 
          this.map.on("isochroneset", e => {
             if(e.newval) {
-               this.ors.contador++;
+               this.map.contador++;
                this._isocronas.create();
             }
             else {
@@ -337,13 +338,13 @@ const MapaAdjOfer = (function() {
             });
          });
 
-         this.map.on("addressset", e => { if(e.newval) this.ors.contador++; });
+         this.map.on("addressset", e => { if(e.newval) this.map.contador++; });
          // Fin issue #46
 
          // Issue #47
          this.map.on("routeset", e => {
             if(e.newval) {
-               this.ors.contador++;
+               this.map.contador++;
                this._ruta.create(e.newval);
                e.newval.unbindContextMenu();
                e.newval.bindContextMenu(contextMenuCentro.call(this, e.newval));
@@ -1308,7 +1309,7 @@ const MapaAdjOfer = (function() {
             });
          }
 
-         // TODO:: La obtención de direcciones y coordenadas habría que estudiarla bien.
+         // TODO:: La obtención de direcciones habría que estudiarla bien.
          function obtenerDireccion(data) {
             return data.features.length === 0?"Dirección desconocida":data.features[0].properties.label;
          }
@@ -1318,9 +1319,8 @@ const MapaAdjOfer = (function() {
                console.error(`Imposible localizar '${search}'`);
                return null;
             }
-            if(data.features.length>1) console.warn(`Hay ${data.features.length} candidatos que cumplen los criterios de búsqueda: ${search}`)
-            const [lng, lat] = data.features[0].geometry.coordinates;
-            return L.latLng(lat, lng);
+
+            return data.features;
          }
 
          return Geocode;
@@ -1457,7 +1457,6 @@ const MapaAdjOfer = (function() {
          Isocronas: Isocronas,
          Geocode: Geocode,
          Ruta: Ruta,
-         contador: 0,
       }
 
       return ret;
