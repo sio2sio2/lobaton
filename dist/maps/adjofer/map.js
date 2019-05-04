@@ -279,6 +279,14 @@ const MapaAdjOfer = (function() {
                enumerable: false,
                configurable: false
             },
+            // Issue #46
+            _direccion: {
+               value: new this.ors.Geocode(),
+               writable: true,
+               enumerable: false,
+               configurable: false
+            },
+            // Fin issue #46
             _ruta: {
                value: undefined,
                writable: true,
@@ -287,6 +295,7 @@ const MapaAdjOfer = (function() {
             }
          });
          crearAttrEvent.call(this.map, "isocronas", "isochroneset");
+         crearAttrEvent.call(this.map, "direccion", "addressset");  // Issue #46
          crearAttrEvent.call(this.map, "ruta", "routeset");
 
          this.map.on("isochroneset", e => {
@@ -297,12 +306,32 @@ const MapaAdjOfer = (function() {
             }
             
             const origen = this.map.origen;
-            if(origen) {
+            if(origen && this.light) {
                origen.unbindContextMenu();
                origen.bindContextMenu(contextMenuMarker.call(this));
             }
          });
+
+         // Issue #46
+         this.map.on("originset", e => {
+            if(!e.newval) return;
+            // Asociamos un evento "geocode" al momento en que
+            // averiguamos la dirección postal del origen.
+            crearAttrEvent.call(e.newval, "postal", "geocode");
+            // Incluimos la dirección como title y deshabilitamos
+            // la posibilidad de obtenerla a través del menú contextual.
+            this.map.origen.on("geocode", e => {
+               this.map.origen.getElement().setAttribute("title", e.newval);
+               if(this.light) {
+                  this.map.origen.unbindContextMenu();
+                  this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+               }
+            });
+         });
+         // Fin issue #46
       }
+
+      this.map.on("addressset", e => { if(e.newval) this.ors.contador++; });  // Issue #46
    }
 
    /**
@@ -869,8 +898,14 @@ const MapaAdjOfer = (function() {
       const items = [
          {
             text: "Geolocalizar este origen",
-            disabled: true,
-            callback: e => console.log("TODO")
+            disabled: !!this.map.origen.postal,
+            callback: e => {
+               this._direccion.query(this.map.origen.getLatLng());
+               this.map.origen.postal = true;
+               this.map.once("addressset", e => {
+                  if(typeof e.newval === "string") this.map.origen.postal = e.newval;
+               });
+            }
          },
          {
             text: "Eliminar este origen",
@@ -912,7 +947,7 @@ const MapaAdjOfer = (function() {
    // Servicios de OpenRouteService
    const ORS = (function (adjofer, ors) {
 
-      const URLBase = "https://api.openrouteservice.org/v2";
+      const URLBase = "https://api.openrouteservice.org";
 
       function failback(xhr) {
          const response = JSON.parse(xhr.responseText);
@@ -920,9 +955,8 @@ const MapaAdjOfer = (function() {
       }
 
       const Isocronas = (function() {
-         /** @lends MadAdjOfer.prototype */
 
-         const url = URLBase + "/isochrones";
+         const url = URLBase + "/v2/isochrones";
 
          const defaults = {
             profile: "driving-car",
@@ -933,6 +967,7 @@ const MapaAdjOfer = (function() {
             intersections: false,
          }
 
+         // Para la interrupción del cálculo de las isocronas.
          const isocronas = {
             interval: 200,
             delay: 50
@@ -946,7 +981,9 @@ const MapaAdjOfer = (function() {
                throw new ReferenceError("No se encuentra cargado turf. ¿Ha olvidado cargar la librería en el HTML?");
             }
 
+            this.options = Object.assign({}, defaults);
             this.setOptions(opts);
+
             this.layer = L.geoJSON(undefined, {
                style: f => new Object({
                               color: rgb2hex(HSLtoRGB(f.properties.ratio, .75, .30)),
@@ -1008,7 +1045,7 @@ const MapaAdjOfer = (function() {
                      this.Centro.unfilter("lejos");
                      this.Centro.invoke("refresh");
                      farea.feature.properties.filtrante = false;
-                     for(const area of layer.getLayers()) {
+                     for(const a of layer.getLayers()) {
                         a.unbindContextMenu();
                         a.bindContextMenu(contextMenuArea.call(this, a, layer));
                      }
@@ -1024,7 +1061,7 @@ const MapaAdjOfer = (function() {
          }
 
          Isocronas.prototype.setOptions = function(opts) {
-            this.options = Object.assign({}, defaults, opts);
+            Object.assign(this.options, opts);
             if(!(this.options.range instanceof Array)) {
                this.options.range = [this.options.range];
             }
@@ -1051,14 +1088,11 @@ const MapaAdjOfer = (function() {
             let params = Object.assign({locations: [[point.lng, point.lat]]},
                                          this.options);
 
-            if(ors.loading) ors.loading();
+            if(ors.loading) ors.loading("isocronas");
             L.utils.load({
                url: url + "/" + params.profile,
                headers: { Authorization: ors.key },
                contentType: "application/json; charset=UTF-8",
-               //method: "GET",
-               //params: Object.assign({locations: [point.lng, point.lat].join(",")},
-               //                      this.options),
                params: params,
                callback: crearIsocronas.bind(this, callback),
                failback: failback
@@ -1079,7 +1113,7 @@ const MapaAdjOfer = (function() {
          }
 
          function crearIsocronas(callback, xhr) {
-            if(ors.loading) ors.loading();
+            if(ors.loading) ors.loading("isocronas");
 
             const started = (new Date()).getTime();
             // Estos polígonos son completamente macizos, es decir,
@@ -1125,8 +1159,97 @@ const MapaAdjOfer = (function() {
          return Isocronas;
       })();
 
+      // Issue #46
+      const Geocode = (function() {
+
+         const url = URLBase + "/geocode";
+
+         const defaults = {
+            "boundary.country": "ES"  // Restringimos las búsquedas a España.
+         }
+
+         function Geocode(opts) {
+            this.options = Object.assign({api_key: ors.key}, defaults);
+            this.setOptions(opts || {});
+
+            Object.defineProperty(this, "ready", {
+               value: false,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            });
+         }
+
+         Geocode.prototype.setOptions = function(opts) {
+            Object.assign(this.options, opts);
+         }
+
+         /**
+          * Realiza la consulta de geocodificación de manera que obtiene
+          * unas coordenadas si se introduce una dirección o una dirección
+          * si se introducen unas coordenadas.
+          *
+          * @param {String, L.LatLng} data  Los datos de la consulta.
+          *
+          */
+         Geocode.prototype.query = function(data) {
+            if(this.ready === null) throw new Error("Hay otra petición en curso");
+            else this.ready = null;
+
+            if(ors.loading) ors.loading("geocodificacion");
+
+            let furl, params;
+            if(typeof data === "string") { // Es una dirección.
+               furl = url + "/search";
+               params = Object.assign({text: data}, this.options);
+            }
+            else {  // Es una coordenada.
+               furl = url + "/reverse";
+               params = Object.assign({"point.lon": data.lng, "point.lat": data.lat}, this.options);
+            }
+
+            L.utils.load({
+               url: furl,
+               method: "GET",
+               params: params,
+               callback: (xhr) => {
+                  if(ors.loading) ors.loading("geocodificacion");
+                  this.ready = true;
+                  const response = JSON.parse(xhr.responseText),
+                        parser = typeof data === "string"?obtenerCoordenadas:obtenerDireccion;
+                  adjofer.map.direccion = parser(response, data);
+               },
+               failback: (xhr) => {
+                  if(ors.loading) ors.loading("geocodificacion");
+                  failback(xhr);
+                  this.address = false;
+                  adjofer.map.direccion = JSON.parse(xhr.responseText).error;
+               }
+            });
+         }
+
+         // TODO:: La obtención de direcciones y coordenadas habría que estudiarla bien.
+         function obtenerDireccion(data) {
+            return data.features.length === 0?"Dirección desconocida":data.features[0].properties.label;
+         }
+
+         function obtenerCoordenadas(data, search) {
+            if(data.features.length === 0) {
+               console.error(`Imposible localizar '${search}'`);
+               return null;
+            }
+            if(data.features.length>1) console.warn(`Hay ${data.features.length} candidatos que cumplen los criterios de búsqueda: ${search}`)
+            const [lng, lat] = data.features[0].geometry.coordinates;
+            return L.latLng(lat, lng);
+         }
+
+         return Geocode;
+      })();
+      // Fin issue #46
+
       const ret = {
          Isocronas: Isocronas,
+         Geocode: Geocode,
          contador: 0,
       }
 

@@ -46,9 +46,8 @@ window.onload = function() {
    const g = new MapaAdjOfer("map", {
       path: "../../dist",
       light: true,
-      // TODO: Crear mi propia clave.
       ors: {
-         key: "5b3ce3597851110001cf6248941d2588ac8848c79f7128dd6b3c267a",
+         key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
          loading: cargaDatos,
          chunkProgress: progresaIsocronas
       }
