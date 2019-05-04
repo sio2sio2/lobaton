@@ -168,6 +168,9 @@ const MapaAdjOfer = (function() {
                // Fin issue #41, #33
 
                return centro;
+            },
+            onEachFeature: (f, l) => {
+               if(this.light) l.bindContextMenu(contextMenuCentro.call(this, l));
             }
          });
 
@@ -287,12 +290,14 @@ const MapaAdjOfer = (function() {
                configurable: false
             },
             // Fin issue #46
+            // Issue #47
             _ruta: {
-               value: undefined,
+               value: new this.ors.Ruta(),
                writable: true,
                enumerable: false,
                configurable: false
             }
+            // Fin issue #47
          });
          crearAttrEvent.call(this.map, "isocronas", "isochroneset");
          crearAttrEvent.call(this.map, "direccion", "addressset");  // Issue #46
@@ -308,7 +313,7 @@ const MapaAdjOfer = (function() {
             const origen = this.map.origen;
             if(origen && this.light) {
                origen.unbindContextMenu();
-               origen.bindContextMenu(contextMenuMarker.call(this));
+               origen.bindContextMenu(contextMenuOrigen.call(this));
             }
          });
 
@@ -324,14 +329,51 @@ const MapaAdjOfer = (function() {
                this.map.origen.getElement().setAttribute("title", e.newval);
                if(this.light) {
                   this.map.origen.unbindContextMenu();
-                  this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+                  this.map.origen.bindContextMenu(contextMenuOrigen.call(this));
                }
             });
          });
-         // Fin issue #46
-      }
 
-      this.map.on("addressset", e => { if(e.newval) this.ors.contador++; });  // Issue #46
+         this.map.on("addressset", e => { if(e.newval) this.ors.contador++; });
+         // Fin issue #46
+
+         // Issue #47
+         this.map.on("routeset", e => {
+            if(e.newval) {
+               this.ors.contador++;
+               this._ruta.create(e.newval);
+               e.newval.unbindContextMenu();
+               e.newval.bindContextMenu(contextMenuCentro.call(this, e.newval));
+            }
+            else this._ruta.remove();
+
+            if(e.oldval) {
+               e.oldval.unbindContextMenu();
+               e.oldval.bindContextMenu(contextMenuCentro.call(this, e.oldval));
+            }
+         });
+         // Al cambiar de origen, hay que cambiar los menús contextuales de
+         // todas las marcas, ya que no tiene sentido la entrada de crear ruta.
+         this.map.on("originset", e=> {
+            if(this.map.ruta) this.map.ruta = null;
+            for(const c of this.Centro.store) {
+               c.unbindContextMenu();
+               c.bindContextMenu(contextMenuCentro.call(this, c));
+            }
+         });
+         // Al seleccionar/deseleccionar, hay que cambiar los
+         // menús contextuales de las marcas implicadas.
+         this.cluster.on("markerselect", e => {
+            for(const c of [e.oldval, e.newval]) {
+               if(c) {
+                  c.unbindContextMenu();
+                  c.bindContextMenu(contextMenuCentro.call(this, c));
+               }
+            }
+         });
+         // Fin issue #47
+     }
+
    }
 
    /**
@@ -872,7 +914,7 @@ const MapaAdjOfer = (function() {
                   this.map.origen = new L.Marker(e.latlng, {
                      title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
                   });
-                  this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+                  this.map.origen.bindContextMenu(contextMenuOrigen.call(this));
                }
             },
             {
@@ -894,7 +936,7 @@ const MapaAdjOfer = (function() {
       }
    }
 
-   function contextMenuMarker(espera) {
+   function contextMenuOrigen(espera) {
       const items = [
          {
             text: "Geolocalizar este origen",
@@ -930,10 +972,42 @@ const MapaAdjOfer = (function() {
             text: "Generar isocronas",
             callback: e => {
                this._isocronas = this._isocronas || new this.ors.Isocronas();
+               // TODO:: Es mejor hacer esta asignación en crearIsocronas, y dejarse de callback.
                this._isocronas.create(i => this.map.isocronas = i);
                this.map.origen.unbindContextMenu();
-               this.map.origen.bindContextMenu(contextMenuMarker.call(this, true));
+               this.map.origen.bindContextMenu(contextMenuOrigen.call(this, true));
             }
+         });
+      }
+
+      return {
+         contextmenu: true,
+         contextmenuInheritItems: false,
+         contextmenuItems: items
+      }
+   }
+
+   function contextMenuCentro(marker) {
+
+      const seleccion = this.cluster.seleccionado !== marker,
+            texto = (seleccion?"Seleccionar":"Deseleccionar") + " el centrp",
+            items = [
+               {
+                  text: texto,
+                  callback: e => this.cluster.seleccionado = (seleccion?marker:null)
+               }
+            ]
+
+      if(this.map.ruta === marker) {
+         items.push({
+            text: "Eliminar la ruta",
+            callback: e => this.map.ruta = nuwll
+         });
+      }
+      else if(this.map.origen) {
+         items.push({
+            text: "Crear ruta desde el origien",
+            callback: e => this.map.ruta = marker
          });
       }
 
@@ -990,7 +1064,6 @@ const MapaAdjOfer = (function() {
                               opacity: 0.6
                            }),
                onEachFeature: (f, l) => {
-                  //l.bindPopup(`Hasta ${f.properties.value/60} min`);
                   l.bindContextMenu(contextMenuArea.call(adjofer, l, this.layer));
                }
             });
@@ -1017,7 +1090,7 @@ const MapaAdjOfer = (function() {
                      this.map.origen = new L.Marker(e.latlng, {
                         title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
                      });
-                     this.map.origen.bindContextMenu(contextMenuMarker.call(this));
+                     this.map.origen.bindContextMenu(contextMenuOrigen.call(this));
                   }
                },
                {
@@ -1213,14 +1286,14 @@ const MapaAdjOfer = (function() {
                method: "GET",
                params: params,
                callback: (xhr) => {
-                  if(ors.loading) ors.loading("geocodificacion");
+                  if(ors.loading) ors.loading("geocode");
                   this.ready = true;
                   const response = JSON.parse(xhr.responseText),
                         parser = typeof data === "string"?obtenerCoordenadas:obtenerDireccion;
                   adjofer.map.direccion = parser(response, data);
                },
                failback: (xhr) => {
-                  if(ors.loading) ors.loading("geocodificacion");
+                  if(ors.loading) ors.loading("geocode");
                   failback(xhr);
                   this.address = false;
                   adjofer.map.direccion = JSON.parse(xhr.responseText).error;
@@ -1247,9 +1320,136 @@ const MapaAdjOfer = (function() {
       })();
       // Fin issue #46
 
+      // Issue #47
+      const Ruta = (function() {
+
+         const url = URLBase + "/v2/directions";
+
+         const defaults = {
+            profile: "driving-car"
+         }
+
+         function crearPopup(marker, ruta) {
+            const container = document.createElement("div"),
+                  distancia = Math.floor(ruta.properties.summary.distance / 1000),
+                  tiempo = (function(t) {  // Pasa segundos a horas y minutos.
+                     let m = Math.floor(t/60);
+                     if(m > 60) {
+                        const h = Math.floor(m/60);
+                        m %= 60;
+                        return `${h}h ${m}m`;
+                     }
+                     else return m + "m";
+                  })(ruta.properties.summary.duration);
+
+            let e = document.createElement("h3");
+
+            e.textContent = marker.getData().id.nom;
+            container.appendChild(e);
+
+            let p = document.createElement("p");
+            e = document.createElement("b");
+            e.textContent = "Distancia";
+            p.appendChild(e);
+            p.appendChild(document.createTextNode(`: ${distancia} Km`));
+            
+            p.appendChild(document.createElement("br"));
+
+            e = document.createElement("b");
+            e.textContent = "Tiempo est.";
+            p.appendChild(e);
+            p.appendChild(document.createTextNode(`: ${tiempo}`));
+
+            container.appendChild(p);
+
+            return container;
+         }
+
+         function Ruta(opts) {
+            this.options = Object.assign({api_key: ors.key}, defaults);
+            this.setOptions(opts || {});
+
+            this.layer = L.geoJSON(undefined, {
+               style: f => new Object({
+                              color: "#77f",
+                              weight: 5,
+                              opacity: 0.9
+                           }),
+               onEachFeature: (f, l) => {
+                  l.bindPopup(crearPopup(this.marker, f));
+               }
+            });
+
+            Object.defineProperty(this, "marker", {
+               value: null,
+               writable: true,
+               enumerable: false,
+               configurable: false
+            });
+         }
+
+         Ruta.prototype.setOptions = function(opts) {
+            Object.assign(this.options, opts);
+         }
+
+         Ruta.prototype.create = function(marker) {
+            const origen = adjofer.map.origen.getLatLng(),
+                  fin    = marker.getLatLng(),
+                  params = Object.assign({
+                              start: origen.lng + "," + origen.lat,
+                              end: fin.lng + "," + fin.lat,
+                           }, this.options),
+                  furl = url + "/" + params.profile;
+
+            delete params.profile;
+            
+            this.remove();
+
+            if(ors.loading) ors.loading("ruta");
+            L.utils.load({
+               url: furl,
+               method: "GET",
+               params: params,
+               callback: crearRuta.bind(this, marker),
+               failback: failback
+            });
+
+            return this;
+         }
+
+         function crearRuta(marker, xhr) {
+            if(ors.loading) ors.loading("isocronas");
+
+            const data = JSON.parse(xhr.responseText);
+            this.marker = marker;
+
+            this.layer.addTo(adjofer.map);
+            this.layer.addData(data);
+            
+            const ruta   = this.layer.getLayers()[0],
+                  coords = ruta.feature.geometry.coordinates,
+                  point  = coords[Math.floor(.9*coords.length)];
+
+            ruta.openPopup({lat: point[1], lng: point[0]});
+         }
+
+         Ruta.prototype.remove = function() {
+            if(!this.marker) return false;
+
+            this.layer.clearLayers();
+            this.layer.removeFrom(adjofer.map);
+            this.marker = null;
+            return this;
+         }
+
+         return Ruta;
+      })();
+      // Fin issue #47
+
       const ret = {
          Isocronas: Isocronas,
          Geocode: Geocode,
+         Ruta: Ruta,
          contador: 0,
       }
 

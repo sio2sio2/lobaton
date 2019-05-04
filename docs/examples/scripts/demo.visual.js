@@ -8,6 +8,7 @@ window.onload = function() {
       selectEsp.addEventListener("change", function(e) {
          g.cluster.clearLayers();
          g.Centro.reset();
+         g.map.ruta = null;  // Hay que borrar rutas.
          L.utils.load({
             url: this.value,
             callback: function(xhr) {
@@ -27,7 +28,8 @@ window.onload = function() {
       if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
    }
 
-   function cargaDatos() {
+   // tipo: isocronas, geocode, ruta.
+   function cargaDatos(tipo) {
       let loading;
       
       if(loading = L.DomUtil.get("leaflet-loading")) {
