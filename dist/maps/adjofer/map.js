@@ -1071,11 +1071,13 @@ const MapaAdjOfer = (function() {
                               opacity: 0.6
                            }),
                onEachFeature: (f, l) => {
-                  l.bindContextMenu(contextMenuArea.call(adjofer, l, this.layer));
+                  l.bindContextMenu(contextMenuArea.call(this, l, this.layer));
                },
                pane: "isochronePane"
             });
 
+            // Cuando hecho, almacena los anillos huecos
+            // que forman entre ellas las isocronas.
             Object.defineProperty(this, "done", {
                value: false,
                writable: true,
@@ -1085,58 +1087,6 @@ const MapaAdjOfer = (function() {
 
             // Elimina la isocrona al fijar un nuevo origen.
             adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
-         }
-
-         function contextMenuArea(area, layer) {
-            // area maciza que se usa para filtrar.
-            let farea = layer.getLayers().filter(a => a.feature.properties.filtrante)[0];
-
-            const items = [
-               {
-                  text: "Eliminar isocronas",
-                  callback: e => adjofer.map.isocronas = null,
-                  index: 0,
-               },
-               {
-                  text: `Filtrar centros alejados más de ${area.feature.properties.value/60} min`,
-                  disabled: area === farea,
-                  callback: e => {
-                     this.Centro.filter("lejos", {area: area.feature.properties.area});
-                     this.Centro.invoke("refresh");
-                     if(farea) farea.feature.properties.filtrante = false;
-                     area.feature.properties.filtrante = true;
-                     for(const a of layer.getLayers()) {
-                        a.unbindContextMenu();
-                        a.bindContextMenu(contextMenuArea.call(this, a, layer));
-                     }
-                  },
-                  index: 1,
-               },
-               {
-                  text: `Mostrar centros alejados más de ${(farea || area).feature.properties.value/60} min`,
-                  disabled: !farea,
-                  callback: e => {
-                     this.Centro.unfilter("lejos");
-                     this.Centro.invoke("refresh");
-                     farea.feature.properties.filtrante = false;
-                     for(const a of layer.getLayers()) {
-                        a.unbindContextMenu();
-                        a.bindContextMenu(contextMenuArea.call(this, a, layer));
-                     }
-                  },
-                  index: 2
-               },
-               {
-                  separator: true,
-                  index: 3
-               }
-            ]
-
-            return {
-               contextmenu: true,
-               contextmenuInheritItems: true,
-               contextmenuItems: items
-            }
          }
 
          Isocronas.prototype.setOptions = function(opts) {
@@ -1210,12 +1160,16 @@ const MapaAdjOfer = (function() {
                   if(ors.chunkProgress && lapso > isocronas.interval) break;
 
                   const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
-                                 data.features[0];
+                                 Object.assign({}, data.features[0]);
 
-                  Object.assign(anillo.properties, {
+                  // turf hace que anillo y data.features[i] compartan properties,
+                  // pero se necesita que sean objetos diferentes para que uno tenga
+                  // la propiedad area y el otro no.
+                  anillo.properties = Object.assign({}, data.features[i].properties, {
                      ratio:  1 - i/data.features.length,
                      area: data.features[i]  // Las área macizas sirven para filtrado.
                   });
+                  data.features[i].properties.ratio = anillo.properties.ratio;
 
                   this.layer.addData(anillo);
                }
@@ -1224,7 +1178,7 @@ const MapaAdjOfer = (function() {
                                                        (new Date().getTime() - started));
 
                if(i === data.features.length) {
-                  this.done = adjofer.map.origen;
+                  this.done = this.layer.getLayers();
                   if(adjofer.light) {
                      // Durante la generación se deshabilitó la entrada del menú contextual.
                      // Ahora se habilita poniendo "Eliminar isocronas".
@@ -1235,6 +1189,61 @@ const MapaAdjOfer = (function() {
                else setTimeout(process, isocronas.delay);
             }
             process();
+         }
+
+         function contextMenuArea(area) {
+            const es_anillo = !!area.feature.properties.area;
+
+            const items = [
+               {
+                  text: "Eliminar isocronas",
+                  callback: e => adjofer.map.isocronas = null,
+                  index: 0,
+               }
+            ]
+
+            if(es_anillo) {
+               items.push({
+                  text: `Filtrar centros alejados más de ${area.feature.properties.value/60} min`,
+                  callback: e => {
+                     const maciza = area.feature.properties.area;
+                     adjofer.Centro.filter("lejos", {area: maciza});
+                     adjofer.Centro.invoke("refresh");
+                     dibujarAreaMaciza.call(this, maciza);
+                  },
+                  index: 1,
+               })
+            }
+            else {
+               items.push({
+                  text: `Mostrar centros alejados más de ${area.feature.properties.value/60} min`,
+                  callback: e => {
+                     adjofer.Centro.unfilter("lejos");
+                     adjofer.Centro.invoke("refresh");
+                     redibujarAnillos.call(this);
+                  },
+                  index: 1
+               });
+            }
+
+            items.push({separator: true, index: 2});
+
+            return {
+               contextmenu: true,
+               contextmenuInheritItems: true,
+               contextmenuItems: items
+            }
+         }
+
+         function dibujarAreaMaciza(area) {
+            this.layer.clearLayers().addData(area);
+            const a = this.layer.getLayers()[0];
+            a.bindContextMenu(contextMenuArea.call(this, a));
+         }
+
+         function redibujarAnillos() {
+            this.layer.clearLayers();
+            for(const a of this.done) this.layer.addLayer(a);
          }
 
          return Isocronas;
