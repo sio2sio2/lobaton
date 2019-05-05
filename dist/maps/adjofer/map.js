@@ -1337,7 +1337,7 @@ const MapaAdjOfer = (function() {
          }
 
          function crearPopup(marker, ruta) {
-            const container = document.createElement("div"),
+            const container = document.createElement("article"),
                   distancia = Math.floor(ruta.properties.summary.distance / 1000),
                   tiempo = (function(t) {  // Pasa segundos a horas y minutos.
                      let m = Math.floor(t/60);
@@ -1354,20 +1354,24 @@ const MapaAdjOfer = (function() {
             e.textContent = marker.getData().id.nom;
             container.appendChild(e);
 
-            let p = document.createElement("p");
+            let ul = document.createElement("ul"),
+                li = document.createElement("li");
+
+            ul.appendChild(li);
             e = document.createElement("b");
             e.textContent = "Distancia";
-            p.appendChild(e);
-            p.appendChild(document.createTextNode(`: ${distancia} Km`));
+            li.appendChild(e);
+            li.appendChild(document.createTextNode(`: ${distancia} Km`));
             
-            p.appendChild(document.createElement("br"));
+            li = document.createElement("li");
+            ul.appendChild(li);
 
             e = document.createElement("b");
             e.textContent = "Tiempo est.";
-            p.appendChild(e);
-            p.appendChild(document.createTextNode(`: ${tiempo}`));
+            li.appendChild(e);
+            li.appendChild(document.createTextNode(`: ${tiempo}`));
 
-            container.appendChild(p);
+            container.appendChild(ul);
 
             return container;
          }
