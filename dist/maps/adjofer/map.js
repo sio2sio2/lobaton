@@ -1076,13 +1076,21 @@ const MapaAdjOfer = (function() {
                pane: "isochronePane"
             });
 
-            // Cuando hecho, almacena los anillos huecos
-            // que forman entre ellas las isocronas.
-            Object.defineProperty(this, "done", {
-               value: false,
-               writable: true,
-               enumerable: false,
-               configurable: false
+            Object.defineProperties(this, {
+               "done": {
+                  value: false,
+                  writable: true,
+                  enumerable: false,
+                  configurable: false
+               },
+               // Converva el último cálculo de isocronas,
+               // por si se pide unas nuevas con el mismo origen,
+               "calc": {
+                  value: {origen: null, areas: null},
+                  writable: false,
+                  enumerable: false,
+                  configurable: false
+               }
             });
 
             // Elimina la isocrona al fijar un nuevo origen.
@@ -1102,17 +1110,26 @@ const MapaAdjOfer = (function() {
           *
           * @param {Function} callback  Función que se ejecutará al generarse las
           * isocronas sobre el mapa.
-          * @param {Boolean} force  Si  ``true``, borra las isocronas anteriores;
-          * en caso contrario, generará un error.
-          * @param {L.LatLng} point Punto alternativo al de origen.
           */
-         Isocronas.prototype.create = function(point) {
+         Isocronas.prototype.create = function() {
             if(this.done) this.remove();
+            
+            // Si repetimos origen, entonces rescatamos las isocronas calculadas.
+            if(mismoPunto(adjofer.map.origen, this.calc.origen)) {
+               redibujarAnillos.call(this);
+               this.layer.addTo(adjofer.map);
+               this.done = true;
+               if(adjofer.light) {
+                  adjofer.map.origen.unbindContextMenu();
+                  adjofer.map.origen.bindContextMenu(contextMenuOrigen.call(adjofer));
+               }
+               return this;
+            }
+            else this.calc.origen = this.calc.areas = null;
 
-            if(!point) point = adjofer.map.origen.getLatLng();
-
-            let params = Object.assign({locations: [[point.lng, point.lat]]},
-                                         this.options);
+            let point  = adjofer.map.origen.getLatLng(),
+                params = Object.assign({locations: [[point.lng, point.lat]]},
+                                        this.options);
 
             if(ors.loading) ors.loading("isocronas");
             L.utils.load({
@@ -1178,7 +1195,9 @@ const MapaAdjOfer = (function() {
                                                        (new Date().getTime() - started));
 
                if(i === data.features.length) {
-                  this.done = this.layer.getLayers();
+                  this.done = true;
+                  this.calc.origen = adjofer.map.origen;
+                  this.calc.areas = this.layer.getLayers();
                   if(adjofer.light) {
                      // Durante la generación se deshabilitó la entrada del menú contextual.
                      // Ahora se habilita poniendo "Eliminar isocronas".
@@ -1189,6 +1208,13 @@ const MapaAdjOfer = (function() {
                else setTimeout(process, isocronas.delay);
             }
             process();
+         }
+
+         function mismoPunto(x, y) {
+            if(x === null || y === null) return false;
+            x = x.getLatLng();
+            y = y.getLatLng();
+            return x.lat === y.lat && x.lng === y.lng;
          }
 
          function contextMenuArea(area) {
@@ -1243,7 +1269,7 @@ const MapaAdjOfer = (function() {
 
          function redibujarAnillos() {
             this.layer.clearLayers();
-            for(const a of this.done) this.layer.addLayer(a);
+            for(const a of this.calc.areas) this.layer.addLayer(a);
          }
 
          return Isocronas;
