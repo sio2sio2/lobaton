@@ -1106,9 +1106,11 @@
       for(const marker of this.store) marker.apply(name);
 
       // Issue #54
-      const opts = corr.getAutoCorrs(name);
+      const opts = corr.getAutoCorrs(name),
+            auto2 = corr.getOptions(name).auto;
       for(const n in opts) {
-         this.fire(`correct:${n}`, {name: n, opts: opts[n]});
+         const auto = n === name?false:auto2;
+         this.fire(`correct:${n}`, {name: n, opts: opts[n], auto: auto});
       }
       // Fin issue #54
       return this;
@@ -1138,9 +1140,11 @@
 
       for(const marker of this.store) marker.unapply(name);
       // Issue #54
-      const opts = corr.getAutoCorrs(name);
+      const opts = corr.getAutoCorrs(name),
+            auto2 = corr.getOptions(name).auto;
       for(const n in opts) {
-         this.fire(`uncorrect:${n}`, {name: n, opts: opts[n]});
+         const auto = n === name?false:auto2;
+         this.fire(`uncorrect:${n}`, {name: n, opts: opts[n], auto: auto});
       }
       // Fin issue #54
       corr.setParams(name, null);
