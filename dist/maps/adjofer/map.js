@@ -993,7 +993,7 @@ const MapaAdjOfer = (function() {
    function contextMenuCentro(marker) {
 
       const seleccion = this.cluster.seleccionado !== marker,
-            texto = (seleccion?"Seleccionar":"Deseleccionar") + " el centrp",
+            texto = (seleccion?"Seleccionar":"Deseleccionar") + " el centro",
             items = [
                {
                   text: texto,

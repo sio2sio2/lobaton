@@ -1,10 +1,20 @@
+// Necesitamos que g sea accesible desde fuera de la función de inicio para poder enlazar la interfaz visual con el mapa
 var g;
+
 // menuCorrecciones será un array con las opciones que serán mostradas en el menú de correcciones/filtrado
 // Se declara aquí ya que en algunos momentos es necesario acceder a la información textual de las mismas
 var menuCorrecciones = [];
 
 window.onload = function() {
-   g = new MapaAdjOfer("map", "../../dist");
+   g = new MapaAdjOfer("map", {
+      path: "../../dist",
+      light: true,
+      ors: {
+         key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
+         loading: cargaDatos,
+         chunkProgress: progresaIsocronas
+      }
+   });
    g.lanzarTrasDatos(function(){
       //Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos. Esto es útil tras cambiar de especialidad sobre todo
       g.cluster.seleccionado = null;
@@ -12,11 +22,6 @@ window.onload = function() {
 
       //Lo primero que haremos tras cargar los datos será cargar las correcciones oportunas
       cargaCorrecciones();
-
-      //Cada vez que se seleccione un centro, marcaremos el mismo como seleccionado, lo que lanzará el evento markerselect
-      g.Centro.invoke("on", "click", function(e) {
-         g.cluster.seleccionado = g.cluster.seleccionado === this?null:this;
-      });
    });
 
    //En el momento en el que se seleccione uno de los centros
@@ -33,7 +38,31 @@ window.onload = function() {
       }
    });
    
-   
+   // tipo: isocronas, geocode, ruta.
+   function cargaDatos(tipo) {
+      let loading;
+      
+      if(loading = L.DomUtil.get("leaflet-loading")) {
+         L.DomUtil.remove(loading);
+      }
+      else {
+         loading = L.DomUtil.create("div", "leaflet-message leaflet-control", 
+                                    L.DomUtil.get("map"));
+         loading.id = "leaflet-loading";
+         const img = document.createElement("img");
+         img.setAttribute("src", "images/ajax-loader.gif");
+         loading.appendChild(img);
+      }
+   }
+
+   function progresaIsocronas(n, total, lapso) {
+      const map = L.DomUtil.get("map"),
+            progress = L.DomUtil.get("leaflet-progress") || 
+                       L.DomUtil.create("progress", "leaflet-message leaflet-control", map);
+      progress.id = "leaflet-progress";
+      progress.setAttribute("value", n/total);
+      if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
+   }
 
    x = g;
 
