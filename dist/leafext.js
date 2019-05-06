@@ -935,6 +935,7 @@
       if(options.mutable) {
          options.corr = new CorrSys();
          Object.assign(Marker.prototype, prototypeExtra);
+         Object.assign(Marker, L.Evented.prototype);  // Issue #54
          /**
           * Almacena todas las marcas creadas de este tipo
           * @name Marker.store
@@ -1084,9 +1085,6 @@
     *
     * @params {String} name   Nombre de la corrección.
     * @params {Object} params Opciones de aplicacion de la corrección.
-    * @params {Array.<String>} prev  Si se encadenan correcciones, las
-    * correcciones previas en la cadena. Este parámetro sólo debe usarlo
-    * internamente la libreria.
     * @params {Boolean} auto  Si ``true``, aplica las correcciones
     * en cadena, si estas se han definino.
     *
@@ -1107,6 +1105,12 @@
       corr.initialize(name, params, auto);
       for(const marker of this.store) marker.apply(name);
 
+      // Issue #54
+      const opts = corr.getAutoCorrs(name);
+      for(const n in opts) {
+         this.fire(`correct:${n}`, {name: n, opts: opts[n]});
+      }
+      // Fin issue #54
       return this;
    }
 
@@ -1133,6 +1137,12 @@
       }
 
       for(const marker of this.store) marker.unapply(name);
+      // Issue #54
+      const opts = corr.getAutoCorrs(name);
+      for(const n in opts) {
+         this.fire(`uncorrect:${n}`, {name: n, opts: opts[n]});
+      }
+      // Fin issue #54
       corr.setParams(name, null);
 
       return this;
@@ -1168,8 +1178,12 @@
       const filter = this.prototype.options.filter;
       if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-      if(!filter.setParams(name, params, true)) return false;  //El filtro no existe o ya estaba habilitado con los mismo parámetros.
+      // El filtro no existe o ya estaba habilitado con los mismo parámetros.
+      if(!filter.setParams(name, params, true)) return false;
       for(const marker of this.store) marker.applyF(name);
+
+      this.fire("filter", {name: name, opts: params});  // Issue #54
+      
       return this;
    }
 
@@ -1183,8 +1197,15 @@
       const filter = this.prototype.options.filter;
       if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
+      const params = filter.getParams(name);  // Issue #54
+
       if(!filter.disable(name)) return false;  // El filtro no existe o está deshabilitado.
       for(const marker of this.store) marker.unapplyF(name);
+
+      // #Issue #54
+      this.fire("unfilter", {name: name, opts: params});  // Issue #54
+      // Fin #issue 54
+
       return this;
    }
 
@@ -1804,7 +1825,7 @@
        * automáticamente la aplicación de una o más correcciones que afectan a otros
        * atributos. En este caso, si la corrección que se aplica es "bilingue" y la
        * corrección que se desencadena automáticamente es "adjpue", la corrección
-       * automática se identificará como "bilingüe adjpue".
+       * automática se identificará como "bilingue adjpue".
        * 
        * Las :js:class:`clases de marcas definidas como mutables <Marker>` definen
        * automáticamente una opción ``corr`` que es un objeto de este tipo, de modo
@@ -2055,21 +2076,20 @@
             const sc = this[this.getProp(name)];
             if(!sc) throw new Error(`${name}: corrección no registrada`);
 
-            let prename;
-            [prename, name] = this._normalizeName(name, true);
+            let [prename, postname] = this._normalizeName(name, true);
 
             if(prename) {
-               if(opts !== null) sc[name].prop.chain_params[prename] = opts;
-               else delete sc[name].prop.chain_params[prename];
+               if(opts !== null) sc[postname].prop.chain_params[prename] = opts;
+               else delete sc[postname].prop.chain_params[prename];
             }
             else sc[name].prop.params = opts;
 
             // Si se borran los opciones de corrección (se fijan a null), se deben
             // borrar recursivamente las opciones calculadas del resto de la cadena.
             if(opts === null) {
-               for(const chain of sc[name].prop.chain) {
+               for(const chain of sc[postname].prop.chain) {
                   if(this.looped(name, chain.corr)) continue;
-                  this.setParams(name + " " + chain.corr, null);
+                  this.setParams(postname + " " + chain.corr, null);
                }
             }
 
@@ -2140,7 +2160,7 @@
           * @param {String} name  El nombre de la corrección.
           *
           * @returns {Object}  Un objeto en que las claves son las correcciones originales
-          * que provocaron las correccines y los valores las opciones de corrección.
+          * que provocaron las correcciones y los valores las opciones de corrección.
           */
          CorrSys.prototype.getAutoParams = function(name) {
             const sc = this[this.getProp(name)];
@@ -2166,9 +2186,44 @@
           * desencadenó la corrección suministrada.
           */
          CorrSys.prototype.getOriginal = function(name) {
-            return name.split(" ")[0];
+            const idx = name.indexOf(" ");
+            return idx === -1?name:name.substring(0, idx);
          }
-         // FIn issue #37
+         // Fin issue #37
+
+         /**
+          * Devuelve todas las correcciones que ha desencadenado
+          * automáticamente la corrección suministrada y cuáles
+          * han sido los parámetros con los que se ha desencadenado.
+          * Se incluye a sí misma.
+          *
+          * @param {String} name  El nombre de la corrección desencadenante.
+          *
+          * @returns {Object} Objeto en que cada clave es una de las
+          * correcciones desencadenadas y el valor, los parámetros con los
+          * que se aplicó.
+          */
+         CorrSys.prototype.getAutoCorrs = function(name, ret) {
+            ret = ret || {}; 
+
+            const sc = this[this.getProp(name)];
+            if(!sc) throw new Error(`${name}: corrección no registrada`);
+
+            let [prename, postname] = this._normalizeName(name, true);
+
+            if(prename) {
+               const opts = sc[postname].prop.chain_params[prename];
+               if(opts) ret[postname] = opts;
+            }
+            else ret[name] = sc[name].prop.params;
+
+            for(const chain of sc[postname].prop.chain) {
+               if(this.looped(name, chain.corr)) continue;
+               this.getAutoCorrs(name + " " + chain.corr, ret);
+            }
+
+            return ret;
+         }
 
          return CorrSys;
       })();
@@ -2244,11 +2299,12 @@
        * Registra una corrección
        * @memberof FilterSys
        *
-       * @param {String}         name  Nombre del filtro.
-       * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
-       *    cuyos valores afecta al filtro.
-       * @param {Function}       func  Función que filtra. Debe devolver
-       *    true (sí filtra) o false.
+       * @param {String}  name  Nombre del filtro.
+       * @param {Object}  obj   Propiedades del filtro.
+       * @param {String|Array.<String>} obj.attrs Nombre de las propiedades de los datos
+       * cuyos valores afecta al filtro.
+       * @param {Function} obj.func  Función que filtra. Debe devolver
+       * ``true`` (sí filtra) o ``false``.
        */
       FilterSys.prototype.register = function(name, obj) {
          if(this[name]) {
