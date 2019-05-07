@@ -34,6 +34,13 @@
     <!-- Librería turf: necesaria para isocronas -->
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     
+   <!-- Plugin: Leaflet Control Search -->
+   <script src="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.js"></script>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.css">
+   <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.mobile.min.css">
+   <!-- Fuse.js: Fuzzy-search -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/1.2.2/fuse.min.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css"
       integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
@@ -60,93 +67,89 @@
           </button>
           <div class="section-cardbox" id="select_esp">
             <div class="section-cardbox-header" data-toggle="collapse" href="#esp">
-              <span id="esp_selected_title">Elige ...</span>
+              <span id="esp_selected_title">Escoja especialidad...</span>
             </div>
             <div id="esp" class="section-cardbox-content collapse show">
-              <label class="my-1 mr-2" for="inlineFormCustomSelectPref">Selecciona la especialidad</label>
-              <form autocomplete="off">
-                <select name="especialidad" class="custom-select my-1 mr-sm-2" id="esp_selected" v-model="esp_selected">
-                  <option selected value="">Elige...</option>
-                  <optgroup label="590">
-                    <option value="../../json/590101.json">Administración de empresas</option>
-                    <option value="../../json/590012.json">Alemán</option>
-                    <option value="../../json/590102.json">Análisis y química industrial</option>
-                    <option value="../../json/590103.json">Asesoría y procesos de imagen personal</option>
-                    <option value="../../json/590008.json">Biología y geología</option>
-                    <option value="../../json/590104.json">Construcciones civiles y edificación</option>
-                    <option value="../../json/590009.json">Dibujo</option>
-                    <option value="../../json/590061.json">Economía</option>
-                    <option value="../../json/590017.json">Educación física</option>
-                    <option value="../../json/590001.json">Filosofía</option>
-                    <option value="../../json/590105.json">Formación y orientación laboral</option>
-                    <option value="../../json/590010.json">Francés</option>
-                    <option value="../../json/590007.json">Física y química</option>
-                    <option value="../../json/590005.json">Geografía e historia</option>
-                    <option value="../../json/590002.json">Griego</option>
-                    <option value="../../json/590106.json">Hostelería y turismo</option>
-                    <option value="../../json/590107.json">Informática</option>
-                    <option value="../../json/590011.json">Inglés</option>
-                    <option value="../../json/590108.json">Intervención sociocomunitaria</option>
-                    <option value="../../json/590013.json">Italiano</option>
-                    <option value="../../json/590003.json">Latín</option>
-                    <option value="../../json/590004.json">Lengua castellana y literatura</option>
-                    <option value="../../json/590006.json">Matemáticas</option>
-                    <option value="../../json/590016.json">Música</option>
-                    <option value="../../json/590109.json">Navegación e instalaciones marinas</option>
-                    <option value="../../json/590110.json">Organización y gestión comercial</option>
-                    <option value="../../json/590111.json">Organización y procesos de mantenimiento de vehículos</option>
-                    <option value="../../json/590112.json">Organización y proyectos de fabricación mecánica</option>
-                    <option value="../../json/590113.json">Organización y proyectos de sistemas energéticos</option>
-                    <option value="../../json/590018.json">Orientacion educativa</option>
-                    <option value="../../json/590015.json">Portugués</option>
-                    <option value="../../json/590114.json">Procesos de cultivo acuícola</option>
-                    <option value="../../json/590117.json">Procesos de diagnósticos clínicos y productos ortoprotésicos</option>
-                    <option value="../../json/590115.json">Procesos de producción agraria</option>
-                    <option value="../../json/590116.json">Procesos en la industria alimentaria</option>
-                    <option value="../../json/590118.json">Procesos sanitarios</option>
-                    <option value="../../json/590119.json">Procesos y medios de comunicación</option>
-                    <option value="../../json/590120.json">Procesos y productos de textil, confección y piel</option>
-                    <option value="../../json/590121.json">Procesos y productos de vidrio y cerámica</option>
-                    <option value="../../json/590122.json">Procesos y productos en artes gráficas</option>
-                    <option value="../../json/590123.json">Procesos y productos en madera y mueble</option>
-                    <option value="../../json/590125.json">Sistemas electrotécnicos y automáticos</option>
-                    <option value="../../json/590124.json">Sistemas electrónicos</option>
-                    <option value="../../json/590019.json">Tecnología</option>
-                </optgroup>
-                <optgroup label="591">
-                    <option value="../../json/591201.json">Cocina y pastelería</option>
-                    <option value="../../json/591202.json">Equipos electrónicos</option>
-                    <option value="../../json/591203.json">Estética</option>
-                    <option value="../../json/591204.json">Fabricación e instalación de carpintería y mueble</option>
-                    <option value="../../json/591206.json">Instalaciones electrotécnicas</option>
-                    <option value="../../json/591207.json">Instalaciones y equipos de cría y cultivo</option>
-                    <option value="../../json/591205.json">Instalación y mantenimiento de equipos termicos y de fluídos</option>
-                    <option value="../../json/591208.json">Laboratorio</option>
-                    <option value="../../json/591209.json">Mantenimiento de vehículos</option>
-                    <option value="../../json/591211.json">Mecanizado y mantenimiento de máquinas</option>
-                    <option value="../../json/591210.json">Máquinas, servicios y producción</option>
-                    <option value="../../json/591212.json">Oficina de proyectos de construcción</option>
-                    <option value="../../json/591213.json">Oficina de proyectos de fabricación mecánica</option>
-                    <option value="../../json/591215.json">Operaciones de procesos</option>
-                    <option value="../../json/591214.json">Operaciones y equipos de elaboración de productos alimentarios</option>
-                    <option value="../../json/591216.json">Operaciones y equipos de producción agraria</option>
-                    <option value="../../json/591217.json">Patronaje y confección</option>
-                    <option value="../../json/591218.json">Peluquería</option>
-                    <option value="../../json/591219.json">Procedimientos de diagnostico clinico y ortoprotésico</option>
-                    <option value="../../json/591220.json">Procedimientos sanitarios y asistenciales</option>
-                    <option value="../../json/591221.json">Procesos comerciales</option>
-                    <option value="../../json/591222.json">Procesos de gestión administrativa</option>
-                    <option value="../../json/591223.json">Producción en artes gráficas</option>
-                    <option value="../../json/591224.json">Producción textil y tratamiento fisico-quimicos</option>
-                    <option value="../../json/591225.json">Servicios a la comunidad</option>
-                    <option value="../../json/591226.json">Servicios de restauración</option>
-                    <option value="../../json/591227.json">Sistemas y aplicaciones informáticas</option>
-                    <option value="../../json/591228.json">Soldadura</option>
-                    <option value="../../json/591021.json">Taller de vidrio y cerámica</option>
-                    <option value="../../json/591229.json">Técnicas y procedimientos de imagen y sonido</option>
-                </optgroup>
-                </select>
-              </form>
+              <label>Escriba o seleccione una especialidad
+                <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
+                       id="esp_selected" v-model="esp_selected" autocomplete=off>
+                <datalist id="especialidades">
+                   <option value="590101">Administración de empresas</option>
+                   <option value="590012">Alemán</option>
+                   <option value="590102">Análisis y química industrial</option>
+                   <option value="590103">Asesoría y procesos de imagen personal</option>
+                   <option value="590008">Biología y geología</option>
+                   <option value="590104">Construcciones civiles y edificación</option>
+                   <option value="590009">Dibujo</option>
+                   <option value="590061">Economía</option>
+                   <option value="590017">Educación física</option>
+                   <option value="590001">Filosofía</option>
+                   <option value="590105">Formación y orientación laboral</option>
+                   <option value="590010">Francés</option>
+                   <option value="590007">Física y química</option>
+                   <option value="590005">Geografía e historia</option>
+                   <option value="590002">Griego</option>
+                   <option value="590106">Hostelería y turismo</option>
+                   <option value="590107">Informática</option>
+                   <option value="590011">Inglés</option>
+                   <option value="590108">Intervención sociocomunitaria</option>
+                   <option value="590013">Italiano</option>
+                   <option value="590003">Latín</option>
+                   <option value="590004">Lengua castellana y literatura</option>
+                   <option value="590006">Matemáticas</option>
+                   <option value="590016">Música</option>
+                   <option value="590109">Navegación e instalaciones marinas</option>
+                   <option value="590110">Organización y gestión comercial</option>
+                   <option value="590111">Organización y procesos de mantenimiento de vehículos</option>
+                   <option value="590112">Organización y proyectos de fabricación mecánica</option>
+                   <option value="590113">Organización y proyectos de sistemas energéticos</option>
+                   <option value="590018">Orientacion educativa</option>
+                   <option value="590015">Portugués</option>
+                   <option value="590114">Procesos de cultivo acuícola</option>
+                   <option value="590117">Procesos de diagnósticos clínicos y productos ortoprotésicos</option>
+                   <option value="590115">Procesos de producción agraria</option>
+                   <option value="590116">Procesos en la industria alimentaria</option>
+                   <option value="590118">Procesos sanitarios</option>
+                   <option value="590119">Procesos y medios de comunicación</option>
+                   <option value="590120">Procesos y productos de textil, confección y piel</option>
+                   <option value="590121">Procesos y productos de vidrio y cerámica</option>
+                   <option value="590122">Procesos y productos en artes gráficas</option>
+                   <option value="590123">Procesos y productos en madera y mueble</option>
+                   <option value="590125">Sistemas electrotécnicos y automáticos</option>
+                   <option value="590124">Sistemas electrónicos</option>
+                   <option value="590019">Tecnología</option>
+                   <option value="591201">Cocina y pastelería</option>
+                   <option value="591202">Equipos electrónicos</option>
+                   <option value="591203">Estética</option>
+                   <option value="591204">Fabricación e instalación de carpintería y mueble</option>
+                   <option value="591206">Instalaciones electrotécnicas</option>
+                   <option value="591207">Instalaciones y equipos de cría y cultivo</option>
+                   <option value="591205">Instalación y mantenimiento de equipos termicos y de fluídos</option>
+                   <option value="591208">Laboratorio</option>
+                   <option value="591209">Mantenimiento de vehículos</option>
+                   <option value="591211">Mecanizado y mantenimiento de máquinas</option>
+                   <option value="591210">Máquinas, servicios y producción</option>
+                   <option value="591212">Oficina de proyectos de construcción</option>
+                   <option value="591213">Oficina de proyectos de fabricación mecánica</option>
+                   <option value="591215">Operaciones de procesos</option>
+                   <option value="591214">Operaciones y equipos de elaboración de productos alimentarios</option>
+                   <option value="591216">Operaciones y equipos de producción agraria</option>
+                   <option value="591217">Patronaje y confección</option>
+                   <option value="591218">Peluquería</option>
+                   <option value="591219">Procedimientos de diagnostico clinico y ortoprotésico</option>
+                   <option value="591220">Procedimientos sanitarios y asistenciales</option>
+                   <option value="591221">Procesos comerciales</option>
+                   <option value="591222">Procesos de gestión administrativa</option>
+                   <option value="591223">Producción en artes gráficas</option>
+                   <option value="591224">Producción textil y tratamiento fisico-quimicos</option>
+                   <option value="591225">Servicios a la comunidad</option>
+                   <option value="591226">Servicios de restauración</option>
+                   <option value="591227">Sistemas y aplicaciones informáticas</option>
+                   <option value="591228">Soldadura</option>
+                   <option value="591021">Taller de vidrio y cerámica</option>
+                   <option value="591229">Técnicas y procedimientos de imagen y sonido</option>
+                </datalist>
+		</label>
             </div>
           </div>
           <div class="section-cardbox">
