@@ -225,9 +225,10 @@ const MapaAdjOfer = (function() {
 
       this.map = L.map(this._idmap, options);
 
-      this.map.zoomControl.setPosition('topright');
+      this.map.zoomControl.setPosition('bottomright');
 
       this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18
@@ -247,6 +248,7 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
+      this.map.addControl(createSearchBar.call(this));  // Issue #51
 
       // Issue #27
       crearAttrEvent.call(this.map, "origen", "originset");
@@ -380,8 +382,65 @@ const MapaAdjOfer = (function() {
 
    }
 
+   // Issue #51
+   function createSearchBar() {
+
+      const label = (d) => `${String(d.id.cp).substring(0,2)}: ${d.id.nom}`;
+
+      const control = new L.Control.Search({
+         position: "topright",
+         textPlaceholder: "Busque por nombre",
+         textErr: "No encontrado",
+         initial: false,
+         zoom: this.cluster.options.disableClusteringAtZoom,
+         marker: false,
+         minLength: 3,
+         sourceData: (text, callback) => {
+            callback(this.cluster.getLayers().map(m => {
+               const data = m.getData();
+               return {
+                  title: label(data),
+                  loc: m.getLatLng()
+               }
+            }));
+
+            return { abort: function() {}}
+         },
+         filterData: (text, records)  => {
+            const ret = {},
+                  pathData = this.Centro.prototype.options.mutable,
+                  coincidentes = new Fuse(
+                     this.cluster.getLayers(), {
+                        keys: [pathData + ".id.nom"],
+                        minMatchCharLength: 2,
+                     }).search(text);
+
+            for(const idx in coincidentes) {
+               const data = coincidentes[idx].getData(),
+                     title = label(data),
+                     centro = records[title];
+
+               if(!centro) continue;
+
+               ret[title] = centro;
+               centro.layer = coincidentes[idx];
+            }
+
+            return ret;
+         }
+      });
+
+      control.on("search:locationfound", e => {
+         this.cluster.seleccionado = e.layer;
+         control.collapse();
+      });
+
+      return control;
+   }
+   // Fin issue #51
+
    /**
-    * Crea la clase de marca para los centros y le
+     Crea la clase de marca para los centros y le
     * añade las correcciones y filtros definidos para ella.
     * @this {MapAdjOfer} El objeto que implemnta el mapa
     * @private
