@@ -96,8 +96,8 @@ const MapaAdjOfer = (function() {
           * @type {Boolean}
           */
          light: {
-            value: opts.light,
-            wirtable: false,
+            value: !!opts.light,
+            writable: false,
             enumerable: true,
             configurable: false
          },
@@ -119,8 +119,16 @@ const MapaAdjOfer = (function() {
             writable: true,
             enumerable: false,
             configurable: false
-         }
+         },
          // Fin issue #42
+         // Issue #51
+         search: {
+            value: !!opts.search,
+            writable: false,
+            enumerable: true,
+            configurable: false
+         }
+         // Fin issue #51
       });
 
       /**
@@ -248,7 +256,7 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
-      this.map.addControl(createSearchBar.call(this));  // Issue #51
+      if(this.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
 
       // Issue #27
       crearAttrEvent.call(this.map, "origen", "originset");
