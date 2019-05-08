@@ -1,7 +1,10 @@
 /**
- * Constructor del mapa
- * @name MapAAdjOfer
+ * @name MapAdjOfer
  * @class
+ * @hideconstructor
+ * @classdesc Implementa un mapa que muestra la adjudicación de vacantes provisionales
+ * y la oferta educativa de los centros públicos dependientes de la Junta de Andalucía.
+ *
  * @param {String} id  Identificador del elemento HTML
  * donde se incrustará el mapa.
  * @param {Obj} opts Opciones de configuración.
@@ -15,19 +18,8 @@
  * @param {String} opts.ors  La clave para el uso de los servios de OpenRouteService.
  * @param {Function} opts.chunkProgress   Función que se ejecuta periódicamente
  * si se demora demasiado la creación de las isoronas.
- * @classdesc Implementa  un mapa que muestra la adjudicación de vacantes provisionales
- *    y la oferta educativa de cada centro, organizado según especialidades de los
- *    cuerpos 590 y 591. El mapa ofrece:
- *    <ul>
- *    <li>La ubicación de los centros y información relativa a su oferta educativa,
- *       plantillas orgánicas y de funcionamiento y vacantes anuales.
- *    <li>Filtros según distintos criterios para eliminar aquellos centros irrelevantes.
- *    <li>Cálculo de rutas con su distancia y sus tiempos estimados de viaje desde un origen
- *       arbitrario.
- *    <li>Cálculo de las isocronas.
- *    </ul>
  */
-const MapaAdjOfer = (function() {
+const mapAdjOfer = (function(path, opts) {
    "use strict";
 
    // Issue #27
@@ -44,197 +36,249 @@ const MapaAdjOfer = (function() {
     */
    function crearAttrEvent(attr, tipo, value=null) {
       if(this.fire === undefined) throw new Error("El objeto no puede lanzar eventos");
-      Object.defineProperties(this, {
-         [attr]: {
-            get: function() { return this["_" + attr]; },
-            set: function(value) {
-               const old = this[attr];
-               this["_" + attr] = value;
-               this.fire(tipo, {oldval: old, newval: value});
-            },
-            configurable: false,
-            enumerable: true
+
+      addDescriptor(this, "_" + attr, value, true);
+      Object.defineProperty(this, attr, {
+         get: function() { return this["_" + attr]; },
+         set: function(value) {
+            const old = this[attr];
+            this["_" + attr] = value;
+            this.fire(tipo, {oldval: old, newval: value});
          },
-         ["_" + attr]: {
-            value: value,
-            writable: true,
-            configurable: false,
-            enumerable: false
-         }
+         configurable: false,
+         enumerable: true
       });
    }
    // Fin issue #27;
 
-   function MapaAdjOfer(id, opts) {
-      /** @lends MapaAdjOfer.prototype */
-      Object.defineProperties(this, {
-         /**
-          * Identificador del elemento HTML donde se ubica el mapa
-          * @private
-          * @type {String}
-          */
-         _idmap: {
-            value: id,
-            writable: false,
-            enumerable: false,
-            configurable: false
-         },
-         /**
-          * Ruta a la raiz desde el directorio donde su ubica la página.
-          * @private
-          * @type  {String}
-          */
-         _path: {
-            value: opts.path,
-            writable: false,
-            enumerable: false,
-            configurable: false
-         },
-         // Issue #41
-         /**
-          * Interfaz visual ligera.
-          * @type {Boolean}
-          */
-         light: {
-            value: !!opts.light,
-            writable: false,
-            enumerable: true,
-            configurable: false
-         },
-         // Fin issue #41
-         /**
-          * Guarda las funciones que se desean ejecutar al acabar de cargar los datos.
-          * @private
-          * @type {Array}
-          */
-         _events: {
-            value: [],
-            writable: false,
-            enumerable: false,
-            configurable: false
-         },
-         // Issue #42
-         ors: {
-            value: opts.ors,
-            writable: true,
-            enumerable: false,
-            configurable: false
-         },
-         // Fin issue #42
-         // Issue #51
-         search: {
-            value: !!opts.search,
-            writable: false,
-            enumerable: true,
-            configurable: false
-         }
-         // Fin issue #51
+
+   /**
+    * Define una propiedad mediante un descriptor que no configurable ni enumerable.
+    *
+    * @param {Object} obj        Objeto en el que se define el descritor
+    * @param {String}  name      Nombre de la propiedad
+    * @param {Boolean} writable  Define si es o no escribible.
+    */
+   function addDescriptor(obj, name, value, writable) {
+      Object.defineProperty(obj, name, {
+         value: value,
+         writable: !!writable,
+         enumerable: false,
+         configurable: false
       });
+   }
+
+
+   // Obtiene una gama de colores RGB distinguibles entre sí.
+   // En principio, si se desea obtener 4 colores, habrá que pasar:
+   // como ratio 1/4, 2/4, 3/4 y 4/4.
+   function HSLtoRGB(h, s, l) {
+      s = s || .65;
+      l = l || .45;
+
+      var r, g, b;
+
+      if(s == 0){
+         r = g = b = l;
+      }
+      else {
+         function hue2rgb(p, q, t) {
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+         }
+
+         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+         var p = 2 * l - q;
+         r = hue2rgb(p, q, h + 1/3);
+         g = hue2rgb(p, q, h);
+         b = hue2rgb(p, q, h - 1/3);
+      }
+
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+   }
+
+   // Convierte un array de tres enteros (RGB) en notación hexadecimal.
+   function rgb2hex(rgb) {
+      return "#" + rgb.map(dec => ("0" + dec.toString(16)).slice(-2)).join("");
+   }
+
+
+   const MapAdjOfer = L.Evented.extend({
+      /** @lends MapAdjOfer.prototype */
+
+      options: {
+         id: "map",
+         center: [37.07, -6.27],
+         zoom: 9,
+         light: true,      // Issue #41
+         search: true,     // Issue #51
+         ors: false,       // Issue #42
+         icon: "boliche"   // Estilo con que se definen las nuevas marcas.
+      },
+
+      statics: {
+      },
+
+      initialize: function(options) {
+         L.Util.setOptions(this, options);
+         loadMap.call(this);
+         createMarker.call(this);
+      },
 
       /**
-       * Iconos disponibles
-       * @memberof MapaAdjOfer.prototype
-       * @type {Icon}
+       * Cambia el estilo de icono de todos las marcas de centro existentes.
+       * En cambio, si la pretensión fuera empezar a dibujar marcas con
+       * distinto estilo de icono, habría que hacer:
+       *
+       * @example
+       *
+       * mapadjofer.options.icon = "otro_estilo";
+       *
+       * @param {String} estilo     El estilo deseado para el icono.
        */
-      this.Iconos = createIcons.call(this);
-      loadMap.call(this);
-      createMarker.call(this);
-   }
+      setIcon: function(estilo) {
+         const Icono = catalogo[estilo];
+         if(!Icono) throw new Error(`${estilo}: Estilo de icono desconocido`);
 
+         Icono.oneady(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
+         this.options.icon = estilo;
 
-   /**
-    * Agregar centros al mapa.
-    * @memberof MapaAdjOfer.prototype
-    *
-    * @param {String} estilo    Estilo del icono.
-    * @param {Object} datos     Datos en formato GeoJSON.
-    *
-    */
-   MapaAdjOfer.prototype.agregarCentros = function(estilo, datos) {
-      const Icon = this.Iconos[estilo];
-      Icon.onready((function() {
-         this.general = datos.features[0].properties;
-         // Capa intermedia capaz de leer objetos GeoJSON.
-         const layer = L.geoJSON(datos, {
-            pointToLayer: (f, p) => {
-               const centro = new this.Centro(p, {
-                  icon: new Icon(),
-                  title: f.properties.id.nom
+         return this;
+      },
+
+      /**
+       * Agregar centros al mapa.
+       *
+       * @param {String|Object} datos  Datos en formato GeoJSON o URL donde conseguirlos.
+       */
+      agregarCentros: function(datos) {
+         const Icono = catalogo[this.options.icon];
+         Icono.onready(() => {
+            if(typeof datos === "string") {  // Es una URL.
+               L.utils.load({
+                  url: datos,
+                  callback: xhr => {
+                     const datos = JSON.parse(xhr.responseText);
+                     this.agregarCentros(datos);
+                  }
+               });
+            }
+            else {
+               this.general = datos.features[0].properties;
+               // Capa intermedia capaz de leer objetos GeoJSON.
+               const layer = L.geoJSON(datos, {
+                  pointToLayer: (f, p) => {
+                     const centro = new this.Centro(p, {
+                        icon: new Icono(),
+                        title: f.properties.id.nom
+                     });
+
+                     // Issue #33
+                     // Para cada centro que creemos hay que añadir a los datos
+                     // la propiedad que indica si la marca está o no seleccionada.
+                     centro.on("dataset", e => e.target.changeData({sel: false}));
+
+                     // Issue #41
+                     if(this.options.light) centro.once("dataset", e => {
+                        centro.on("click", e => {
+                           this.seleccionado = this.seleccionado === e.target?null:e.target
+                        });
+                     });
+                     // Fin issue #41, #33
+
+                     return centro;
+                  },
+                  onEachFeature: (f, l) => {
+                     if(this.options.light) l.bindContextMenu(contextMenuCentro.call(this, l));
+                  }
                });
 
-               // Issue #33
-               // Para cada centro que creemos hay que añadir a los datos
-               // la propiedad que indica si la marca está o no seleccionada.
-               centro.on("dataset", e => e.target.changeData({sel: false}));
-
-               // Issue #41
-               if(this.light) centro.once("dataset", e => {
-                  centro.on("click", e => {
-                     this.cluster.seleccionado = this.cluster.seleccionado === e.target?null:e.target
-                  });
-               });
-               // Fin issue #41, #33
-
-               return centro;
-            },
-            onEachFeature: (f, l) => {
-               if(this.light) l.bindContextMenu(contextMenuCentro.call(this, l));
+               this.cluster.addLayer(layer);
+               this.fire("dataloaded");
             }
          });
+      },
+      /**
+       * Calcula la dirección postal del origen
+       */
+      calcularOrigen: function() {
+         if(!this.origen) return;
+         this.geoCodificar(this.origen.getLatLng());
+         this.once("addressset", e => {
+            if(typeof this.direccion === "string") this.origen.postal = this.direccion;
+         });
+         // Deshabilitamos inmediatamente en el menú contextual
+         // la entrada correspondiente a geolocalizar el origen.
+         if(this.options.light) {
+            this.origen.unbindContextMenu();
+            this.origen.bindContextMenu(contextMenuOrigen.call(this));
+         }
+      },
+      /**
+       * Establece el origen de los viajes.
+       *
+       * @param {L.LatLng} latlng  Coordenadas en las que fijarlo.
+       */
+      setOrigen: function(latlng) {
+         if(latlng) {
+            this.origen = new L.Marker(latlng, {
+               title: `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`
+            });
+            if(this.options.light) {
+               this.origen.bindContextMenu(contextMenuOrigen.call(this));
+            }
+         }
+         else this.origen = null;
+      },
+      /**
+       * Establece las isocronas referidas al origen
+       */
+      setIsocronas: function(a) {
+         this.isocronas = !!a;
+         if(a && this.options.light && this.origen) {
+            this.origen.unbindContextMenu();
+            this.origen.bindContextMenu(contextMenuOrigen.call(this));
+         }
+      },
+      /**
+       * Establece la ruta entre el origen y un centro
+       */
+      setRuta: function(centro) {
+         this.ruta = centro;
+         if(centro && this.options.light && this.origen) {
+            this.origen.unbindContextMenu();
+            this.origen.bindContextMenu(contextMenuOrigen.call(this));
+         }
+      },
+      geoCodificar: function(query) {
+         this.direccion = query
+      }
+   });
 
-         this.cluster.addLayer(layer);
-         this._events.forEach(func => func());
-      }).bind(this));
-   }
-
-
-   /**
-    * Cambia el estilo del icono.
-    * @memeberof MapaAdjOfer.prototype
-    *
-    * @param {String} estilo  Nuevo estilo para el icono.
-    */
-   MapaAdjOfer.prototype.cambiarIcono = function(estilo) {
-      const Icono = this.Iconos[estilo];
-      Icono.onready(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
-   }
-
-   /**
-    * Define una función que se ejecutará al acabar de agregar datos.
-    * @memeberof MapaAdjOfer.prototype
-    *
-    * @param {Function} func   La función.
-    */
-   MapaAdjOfer.prototype.lanzarTrasDatos = function(func) {
-      this._events.push(func);
-   }
-
-
-   /**
-    * Elimina todas las funciones que se disparan al acabar de agregar datos.
-    * @memberof MapaAdjOfer.prototype
-    */
-   MapaAdjOfer.prototype.flush = function() {
-      this._event.length = 0;
-   } 
 
    /**
     * Carga el mapa y crea la capa de cluster donde se agregan los centros.
-    * @this {MapAdjOfer} El objeto que implemnta el mapa
+    * @this {MapAdjOfer.prototype} El objeto que implemnta el mapa
     * @private
     */
    function loadMap() {
-      const options = {
-         center: [37.07, -6.27],
-         zoom: 9
+
+      const options = {},
+            nooptions = ["light", "ors", "id", "search", "icon"];
+
+      for(const name in this.options) {
+         if(nooptions.indexOf(name) !== -1) continue
+         options[name] = this.options[name];
       }
 
-      if(this.light) Object.assign(options, contextMenuMap.call(this));
+      if(this.options.light) Object.assign(options, contextMenuMap.call(this));
 
-      this.map = L.map(this._idmap, options);
-
+      this.map = L.map(this.options.id, options);
       this.map.zoomControl.setPosition('bottomright');
-
       this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -246,7 +290,6 @@ const MapaAdjOfer = (function() {
        * Capa donde se agregan las marcas
        * @memberof MapaAdjOfer.prototype
        * @type {L.MarkerClusterGroup}
-       *
        */
       this.cluster = L.markerClusterGroup({
          showCoverageOnHover: false,
@@ -256,16 +299,16 @@ const MapaAdjOfer = (function() {
          iconCreateFunction: L.utils.noFilteredIconCluster
       }).addTo(this.map);
 
-      if(this.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
+      if(this.options.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
 
       // Issue #27
-      crearAttrEvent.call(this.map, "origen", "originset");
-      crearAttrEvent.call(this.cluster, "seleccionado", "markerselect");
+      crearAttrEvent.call(this, "origen", "originset");
+      crearAttrEvent.call(this, "seleccionado", "markerselect");
       // Fin issue #27
 
       // Aplicación de issue #33: Cambiamos la marca
       // al seleccionarla o deseleccionarla.
-      this.cluster.on("markerselect", function(e) {
+      this.on("markerselect", function(e) {
          if(e.oldval) {
             e.oldval.changeData({sel: false});
             e.oldval.refresh();
@@ -276,123 +319,203 @@ const MapaAdjOfer = (function() {
          }
       });
 
-      // Fijar un origen, implica crear una marca sobre
-      // el mapa y destruir la antigua.
-      this.map.on("originset", function(e) {
-         if(e.oldval) e.oldval.removeFrom(this);
-         if(e.newval) e.newval.addTo(this);
+      // Al seleccionar/deseleccionar, hay que cambiar los
+      // menús contextuales de las marcas implicadas.
+      this.on("markerselect", e => {
+         if(!this.options.light) return;
+         for(const c of [e.oldval, e.newval]) {
+            if(c) {
+               c.unbindContextMenu();
+               c.bindContextMenu(contextMenuCentro.call(this, c));
+            }
+         }
       });
 
-      if(this.ors) {
-         this.ors = new ORS(this, this.ors);
+      // Fijar un origen, implica crear una marca sobre
+      // el mapa y destruir la antigua.
+      this.on("originset", e => {
+         if(e.oldval) e.oldval.removeFrom(this.map);
+         if(e.newval) e.newval.addTo(this.map);
+      });
+
+      if(this.options.ors) {
+         /**
+          * Objecto de acceso a los servicios de OpenRouteService.
+          * @memberof {MapAdjOfer.prototype}
+          * @type {ORS}
+          */
+         this.ors = ORS(this);
+         Object.defineProperty(this, "ors", {writable: false, configurable: false});
+
+         crearAttrEvent.call(this, "contador", "counteradd", 0);
+
          Object.defineProperties(this, {
-            _isocronas: {
-               value: undefined,
-               writable: true,
-               enumerable: false,
+            /** @lends MapAdjOfer.prototype */
+            "isocronas": {
+               get: function() {
+                  return this.ors.isocronas.areas;
+               },
+               set: function(value) {  // true crea isocronas; null las elimina.
+                  const old = this.isocronas,
+                        origen_old = this.ors.isocronas.calc.origem;
+                  if(value) {
+                     this.ors.isocronas.create().then((response) => {
+                        if(response || response === undefined) this.contador++;
+                        if(response !== null) { 
+                           this.fire("isochroneset", {oldval: old, newval: this.isocronas});
+                        }
+                     });
+                  }
+                  else {
+                     this.ors.isocronas.remove();
+                     this.fire("isochroneset", {oldval: old, newval: this.isocronas});
+                  }
+               },
+               enumerable: true,
                configurable: false
             },
             // Issue #46
-            _direccion: {
-               value: new this.ors.Geocode(),
-               writable: true,
-               enumerable: false,
+            "direccion": {
+               get: function() {
+                  return this.ors.geocode.value;
+               },
+               set: function(value) {  // Cadena con la dirección o coordenadas.
+                  const old = this.ors.geocode.value;
+                  if(value) {
+                     this.ors.geocode.query(value).then((response) => {
+                        if(response !== null) {
+                           this.contador++;
+                           this.fire("addressset", {oldval: old, newval: value});
+                        }
+                     });
+                  }
+                  else console.warn("No tiene sentido calcular con valor nulo una dirección");
+               },
+               enumerable: true,
                configurable: false
             },
             // Fin issue #46
             // Issue #47
-            _ruta: {
-               value: new this.ors.Ruta(),
-               writable: true,
-               enumerable: false,
+            "ruta": {
+               get: function() {
+                  return this.ors.ruta.value;
+               },
+               set: function(destino) {
+                  const old = this.ruta;
+                  if(destino) {
+                     this.ors.ruta.create(destino).then((response) => {
+                        if(response || response === undefined) this.contador++;
+                        if(response !== null) { 
+                           this.fire("routeset", {oldval: old, newval: this.ruta});
+                        }
+                     });
+                  }
+                  else {
+                     this.ors.ruta.remove();
+                     this.fire("routeset", {oldval: old, newval: this.ruta});
+                  }
+
+               },
+               enumerable: true,
                configurable: false
             }
             // Fin issue #47
          });
-         crearAttrEvent.call(this.map, "isocronas", "isochroneset");
-         crearAttrEvent.call(this.map, "direccion", "addressset");  // Issue #46
-         crearAttrEvent.call(this.map, "ruta", "routeset");
-         crearAttrEvent.call(this.map, "contador", "counteradd", 0);
-
-         this.map.on("isochroneset", e => {
-            if(e.newval) {
-               this.map.contador++;
-               this._isocronas.create();
-            }
-            else {
-               // Elimina las isocronas dibujadas al poner a null el valor.
-               if(e.oldval) this._isocronas.remove();
-            }
-            
-            const origen = this.map.origen;
-            if(origen && this.light) {
-               origen.unbindContextMenu();
-               origen.bindContextMenu(contextMenuOrigen.call(this));
+         
+         // modifica el menú contextual del origen.
+         this.on("isochroneset", e => {
+            if(this.options.light && this.origen) {
+               this.origen.unbindContextMenu();
+               this.origen.bindContextMenu(contextMenuOrigen.call(this));
             }
          });
 
          // Issue #46
-         this.map.on("originset", e => {
+         // Asociamos un evento "geocode" al momento en que
+         // averiguamos la dirección postal del origen.
+         this.on("originset", e => {
             if(!e.newval) return;
-            // Asociamos un evento "geocode" al momento en que
-            // averiguamos la dirección postal del origen.
             crearAttrEvent.call(e.newval, "postal", "geocode");
             // Incluimos la dirección como title y deshabilitamos
             // la posibilidad de obtenerla a través del menú contextual.
-            this.map.origen.on("geocode", e => {
-               this.map.origen.getElement().setAttribute("title", e.newval);
-               if(this.light) {
-                  this.map.origen.unbindContextMenu();
-                  this.map.origen.bindContextMenu(contextMenuOrigen.call(this));
+            e.newval.on("geocode", x => {
+               e.newval.getElement().setAttribute("title", x.newval);
+               if(this.options.light) {
+                  e.newval.unbindContextMenu();
+                  e.newval.bindContextMenu(contextMenuOrigen.call(this));
                }
             });
          });
 
-         this.map.on("addressset", e => { if(e.newval) this.map.contador++; });
+         // Elimina la isocrona al fijar un nuevo origen.
+         this.on("originset", e => this.setIsocronas(null));
          // Fin issue #46
 
          // Issue #47
-         this.map.on("routeset", e => {
-            if(e.newval) {
-               this.map.contador++;
-               this._ruta.create(e.newval);
-               e.newval.unbindContextMenu();
-               e.newval.bindContextMenu(contextMenuCentro.call(this, e.newval));
-            }
-            else this._ruta.remove();
+         this.on("routeset", e => {
+            if(!this.options.light) return;
 
+            if(e.newval) {
+               const destino = e.newval.destino;
+               destino.unbindContextMenu();
+               destino.bindContextMenu(contextMenuCentro.call(this, destino));
+            }
             if(e.oldval) {
-               e.oldval.unbindContextMenu();
-               e.oldval.bindContextMenu(contextMenuCentro.call(this, e.oldval));
+               const destino = e.oldval.destino;
+               destino.unbindContextMenu();
+               destino.bindContextMenu(contextMenuCentro.call(this, destino));
+            }
+            if(this.options.light && this.origen) {
+               this.origen.unbindContextMenu();
+               this.origen.bindContextMenu(contextMenuOrigen.call(this));
             }
          });
          // Al cambiar de origen, hay que cambiar los menús contextuales de
          // todas las marcas, ya que no tiene sentido la entrada de crear ruta.
-         this.map.on("originset", e=> {
-            if(this.map.ruta) this.map.ruta = null;
+         this.on("originset", e => {
+            if(this.ruta) this.setRuta(null);
+
+            if(!this.options.light) return;
             for(const c of this.Centro.store) {
                c.unbindContextMenu();
                c.bindContextMenu(contextMenuCentro.call(this, c));
             }
          });
-         // Al seleccionar/deseleccionar, hay que cambiar los
-         // menús contextuales de las marcas implicadas.
-         this.cluster.on("markerselect", e => {
-            for(const c of [e.oldval, e.newval]) {
-               if(c) {
-                  c.unbindContextMenu();
-                  c.bindContextMenu(contextMenuCentro.call(this, c));
-               }
-            }
-         });
          // Fin issue #47
-     }
+
+      }
 
    }
 
+   /**
+   Crea la clase de marca para los centros y le
+   * añade las correcciones y filtros definidos para ella.
+   * @this {MapAdjOfer} El objeto que implemnta el mapa
+   * @private
+   */
+   function createMarker() {
+      /**
+      * Clase de marca para los centros educativos.
+      * @memberof MapAdjOfer.prototype
+      * @type {Marker}
+      */
+      this.Centro = L.Marker.extend({
+       options: {
+          mutable: "feature.properties",
+          filter: this.cluster,
+          //filter: "filtered",
+          //filter: L.utils.grayFilter
+       }
+      });
+
+      createCorrections.call(this);
+      createFilters.call(this);
+   }
+
+
    // Issue #51
    function createSearchBar() {
-
+      // CodidoProvincial: Nombre del instituto
       const label = (d) => `${String(d.id.cp).substring(0,2)}: ${d.id.nom}`;
 
       const control = new L.Control.Search({
@@ -400,6 +523,7 @@ const MapaAdjOfer = (function() {
          textPlaceholder: "Busque por nombre",
          textErr: "No encontrado",
          initial: false,
+         // Así nos aseguramos que se ve la marca seleccionada.
          zoom: this.cluster.options.disableClusteringAtZoom,
          marker: false,
          minLength: 3,
@@ -416,12 +540,12 @@ const MapaAdjOfer = (function() {
          },
          filterData: (text, records)  => {
             const ret = {},
-                  pathData = this.Centro.prototype.options.mutable,
-                  coincidentes = new Fuse(
-                     this.cluster.getLayers(), {
-                        keys: [pathData + ".id.nom"],
-                        minMatchCharLength: 2,
-                     }).search(text);
+            pathData = this.Centro.prototype.options.mutable,
+            coincidentes = new Fuse(
+               this.cluster.getLayers(), {
+                  keys: [pathData + ".id.nom"],
+                  minMatchCharLength: 2,
+               }).search(text);
 
             for(const idx in coincidentes) {
                const data = coincidentes[idx].getData(),
@@ -431,6 +555,8 @@ const MapaAdjOfer = (function() {
                if(!centro) continue;
 
                ret[title] = centro;
+               // Encchufamos la marca del centro para tenerla
+               // disponible en el evento search:locationfound.
                centro.layer = coincidentes[idx];
             }
 
@@ -439,7 +565,7 @@ const MapaAdjOfer = (function() {
       });
 
       control.on("search:locationfound", e => {
-         this.cluster.seleccionado = e.layer;
+         this.seleccionado = e.layer;
          control.collapse();
       });
 
@@ -447,30 +573,119 @@ const MapaAdjOfer = (function() {
    }
    // Fin issue #51
 
-   /**
-     Crea la clase de marca para los centros y le
-    * añade las correcciones y filtros definidos para ella.
-    * @this {MapAdjOfer} El objeto que implemnta el mapa
-    * @private
-    */
-   function createMarker() {
-      /**
-       * Clase de marca para los centros educativos.
-       * @memberof MapAdjOfer.prototype
-       * @type {Marker}
-       */
-      this.Centro = L.Marker.extend({
-         options: {
-            mutable: "feature.properties",
-            filter: this.cluster,
-            //filter: "filtered",
-            //filter: L.utils.grayFilter
-         }
-      });
 
-      createCorrections.call(this);
-      createFilters.call(this);
+   /**
+   * Define el menú contextual del mapa.
+   * @this {MapAdjOfer}  El objeto del mapa de adjudicaciones.
+   */
+   function contextMenuMap() {
+      return {
+         contextmenu: true,
+         contextmenuItems: [
+            {
+               text: "Fijar origen de viaje",
+               callback: e => this.setOrigen(e.latlng)
+            },
+            {
+               text: "Centrar el mapa aquí",
+               callback: e => this.map.panTo(e.latlng)
+            },
+            "-",
+            {
+               text: "Ampliar escala",
+               icon: path + "/maps/adjofer/images/zoom-in.png",
+               callback: e => this.map.zoomIn()
+            },
+            {
+               text: "Reducir escala",
+               icon: path + "/maps/adjofer/images/zoom-out.png",
+               callback: e => this.map.zoomOut()
+            }
+         ]
+      }
    }
+
+
+   /**
+   * Define el menú contextual del punto de origen
+   * @this {MapAdjOfer}  El objeto del mapa de adjudicaciones.
+   *
+   * @param {String} espera  Cuál es la acción por la que se está esperando.
+   */
+   function contextMenuOrigen() {
+      const items = [
+         {
+            text: "Geolocalizar este origen",
+            disabled: !!this.origen.postal || this.ors.espera.indexOf("geocode") !== -1,
+            callback: e => this.calcularOrigen()
+         },
+         {
+            text: "Eliminar este origen",
+            callback: e => this.setOrigen(null)
+         }
+      ];
+
+      if(this.isocronas) {
+         items.push({
+            text: "Eliminar isocronas",
+            callback: e => this.setIsocronas(null)
+         });
+      }
+      else {
+         items.push({
+            text: "Generar isocronas",
+            disabled: this.ors.espera.indexOf("isocronas") !== -1,
+            callback: e => this.setIsocronas(true)
+         });
+      }
+
+      if(this.ruta || this.ors.espera.indexOf("isocronas") !== -1) {
+         items.push({
+            text: "Eliminar ruta",
+            disabled: this.ors.espera.indexOf("isocronas") !== -1,
+            callback: e => this.setRuta(null)
+         });
+      }
+
+      return {
+         contextmenu: true,
+         contextmenuInheritItems: false,
+         contextmenuItems: items
+      }
+   }
+
+   function contextMenuCentro(marker) {
+
+      const seleccion = this.seleccionado !== marker,
+            texto = (seleccion?"Seleccionar":"Deseleccionar") + " el centro",
+            items = [
+               {
+                  text: texto,
+                  callback: e => this.seleccionado = (seleccion?marker:null)
+               }
+            ]
+
+      if(this.ruta.destino === marker) {
+         items.push({
+            text: "Eliminar la ruta",
+            callback: e => this.setRuta(null)
+         });
+      }
+      else {
+         items.push({
+            text: "Crear ruta desde el origien",
+            disabled: !this.origen,
+            callback: e => this.setRuta(marker)
+         });
+      }
+
+      return {
+         contextmenu: true,
+         contextmenuInheritItems: false,
+         contextmenuItems: items
+      }
+   }
+
 
    /**
     * Registra las correcciones disponibles.
@@ -775,7 +990,8 @@ const MapaAdjOfer = (function() {
          }
       });
 
-      this.map.on("isochroneset", e => {
+      // Al eliminar las isocronas, desaplicamos el filtro lejos.
+      this.on("isochroneset", e => {
          if(!e.newval && this.Centro.hasFilter("lejos")) {
             this.Centro.unfilter("lejos");
             this.Centro.invoke("refresh");
@@ -785,11 +1001,9 @@ const MapaAdjOfer = (function() {
 
 
    /**
-    * Define los distintos tipos de iconos disponibles
-    * @this {MapAdjOfer} El objeto que implemnta el mapa
-    * @private
+    * Define el catálogo de iconos disponibles
     */
-   function createIcons() {
+   const catalogo = (function () {
       // Los dos iconos CSS comparten todo, excepto el estilo CSS.
       const converterCSS = new L.utils.Converter(["numvac", "tipo"])
                                  .define("tipo", "mod.tipo", t => t || "normal")
@@ -937,7 +1151,7 @@ const MapaAdjOfer = (function() {
          piolin: L.utils.createMutableIconClass("piolin", {
             iconSize: null,
             iconAnchor: [12.5, 34],
-            css:  this._path + "/maps/adjofer/icons/piolin.css",
+            css:  path + "/maps/adjofer/icons/piolin.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -945,7 +1159,7 @@ const MapaAdjOfer = (function() {
          chupachups: L.utils.createMutableIconClass("chupachups", {
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
-            css:  this._path + "/maps/adjofer/icons/chupachups.css",
+            css:  path + "/maps/adjofer/icons/chupachups.css",
             html: html,
             converter: converterCSS,
             updater: updaterCSS
@@ -953,7 +1167,7 @@ const MapaAdjOfer = (function() {
          solicitud: L.utils.createMutableIconClass("solicitud", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  this._path + "/maps/adjofer/icons/solicitud.svg",
+            url:  path + "/maps/adjofer/icons/solicitud.svg",
             converter: converterSol,
             updater: function(o) {
                var text = this.querySelector("text");
@@ -968,134 +1182,38 @@ const MapaAdjOfer = (function() {
          boliche: L.utils.createMutableIconClass("boliche", {
             iconSize: [40, 40],
             iconAnchor: [19.556, 35.69],
-            url:  this._path + "/maps/adjofer/icons/boliche.svg",
+            url:  path + "/maps/adjofer/icons/boliche.svg",
             converter: converterBol,
             updater: updaterBoliche,
          }),
       }
-   }
+   })();
 
-   function contextMenuMap() {
-      return {
-         contextmenu: true,
-         contextmenuItems: [
-            {
-               text: "Fijar origen de viaje",
-               callback: e => {
-                  this.map.origen = new L.Marker(e.latlng, {
-                     title: `${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`
-                  });
-                  this.map.origen.bindContextMenu(contextMenuOrigen.call(this));
-               }
-            },
-            {
-               text: "Centrar el mapa aquí",
-               callback: function(e) { this.panTo(e.latlng); }
-            },
-            "-",
-            {
-               text: "Ampliar escala",
-               icon: this._path + "/maps/adjofer/images/zoom-in.png",
-               callback: function(e) { this.zoomIn(); }
-            },
-            {
-               text: "Reducir escala",
-               icon: this._path + "/maps/adjofer/images/zoom-out.png",
-               callback: function(e) { this.zoomOut(); }
-            }
-         ]
-      }
-   }
+   const ORS = (function (adjofer) {
 
-   function contextMenuOrigen(espera) {
-      const items = [
-         {
-            text: "Geolocalizar este origen",
-            disabled: !!this.map.origen.postal,
-            callback: e => {
-               this._direccion.query(this.map.origen.getLatLng());
-               this.map.origen.postal = true;
-               this.map.once("addressset", e => {
-                  if(typeof e.newval === "string") this.map.origen.postal = e.newval;
-               });
-            }
-         },
-         {
-            text: "Eliminar este origen",
-            callback: e => this.map.origen = null
+      const URLBase = "https://api.openrouteservice.org",
+            ors = adjofer.options.ors,
+            espera = [];
+
+      espera.remove = function(value) {
+         const idx = this.indexOf(value);
+         if(idx !== -1) {
+            this.splice(idx, 1)
+            return true;
          }
-      ];
-
-      if(espera) {
-         items.push({
-            text: "Generar isocronas",
-            disabled: true
-         });
+         return false;
       }
-      else if(this.map.isocronas) {
-         items.push({
-            text: "Eliminar isocronas",
-            callback: e => this.map.isocronas = null
-         });
-      }
-      else {
-         items.push({
-            text: "Generar isocronas",
-            callback: e => {
-               this._isocronas = this._isocronas || new this.ors.Isocronas();
-               this.map.isocronas = true;
-               this.map.origen.unbindContextMenu();
-               this.map.origen.bindContextMenu(contextMenuOrigen.call(this, true));
-            }
-         });
-      }
-
-      return {
-         contextmenu: true,
-         contextmenuInheritItems: false,
-         contextmenuItems: items
-      }
-   }
-
-   function contextMenuCentro(marker) {
-
-      const seleccion = this.cluster.seleccionado !== marker,
-            texto = (seleccion?"Seleccionar":"Deseleccionar") + " el centro",
-            items = [
-               {
-                  text: texto,
-                  callback: e => this.cluster.seleccionado = (seleccion?marker:null)
-               }
-            ]
-
-      if(this.map.ruta === marker) {
-         items.push({
-            text: "Eliminar la ruta",
-            callback: e => this.map.ruta = null
-         });
-      }
-      else if(this.map.origen) {
-         items.push({
-            text: "Crear ruta desde el origien",
-            callback: e => this.map.ruta = marker
-         });
-      }
-
-      return {
-         contextmenu: true,
-         contextmenuInheritItems: false,
-         contextmenuItems: items
-      }
-   }
-
-   // Servicios de OpenRouteService
-   const ORS = (function (adjofer, ors) {
-
-      const URLBase = "https://api.openrouteservice.org";
 
       function failback(xhr) {
          const response = JSON.parse(xhr.responseText);
          console.error("Error " + response.error.code + ": " + response.error.message);
+      }
+
+      function ORS() {
+         this.espera = espera;
+         this.isocronas = new Isocronas();
+         this.ruta = new Ruta();
+         this.geocode = new Geocode();
       }
 
       const Isocronas = (function() {
@@ -1111,11 +1229,16 @@ const MapaAdjOfer = (function() {
             intersections: false,
          }
 
-         // Para la interrupción del cálculo de las isocronas.
+         // Para la interrupción del cálculo de las
+         // isocronas. cuando se demora mucho su cálculo.
          const isocronas = {
             interval: 200,
             delay: 50
          }
+
+         // Colocamos las isocronas por debajo de 400, para que siempre
+         // queden por debajo de otros polígonos y segmentos (como las rutas).
+         adjofer.map.createPane("isochronePane").style.zIndex = 390;
 
          function Isocronas(opts) {
             try {
@@ -1128,10 +1251,6 @@ const MapaAdjOfer = (function() {
             this.options = Object.assign({}, defaults);
             this.setOptions(opts);
 
-            // Colocamos las isocronas por debajo de 400, para que siempre
-            // queden por debajo de otros polígonos y segmentos (como las rutas).
-            adjofer.map.createPane("isochronePane").style.zIndex = 390;
-
             this.layer = L.geoJSON(undefined, {
                style: f => new Object({
                               color: rgb2hex(HSLtoRGB(f.properties.ratio, .75, .30)),
@@ -1143,25 +1262,11 @@ const MapaAdjOfer = (function() {
                pane: "isochronePane"
             });
 
-            Object.defineProperties(this, {
-               "done": {
-                  value: false,
-                  writable: true,
-                  enumerable: false,
-                  configurable: false
-               },
-               // Converva el último cálculo de isocronas,
-               // por si se pide unas nuevas con el mismo origen,
-               "calc": {
-                  value: {origen: null, areas: null},
-                  writable: false,
-                  enumerable: false,
-                  configurable: false
-               }
-            });
+            addDescriptor(this, "areas", false, true);  //false: no hecha, null: en proceso.
+            // Resultado del último cálculo, por si se piden
+            // otra vez las isocronas definidas por el mismo origen.
+            addDescriptor(this, "calc", {origen: null, areas: null}, false);
 
-            // Elimina la isocrona al fijar un nuevo origen.
-            adjofer.map.on("originset", e => { adjofer.map.isocronas = null });
          }
 
          Isocronas.prototype.setOptions = function(opts) {
@@ -1174,55 +1279,61 @@ const MapaAdjOfer = (function() {
 
          /**
           * Crea las isocronas, en principio tomando como referencia la marca de origen.
+          * Es función asíncrona cuya promesa devuelve ``null`` si ya había otra petición
+          * en curso; ``false``, si se recuperaron las últimas isocronas, ``true``, si
+          * se generaron unas nuevas; e ``undefined`, si se produjo un error.
           *
           * @param {Function} callback  Función que se ejecutará al generarse las
           * isocronas sobre el mapa.
           */
-         Isocronas.prototype.create = function() {
-            if(this.done) this.remove();
+         Isocronas.prototype.create = async function() {
+            if(this.areas) this.remove();
             
-            // Si repetimos origen, entonces rescatamos las isocronas calculadas.
-            if(mismoPunto(adjofer.map.origen, this.calc.origen)) {
-               redibujarAnillos.call(this);
-               this.layer.addTo(adjofer.map);
-               this.done = true;
-               if(adjofer.light) {
-                  adjofer.map.origen.unbindContextMenu();
-                  adjofer.map.origen.bindContextMenu(contextMenuOrigen.call(adjofer));
+            return new Promise((resolve, reject) => {
+               if(this.areas === null) {
+                  resolve(null);
+                  return;
                }
-               return this;
-            }
-            else this.calc.origen = this.calc.areas = null;
 
-            let point  = adjofer.map.origen.getLatLng(),
-                params = Object.assign({locations: [[point.lng, point.lat]]},
-                                        this.options);
+               espera.push("isocronas");
 
-            if(ors.loading) ors.loading("isocronas");
-            L.utils.load({
-               url: url + "/" + params.profile,
-               headers: { Authorization: ors.key },
-               contentType: "application/json; charset=UTF-8",
-               params: params,
-               callback: crearIsocronas.bind(this),
-               failback: failback
+               // Si repetimos origen, entonces rescatamos las isocronas calculadas.
+               if(mismoPunto(adjofer.origen, this.calc.origen)) {
+                  redibujarAnillos.call(this);
+                  this.layer.addTo(adjofer.map);
+                  this.areas = this.calc.areas;
+                  resolve(false);
+                  return;
+               }
+               else this.areas = this.calc.origen = this.calc.areas = null;
+
+               let point  = adjofer.origen.getLatLng(),
+                   params = Object.assign({locations: [[point.lng, point.lat]]},
+                                           this.options);
+
+               if(ors.loading) ors.loading("isocronas");
+               L.utils.load({
+                  url: url + "/" + params.profile,
+                  headers: { Authorization: ors.key },
+                  contentType: "application/json; charset=UTF-8",
+                  params: params,
+                  callback: xhr => {
+                     crearIsocronas.call(this, xhr).then(() => {
+                        espera.remove("isocronas");
+                        resolve(true);
+                     });
+                  },
+                  failback: xhr => { 
+                     failback();
+                     espera.remove("isocronas");
+                     resolve(undefined);
+                  }
+               });
             });
-
-            return this;
          }
 
-         /**
-          * Elimina las isocronas.
-          */
-         Isocronas.prototype.remove = function() {
-            if(!this.done) return false;
-            this.layer.clearLayers();
-            this.layer.removeFrom(adjofer.map);
-            this.done = null;
-            return this;
-         }
 
-         function crearIsocronas(xhr) {
+         async function crearIsocronas(xhr) {
             if(ors.loading) ors.loading("isocronas");
 
             const started = (new Date()).getTime();
@@ -1232,65 +1343,69 @@ const MapaAdjOfer = (function() {
             const data = JSON.parse(xhr.responseText);
             this.layer.addTo(adjofer.map);
 
-            // La ejecución a intervalos se ha tomado del codigo de Leaflet.markercluster
-            let i=0;
-            const process = () => {
-               const start = (new Date()).getTime();
-               for(; i<data.features.length; i++) {
-                  const lapso = (new Date()).getTime() - start;
+            return new Promise(resolve => {
+               // La ejecución a intervalos se ha tomado del codigo de Leaflet.markercluster
+               let i=0;
+               const process = () => {
+                  const start = (new Date()).getTime();
+                  for(; i<data.features.length; i++) {
+                     const lapso = (new Date()).getTime() - start;
 
-                  // Al superar el intervalo, rompemos el bucle y
-                  // liberamos la ejecución por un breve periodo.
-                  if(ors.chunkProgress && lapso > isocronas.interval) break;
+                     // Al superar el intervalo, rompemos el bucle y
+                     // liberamos la ejecución por un breve periodo.
+                     if(ors.chunkProgress && lapso > isocronas.interval) break;
 
-                  const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
-                                 Object.assign({}, data.features[0]);
+                     const anillo = i>0?turf.difference(data.features[i], data.features[i-1]):
+                                    Object.assign({}, data.features[0]);
 
-                  // turf hace que anillo y data.features[i] compartan properties,
-                  // pero se necesita que sean objetos diferentes para que uno tenga
-                  // la propiedad area y el otro no.
-                  anillo.properties = Object.assign({}, data.features[i].properties, {
-                     ratio:  1 - i/data.features.length,
-                     area: data.features[i]  // Las área macizas sirven para filtrado.
-                  });
-                  data.features[i].properties.ratio = anillo.properties.ratio;
+                     // turf hace que anillo y data.features[i] compartan properties,
+                     // pero se necesita que sean objetos diferentes para que uno tenga
+                     // la propiedad area y el otro no.
+                     anillo.properties = Object.assign({}, data.features[i].properties, {
+                        ratio:  1 - i/data.features.length,
+                        area: data.features[i]  // Las área macizas sirven para filtrado.
+                     });
+                     data.features[i].properties.ratio = anillo.properties.ratio;
 
-                  this.layer.addData(anillo);
-               }
-
-               if(ors.chunkProgress) ors.chunkProgress(i, data.features.length,
-                                                       (new Date().getTime() - started));
-
-               if(i === data.features.length) {
-                  this.done = true;
-                  this.calc.origen = adjofer.map.origen;
-                  this.calc.areas = this.layer.getLayers();
-                  if(adjofer.light) {
-                     // Durante la generación se deshabilitó la entrada del menú contextual.
-                     // Ahora se habilita poniendo "Eliminar isocronas".
-                     adjofer.map.origen.unbindContextMenu();
-                     adjofer.map.origen.bindContextMenu(contextMenuOrigen.call(adjofer));
+                     this.layer.addData(anillo);
                   }
+
+                  if(ors.chunkProgress) ors.chunkProgress(i, data.features.length,
+                                                          (new Date().getTime() - started));
+
+                  if(i === data.features.length) {
+                     this.calc.origen = adjofer.origen;
+                     this.areas = this.calc.areas = this.layer.getLayers();
+                     resolve();
+                  }
+                  else setTimeout(process, isocronas.delay);
                }
-               else setTimeout(process, isocronas.delay);
-            }
-            process();
+               process();
+            });
          }
 
-         function mismoPunto(x, y) {
-            if(x === null || y === null) return false;
-            x = x.getLatLng();
-            y = y.getLatLng();
-            return x.lat === y.lat && x.lng === y.lng;
+
+         /**
+          * Elimina las isocronas.
+          */
+         Isocronas.prototype.remove = function() {
+            if(!this.areas) return false;
+            this.layer.clearLayers();
+            this.layer.removeFrom(adjofer.map);
+            this.areas = false;
+            return this;
          }
+
 
          function contextMenuArea(area) {
+            // Los anillos tienen entre sus propiedades el área maciza,
+            // pero las áreas macizas, no tienen área alguna.
             const es_anillo = !!area.feature.properties.area;
 
             const items = [
                {
                   text: "Eliminar isocronas",
-                  callback: e => adjofer.map.isocronas = null,
+                  callback: e => adjofer.setIsocronas(null),
                   index: 0,
                }
             ]
@@ -1339,8 +1454,13 @@ const MapaAdjOfer = (function() {
             for(const a of this.calc.areas) this.layer.addLayer(a);
          }
 
+         //TODO:: Falta definir una API para poder acceder cómodamente a las áreas
+         // y las áreas macizas, a fin de poder cómodamente en la interfaz virtual
+         // lo que se ha hecho aquí con el menú contextual.
+
          return Isocronas;
       })();
+
 
       // Issue #46
       const Geocode = (function() {
@@ -1353,14 +1473,9 @@ const MapaAdjOfer = (function() {
 
          function Geocode(opts) {
             this.options = Object.assign({api_key: ors.key}, defaults);
-            this.setOptions(opts || {});
+            this.setOptions(opts);
 
-            Object.defineProperty(this, "ready", {
-               value: false,
-               writable: true,
-               enumerable: false,
-               configurable: false
-            });
+            addDescriptor(this, "value", false, true);
          }
 
          Geocode.prototype.setOptions = function(opts) {
@@ -1375,39 +1490,48 @@ const MapaAdjOfer = (function() {
           * @param {String, L.LatLng} data  Los datos de la consulta.
           *
           */
-         Geocode.prototype.query = function(data) {
-            if(this.ready === null) throw new Error("Hay otra petición en curso");
-            else this.ready = null;
-
-            if(ors.loading) ors.loading("geocodificacion");
-
-            let furl, params;
-            if(typeof data === "string") { // Es una dirección.
-               furl = url + "/search";
-               params = Object.assign({text: data}, this.options);
-            }
-            else {  // Es una coordenada.
-               furl = url + "/reverse";
-               params = Object.assign({"point.lon": data.lng, "point.lat": data.lat}, this.options);
-            }
-
-            L.utils.load({
-               url: furl,
-               method: "GET",
-               params: params,
-               callback: (xhr) => {
-                  if(ors.loading) ors.loading("geocode");
-                  this.ready = true;
-                  const response = JSON.parse(xhr.responseText),
-                        parser = typeof data === "string"?obtenerCoordenadas:obtenerDireccion;
-                  adjofer.map.direccion = parser(response, data);
-               },
-               failback: (xhr) => {
-                  if(ors.loading) ors.loading("geocode");
-                  failback(xhr);
-                  this.address = false;
-                  adjofer.map.direccion = JSON.parse(xhr.responseText).error;
+         Geocode.prototype.query = async function(data) {
+            return new Promise((resolve, reject) => {
+               if(this.value === null) {
+                  resolve(null);
+                  return;
                }
+
+               this.value = null;
+               espera.push("geocode");
+
+               if(ors.loading) ors.loading("geocodificacion");
+
+               let furl, params;
+               if(typeof data === "string") { // Es una dirección.
+                  furl = url + "/search";
+                  params = Object.assign({text: data}, this.options);
+               }
+               else {  // Es una coordenada.
+                  furl = url + "/reverse";
+                  params = Object.assign({"point.lon": data.lng, "point.lat": data.lat}, this.options);
+               }
+
+               L.utils.load({
+                  url: furl,
+                  method: "GET",
+                  params: params,
+                  callback: xhr => {
+                     if(ors.loading) ors.loading("geocode");
+                     const response = JSON.parse(xhr.responseText),
+                           parser = typeof data === "string"?obtenerCoordenadas:obtenerDireccion;
+                     this.value = parser(response, data);
+                     espera.remove("geocode");
+                     resolve(true);
+                  },
+                  failback: xhr => {
+                     if(ors.loading) ors.loading("geocode");
+                     failback(xhr);
+                     this.value = JSON.parse(xhr.responseText).error;
+                     espera.remove("geocode");
+                     resolve(undefined);
+                  }
+               });
             });
          }
 
@@ -1425,6 +1549,7 @@ const MapaAdjOfer = (function() {
             return data.features;
          }
 
+
          return Geocode;
       })();
       // Fin issue #46
@@ -1438,7 +1563,121 @@ const MapaAdjOfer = (function() {
             profile: "driving-car"
          }
 
-         function crearPopup(marker, ruta) {
+         function Ruta(opts) {
+            this.options = Object.assign({api_key: ors.key}, defaults);
+            this.setOptions(opts);
+
+            this.layer = L.geoJSON(undefined, {
+               style: f => new Object({
+                              color: "#77f",
+                              weight: 5,
+                              opacity: 0.9
+                           }),
+               onEachFeature: (f, l) => {
+                  l.bindPopup((ors.rutaPopup || crearPopup)(this.calc.destino, f));
+               }
+            });
+
+            addDescriptor(this, "value", false, true); // value= {polininea, destino}
+            addDescriptor(this, "calc", {origen: null,
+                                         destino: null,
+                                         polilinea: null}, true);
+         }
+
+         Ruta.prototype.setOptions = function(opts) {
+            Object.assign(this.options, opts);
+         }
+
+         Ruta.prototype.create = async function(destino) {
+            if(this.value) this.remove();
+
+            return new Promise((resolve, reject) => {
+               if(this.value === null) {
+                  resolve(null);
+                  return;
+               }
+
+               if(mismoPunto(adjofer.origen, this.calc.origen) &&
+                  mismoPunto(destino, this.calc.destino)) {
+
+                  dibujarRuta.call(this);
+                  this.layer.addTo(adjofer.map);
+                  this.value = {
+                     polilinea: this.calc.polilinea,
+                     destino: this.calc.destino
+                  }
+                  resolve(false);
+                  return;
+               }
+
+               espera.push("rutas");
+
+               this.value = this.calc.destino = this.calc.polilinea = null;
+               this.calc.origen = adjofer.origen;
+
+               const origen = adjofer.origen.getLatLng(),
+                     fin    = destino.getLatLng(),
+                     params = Object.assign({
+                                 start: origen.lng + "," + origen.lat,
+                                 end: fin.lng + "," + fin.lat,
+                              }, this.options),
+                     furl = url + "/" + params.profile;
+
+               delete params.profile;
+               
+               if(ors.loading) ors.loading("ruta");
+               L.utils.load({
+                  url: furl,
+                  method: "GET",
+                  params: params,
+                  callback: xhr => { 
+                     crearRuta.call(this, xhr, destino);
+                     espera.remove("rutas");
+                     resolve(true);
+                  },
+                  failback: xhr => {
+                     failback(xhr);
+                     espera.remove("rutas");
+                     resolve(undefined);
+                  }
+               });
+            });
+         }
+
+         function crearRuta(xhr, destino) {
+            if(ors.loading) ors.loading("ruta");
+
+            const data = JSON.parse(xhr.responseText);
+            this.calc.destino = destino;
+            this.calc.origen = adjofer.origen;
+            this.calc.polilinea = data;
+            this.value = {polilinea: data, destino: destino};
+
+            dibujarRuta.call(this);
+         }
+
+         function dibujarRuta() {
+            const ruta = this.calc.polilinea,
+                  coords = ruta.features[0].geometry.coordinates,
+                  point  = coords[Math.floor(.9*coords.length)];
+
+            this.layer.addTo(adjofer.map);
+            this.layer.addData(ruta);
+
+            const layer = this.layer.getLayers()[0];
+            layer.openPopup({lat: point[1], lng: point[0]});
+         }
+
+         Ruta.prototype.remove = function() {
+            if(!this.value) return false;
+
+            this.layer.clearLayers();
+            this.layer.removeFrom(adjofer.map);
+            this.value = false;
+            return this;
+         }
+
+         function crearPopup(destino, ruta) {
             const container = document.createElement("article"),
                   distancia = Math.floor(ruta.properties.summary.distance / 1000),
                   tiempo = (function(t) {  // Pasa segundos a horas y minutos.
@@ -1453,7 +1692,7 @@ const MapaAdjOfer = (function() {
 
             let e = document.createElement("h3");
 
-            e.textContent = marker.getData().id.nom;
+            e.textContent = destino.getData().id.nom;
             container.appendChild(e);
 
             let ul = document.createElement("ul"),
@@ -1478,135 +1717,20 @@ const MapaAdjOfer = (function() {
             return container;
          }
 
-         function Ruta(opts) {
-            this.options = Object.assign({api_key: ors.key}, defaults);
-            this.setOptions(opts || {});
-
-            this.layer = L.geoJSON(undefined, {
-               style: f => new Object({
-                              color: "#77f",
-                              weight: 5,
-                              opacity: 0.9
-                           }),
-               onEachFeature: (f, l) => {
-                  l.bindPopup(crearPopup(this.marker, f));
-               }
-            });
-
-            Object.defineProperty(this, "marker", {
-               value: null,
-               writable: true,
-               enumerable: false,
-               configurable: false
-            });
-         }
-
-         Ruta.prototype.setOptions = function(opts) {
-            Object.assign(this.options, opts);
-         }
-
-         Ruta.prototype.create = function(marker) {
-            const origen = adjofer.map.origen.getLatLng(),
-                  fin    = marker.getLatLng(),
-                  params = Object.assign({
-                              start: origen.lng + "," + origen.lat,
-                              end: fin.lng + "," + fin.lat,
-                           }, this.options),
-                  furl = url + "/" + params.profile;
-
-            delete params.profile;
-            
-            this.remove();
-
-            if(ors.loading) ors.loading("ruta");
-            L.utils.load({
-               url: furl,
-               method: "GET",
-               params: params,
-               callback: crearRuta.bind(this, marker),
-               failback: failback
-            });
-
-            return this;
-         }
-
-         function crearRuta(marker, xhr) {
-            if(ors.loading) ors.loading("isocronas");
-
-            const data = JSON.parse(xhr.responseText);
-            this.marker = marker;
-
-            this.layer.addTo(adjofer.map);
-            this.layer.addData(data);
-            
-            const ruta   = this.layer.getLayers()[0],
-                  coords = ruta.feature.geometry.coordinates,
-                  point  = coords[Math.floor(.9*coords.length)];
-
-            ruta.openPopup({lat: point[1], lng: point[0]});
-         }
-
-         Ruta.prototype.remove = function() {
-            if(!this.marker) return false;
-
-            this.layer.clearLayers();
-            this.layer.removeFrom(adjofer.map);
-            this.marker = null;
-            return this;
-         }
-
          return Ruta;
       })();
       // Fin issue #47
 
-      const ret = {
-         Isocronas: Isocronas,
-         Geocode: Geocode,
-         Ruta: Ruta,
+
+      function mismoPunto(x, y) {
+         if(x === null || y === null) return false;
+         x = x.getLatLng();
+         y = y.getLatLng();
+         return x.lat === y.lat && x.lng === y.lng;
       }
 
-      return ret;
-
+      return new ORS();
    });
 
-   // Algunas funciones relacionadas con el color
-
-   // Obtiene una gama de colores RGB distinguibles entre sí.
-   // En principio, si se desea obtener 4 colores, habrá que pasar:
-   // como ratio 1/4, 2/4, 3/4 y 4/4.
-   function HSLtoRGB(h, s, l) {
-      s = s || .65;
-      l = l || .45;
-
-      var r, g, b;
-
-      if(s == 0){
-         r = g = b = l;
-      }
-      else {
-         function hue2rgb(p, q, t) {
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-         }
-
-         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-         var p = 2 * l - q;
-         r = hue2rgb(p, q, h + 1/3);
-         g = hue2rgb(p, q, h);
-         b = hue2rgb(p, q, h - 1/3);
-      }
-
-      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-   }
-
-   // Convierte un array de tres enteros (RGB) en notación hexadecimal.
-   function rgb2hex(rgb) {
-      return "#" + rgb.map(dec => ("0" + dec.toString(16)).slice(-2)).join("");
-   }
-
-   return MapaAdjOfer;
-})();
+   return new MapAdjOfer(opts);
+});
