@@ -6,19 +6,19 @@ var g;
 var menuCorrecciones = [];
 
 window.onload = function() {
-   g = new MapaAdjOfer("map", {
-      path: "../../dist",
-      light: true,
-      search: true,
+   g = mapAdjOfer( "../../dist", {
+      zoom: 8,
+      center: [37.45, -4.5],
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
          loading: cargaDatos,
          chunkProgress: progresaIsocronas
       }
    });
-   g.lanzarTrasDatos(function(){
-      //Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos. Esto es útil tras cambiar de especialidad sobre todo
-      g.cluster.seleccionado = null;
+   g.on("dataloaded", function(){
+      // Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos.
+      // Esto es útil tras cambiar de especialidad sobre todo
+      g.seleccionado = null;
       ocultarInfoCentro();
 
       //Lo primero que haremos tras cargar los datos será cargar las correcciones oportunas
@@ -26,7 +26,7 @@ window.onload = function() {
    });
 
    //En el momento en el que se seleccione uno de los centros
-   g.cluster.on("markerselect", function(e) {
+   g.on("markerselect", function(e) {
       if(e.newval){
          //Mostramos la barra si estaba oculta
          displaySidebar();
@@ -65,8 +65,6 @@ window.onload = function() {
       if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
    }
 
-   x = g;
-
    // Cuando el usuario seleccione una especialidad, se cargarán los datos y se ocultará el selector
    poblarSelectores();
    
@@ -95,8 +93,8 @@ window.onload = function() {
       }
 
       //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
-      if (g.cluster.seleccionado !== null){
-         displayInfoCentro(g.cluster.seleccionado);
+      if (g.seleccionado !== null){
+         displayInfoCentro(g.seleccionado);
       }
    });
 
@@ -177,7 +175,6 @@ function filtrarCentrosSinOferta(mostrar){
 
 function poblarSelectores() {
    //Deberíamos cargar esta variable desde otro sitio, ya que no debería poder cambiarlo
-   const selectEstilo = "boliche";
    const inputEsp = document.getElementById("esp_selected");
    const opts = Array.from(document.querySelectorAll("#especialidades>option"));
 
@@ -192,14 +189,8 @@ function poblarSelectores() {
 
          g.cluster.clearLayers();
          g.Centro.reset();
-         L.utils.load({
-            url: `../../json/${this.value}.json`,
-            callback: function(xhr) {
-               const centros = JSON.parse(xhr.responseText);
-               g.agregarCentros(selectEstilo, centros);
-            }
-         });
-
+         g.setRuta(null);
+         g.agregarCentros(`../../json/${this.value}.json`);
          this.value = "";
       }
       else this.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
