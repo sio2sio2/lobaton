@@ -144,7 +144,7 @@ const mapAdjOfer = (function(path, opts) {
          const Icono = catalogo[estilo];
          if(!Icono) throw new Error(`${estilo}: Estilo de icono desconocido`);
 
-         Icono.oneady(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
+         Icono.onready(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
          this.options.icon = estilo;
 
          return this;
@@ -1006,7 +1006,7 @@ const mapAdjOfer = (function(path, opts) {
    const catalogo = (function () {
       // Los dos iconos CSS comparten todo, excepto el estilo CSS.
       const converterCSS = new L.utils.Converter(["numvac", "tipo"])
-                                 .define("tipo", "mod.tipo", t => t || "normal")
+                                 .define("tipo", "mod.dif", t => t || "normal")
                                  .define("numvac", "adj", a => a.total !== undefined?a.total:a.length);
 
       const html = document.querySelector("template").content;
