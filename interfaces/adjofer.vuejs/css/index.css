@@ -196,18 +196,6 @@ body, html, #map {
     }
 }
 
-.leaflet-message {
-   position: absolute;
-   top: 50%;
-   left: 50%;
-   transform: translate(-50%, -50%);
-}
-
-.leaflet-popup article ul {
-   list-style: none;
-   padding-left: 1.5em;
-}
-
 .leaflet-popup h3 {
    font-size: large;
 }

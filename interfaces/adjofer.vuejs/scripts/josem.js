@@ -11,10 +11,9 @@ window.onload = function() {
       center: [37.45, -4.5],
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
-         loading: cargaDatos,
-         chunkProgress: progresaIsocronas
       }
    });
+
    g.on("dataloaded", function(){
       // Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos.
       // Esto es útil tras cambiar de especialidad sobre todo
@@ -39,32 +38,6 @@ window.onload = function() {
       }
    });
    
-   // tipo: isocronas, geocode, ruta.
-   function cargaDatos(tipo) {
-      let loading;
-      
-      if(loading = L.DomUtil.get("leaflet-loading")) {
-         L.DomUtil.remove(loading);
-      }
-      else {
-         loading = L.DomUtil.create("div", "leaflet-message leaflet-control", 
-                                    L.DomUtil.get("map"));
-         loading.id = "leaflet-loading";
-         const img = document.createElement("img");
-         img.setAttribute("src", "images/ajax-loader.gif");
-         loading.appendChild(img);
-      }
-   }
-
-   function progresaIsocronas(n, total, lapso) {
-      const map = L.DomUtil.get("map"),
-            progress = L.DomUtil.get("leaflet-progress") || 
-                       L.DomUtil.create("progress", "leaflet-message leaflet-control", map);
-      progress.id = "leaflet-progress";
-      progress.setAttribute("value", n/total);
-      if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
-   }
-
    // Cuando el usuario seleccione una especialidad, se cargarán los datos y se ocultará el selector
    poblarSelectores();
    

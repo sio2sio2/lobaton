@@ -1192,8 +1192,17 @@ const mapAdjOfer = (function(path, opts) {
    const ORS = (function (adjofer) {
 
       const URLBase = "https://api.openrouteservice.org",
-            ors = adjofer.options.ors,
-            espera = [];
+            espera = [],
+            defaults = {
+               chunkProgress: true,
+               loading: true,
+               rutaPopup: true
+            },
+            ors = Object.assign({}, defaults, adjofer.options.ors);
+
+      if(ors.chunkProgress === true) ors.chunkProgress = progressBar;
+      if(ors.loading === true) ors.loading = ajaxGif;
+      if(ors.rutaPopup === true) ors.rutaPopup = crearPopup;
 
       espera.remove = function(value) {
          const idx = this.indexOf(value);
@@ -1574,7 +1583,9 @@ const mapAdjOfer = (function(path, opts) {
                               opacity: 0.9
                            }),
                onEachFeature: (f, l) => {
-                  l.bindPopup((ors.rutaPopup || crearPopup)(this.calc.destino, f));
+                  if(ors.rutaPopup) {
+                     l.bindPopup(ors.rutaPopup(this.calc.destino, f));
+                  }
                }
             });
 
@@ -1665,7 +1676,7 @@ const mapAdjOfer = (function(path, opts) {
             this.layer.addData(ruta);
 
             const layer = this.layer.getLayers()[0];
-            layer.openPopup({lat: point[1], lng: point[0]});
+            if(ors.rutaPopup) layer.openPopup({lat: point[1], lng: point[0]});
          }
 
          Ruta.prototype.remove = function() {
@@ -1675,46 +1686,6 @@ const mapAdjOfer = (function(path, opts) {
             this.layer.removeFrom(adjofer.map);
             this.value = false;
             return this;
-         }
-
-         function crearPopup(destino, ruta) {
-            const container = document.createElement("article"),
-                  distancia = Math.floor(ruta.properties.summary.distance / 1000),
-                  tiempo = (function(t) {  // Pasa segundos a horas y minutos.
-                     let m = Math.floor(t/60);
-                     if(m > 60) {
-                        const h = Math.floor(m/60);
-                        m %= 60;
-                        return `${h}h ${m}m`;
-                     }
-                     else return m + "m";
-                  })(ruta.properties.summary.duration);
-
-            let e = document.createElement("h3");
-
-            e.textContent = destino.getData().id.nom;
-            container.appendChild(e);
-
-            let ul = document.createElement("ul"),
-                li = document.createElement("li");
-
-            ul.appendChild(li);
-            e = document.createElement("b");
-            e.textContent = "Distancia";
-            li.appendChild(e);
-            li.appendChild(document.createTextNode(`: ${distancia} Km`));
-            
-            li = document.createElement("li");
-            ul.appendChild(li);
-
-            e = document.createElement("b");
-            e.textContent = "Tiempo est.";
-            li.appendChild(e);
-            li.appendChild(document.createTextNode(`: ${tiempo}`));
-
-            container.appendChild(ul);
-
-            return container;
          }
 
          return Ruta;
@@ -1731,6 +1702,76 @@ const mapAdjOfer = (function(path, opts) {
 
       return new ORS();
    });
+
+
+   function crearPopup(destino, ruta) {
+      const container = document.createElement("article"),
+            distancia = Math.floor(ruta.properties.summary.distance / 1000),
+            tiempo = (function(t) {  // Pasa segundos a horas y minutos.
+               let m = Math.floor(t/60);
+               if(m > 60) {
+                  const h = Math.floor(m/60);
+                  m %= 60;
+                  return `${h}h ${m}m`;
+               }
+               else return m + "m";
+            })(ruta.properties.summary.duration);
+
+      let e = document.createElement("h3");
+
+      e.textContent = destino.getData().id.nom;
+      container.appendChild(e);
+
+      let ul = document.createElement("ul"),
+          li = document.createElement("li");
+
+      ul.appendChild(li);
+      e = document.createElement("b");
+      e.textContent = "Distancia";
+      li.appendChild(e);
+      li.appendChild(document.createTextNode(`: ${distancia} Km`));
+      
+      li = document.createElement("li");
+      ul.appendChild(li);
+
+      e = document.createElement("b");
+      e.textContent = "Tiempo est.";
+      li.appendChild(e);
+      li.appendChild(document.createTextNode(`: ${tiempo}`));
+
+      container.appendChild(ul);
+
+      return container;
+   }
+
+
+   function progressBar(n, total, lapso) {
+      const map = L.DomUtil.get("map"),
+            progress = L.DomUtil.get("leaflet-progress") || 
+                       L.DomUtil.create("progress", "leaflet-message leaflet-control", map);
+      progress.id = "leaflet-progress";
+      progress.setAttribute("value", n/total);
+      if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
+   }
+
+
+   // tipo: isocronas, geocode, ruta.
+   function ajaxGif(tipo) {
+      let loading;
+      
+      if(loading = L.DomUtil.get("leaflet-loading")) {
+         L.DomUtil.remove(loading);
+      }
+      else {
+         loading = L.DomUtil.create("div", "leaflet-message leaflet-control", 
+                                    L.DomUtil.get("map"));
+         loading.id = "leaflet-loading";
+         const img = document.createElement("img");
+         img.setAttribute("src",  path + "/maps/adjofer/images/ajax-loader.gif");
+         loading.appendChild(img);
+      }
+   }
+
 
    return new MapAdjOfer(opts);
 });

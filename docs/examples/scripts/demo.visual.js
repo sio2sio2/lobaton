@@ -15,39 +15,11 @@ window.onload = function() {
       });
    }
 
-   function progresaIsocronas(n, total, lapso) {
-      const map = L.DomUtil.get("map"),
-            progress = L.DomUtil.get("leaflet-progress") || 
-                       L.DomUtil.create("progress", "leaflet-message leaflet-control", map);
-      progress.id = "leaflet-progress";
-      progress.setAttribute("value", n/total);
-      if(n === total) setTimeout(() => L.DomUtil.remove(progress), 500);
-   }
-
-   // tipo: isocronas, geocode, ruta.
-   function cargaDatos(tipo) {
-      let loading;
-      
-      if(loading = L.DomUtil.get("leaflet-loading")) {
-         L.DomUtil.remove(loading);
-      }
-      else {
-         loading = L.DomUtil.create("div", "leaflet-message leaflet-control", 
-                                    L.DomUtil.get("map"));
-         loading.id = "leaflet-loading";
-         const img = document.createElement("img");
-         img.setAttribute("src", "images/ajax-loader.gif");
-         loading.appendChild(img);
-      }
-   }
-
    const g = mapAdjOfer("../../dist", {
       zoom: 8,
       center: [37.45, -4.5],
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
-         loading: cargaDatos,
-         chunkProgress: progresaIsocronas
       }
    });
    // Los filtros se conservan al cargar nuevos datos
