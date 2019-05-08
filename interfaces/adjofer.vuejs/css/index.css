@@ -211,3 +211,9 @@ body, html, #map {
 .leaflet-popup h3 {
    font-size: large;
 }
+
+/* Elimina la flecha del input con sugerencias */
+#esp_selected::-webkit-calendar-picker-indicator,
+#esp_selected::-webkit-list-button {
+   display: none;
+}

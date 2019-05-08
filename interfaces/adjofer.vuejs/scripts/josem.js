@@ -9,6 +9,7 @@ window.onload = function() {
    g = new MapaAdjOfer("map", {
       path: "../../dist",
       light: true,
+      search: true,
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
          loading: cargaDatos,
@@ -177,24 +178,33 @@ function filtrarCentrosSinOferta(mostrar){
 function poblarSelectores() {
    //Deberíamos cargar esta variable desde otro sitio, ya que no debería poder cambiarlo
    const selectEstilo = "boliche";
-   const selectEsp = document.querySelector("select[name='especialidad']");
+   const inputEsp = document.getElementById("esp_selected");
+   const opts = Array.from(document.querySelectorAll("#especialidades>option"));
 
-   selectEsp.addEventListener("change", function(e) {
+   inputEsp.addEventListener("input", function(e) {
       //Vamos a ocultar el cuadro de selección, y pondremos la esp. seleccionada como título
-      document.getElementById("esp_selected_title").innerHTML = e.target.options[e.target.selectedIndex].text;
-      // jQuery. Nota para poder localizar mejor el uso de la librería por si decidimos eliminarla
-      $("#esp").collapse('hide');
+      if(opts.map(o => o.value).indexOf(this.value) !== -1) {
+         this.setCustomValidity("");
+         const especialidad = document.querySelector(`#especialidades>option[value="${this.value}"]`).textContent
+         document.getElementById("esp_selected_title").innerHTML = especialidad;
 
-      g.cluster.clearLayers();
-      g.Centro.reset();
-      L.utils.load({
-         url: this.value,
-         callback: function(xhr) {
-            const centros = JSON.parse(xhr.responseText);
-            g.agregarCentros(selectEstilo, centros);
-            
-         }
-      });
+         $("#esp").collapse('hide');
+
+         g.cluster.clearLayers();
+         g.Centro.reset();
+         L.utils.load({
+            url: `../../json/${this.value}.json`,
+            callback: function(xhr) {
+               const centros = JSON.parse(xhr.responseText);
+               g.agregarCentros(selectEstilo, centros);
+            }
+         });
+
+         this.value = "";
+      }
+      else this.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
+      // jQuery. Nota para poder localizar mejor el uso de la librería por si decidimos eliminarla
+
    });
 
    
