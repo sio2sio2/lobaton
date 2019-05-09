@@ -130,6 +130,15 @@ const mapAdjOfer = (function(path, opts) {
       },
 
       /**
+       * Devuelve la clase de icono cuyo nombre es el estilo suuministrado.
+       * @param {String} estilo  Nombre del estilo.
+       * @returns {L.DivIcon}
+       */
+      getIcon: function(estilo) {
+         return catalogo[estilo] || null;
+      },
+
+      /**
        * Cambia el estilo de icono de todos las marcas de centro existentes.
        * En cambio, si la pretensión fuera empezar a dibujar marcas con
        * distinto estilo de icono, habría que hacer:
@@ -141,7 +150,7 @@ const mapAdjOfer = (function(path, opts) {
        * @param {String} estilo     El estilo deseado para el icono.
        */
       setIcon: function(estilo) {
-         const Icono = catalogo[estilo];
+         const Icono = this.getIcon(estilo);
          if(!Icono) throw new Error(`${estilo}: Estilo de icono desconocido`);
 
          Icono.onready(() => this.Centro.store.forEach(m => m.setIcon(new Icono())));
