@@ -1110,6 +1110,7 @@
             auto2 = corr.getOptions(name).auto;
       for(const n in opts) {
          const auto = n === name?false:auto2;
+         this.fire(`correct:*`, {name: n, opts: opts[n], auto: auto});
          this.fire(`correct:${n}`, {name: n, opts: opts[n], auto: auto});
       }
       // Fin issue #54
@@ -1144,6 +1145,7 @@
             auto2 = corr.getOptions(name).auto;
       for(const n in opts) {
          const auto = n === name?false:auto2;
+         this.fire(`uncorrect:*`, {name: n, opts: opts[n], auto: auto});
          this.fire(`uncorrect:${n}`, {name: n, opts: opts[n], auto: auto});
       }
       // Fin issue #54
@@ -1186,7 +1188,8 @@
       if(!filter.setParams(name, params, true)) return false;
       for(const marker of this.store) marker.applyF(name);
 
-      this.fire("filter", {name: name, opts: params});  // Issue #54
+      this.fire("filter:*", {name: name, opts: params});  // Issue #54
+      this.fire(`filter:${name}`, {name: name, opts: params});  // Issue #54
       
       return this;
    }
@@ -1207,7 +1210,8 @@
       for(const marker of this.store) marker.unapplyF(name);
 
       // #Issue #54
-      this.fire("unfilter", {name: name, opts: params});  // Issue #54
+      this.fire("unfilter:*", {name: name, opts: params});  // Issue #54
+      this.fire(`unfilter:${name}`, {name: name, opts: params});  // Issue #54
       // Fin #issue 54
 
       return this;
