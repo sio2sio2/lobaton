@@ -320,7 +320,8 @@ const mapAdjOfer = (function(path, opts) {
       });
 
       // Al seleccionar/deseleccionar, hay que cambiar los
-      // menús contextuales de las marcas implicadas.
+      // menús contextuales de las marcas implicadas y
+      // el del origen (su entrada sobre rutas).
       this.on("markerselect", e => {
          if(!this.options.light) return;
          for(const c of [e.oldval, e.newval]) {
@@ -328,6 +329,10 @@ const mapAdjOfer = (function(path, opts) {
                c.unbindContextMenu();
                c.bindContextMenu(contextMenuCentro.call(this, c));
             }
+         }
+         if(this.origen) {
+            this.origen.unbindContextMenu();
+            this.origen.bindContextMenu(contextMenuOrigen.call(this));
          }
       });
 
@@ -618,12 +623,8 @@ const mapAdjOfer = (function(path, opts) {
             text: "Geolocalizar este origen",
             disabled: !!this.origen.postal || this.ors.espera.indexOf("geocode") !== -1,
             callback: e => this.calcularOrigen()
-         },
-         {
-            text: "Eliminar este origen",
-            callback: e => this.setOrigen(null)
          }
-      ];
+      ]
 
       if(this.isocronas) {
          items.push({
@@ -639,13 +640,28 @@ const mapAdjOfer = (function(path, opts) {
          });
       }
 
-      if(this.ruta || this.ors.espera.indexOf("isocronas") !== -1) {
+      if(this.ruta || this.ors.espera.indexOf("ruta") !== -1) {
          items.push({
             text: "Eliminar ruta",
-            disabled: this.ors.espera.indexOf("isocronas") !== -1,
+            disabled: this.ors.espera.indexOf("ruta") !== -1,
             callback: e => this.setRuta(null)
          });
       }
+      else {
+         items.push({
+            text: "Crear ruta al centro seleccionado",
+            disabled: !this.seleccionado,
+            callback: e => this.setRuta(this.seleccionado)
+         });
+      }
+
+      items.push.apply(items, [
+         "-",
+         {
+            text: "Eliminar este origen",
+            callback: e => this.setOrigen(null)
+         }
+      ]);
 
       return {
          contextmenu: true,
@@ -665,7 +681,7 @@ const mapAdjOfer = (function(path, opts) {
                }
             ]
 
-      if(this.ruta.destino === marker) {
+      if(this.ruta && this.ruta.destino === marker) {
          items.push({
             text: "Eliminar la ruta",
             callback: e => this.setRuta(null)
@@ -674,7 +690,7 @@ const mapAdjOfer = (function(path, opts) {
       else {
          items.push({
             text: "Crear ruta desde el origien",
-            disabled: !this.origen,
+            disabled: !this.origen || this.ors.espera.indexOf("ruta") !== -1,
             callback: e => this.setRuta(marker)
          });
       }
@@ -1592,7 +1608,7 @@ const mapAdjOfer = (function(path, opts) {
             addDescriptor(this, "value", false, true); // value= {polininea, destino}
             addDescriptor(this, "calc", {origen: null,
                                          destino: null,
-                                         polilinea: null}, true);
+                                         layer: null}, true);
          }
 
          Ruta.prototype.setOptions = function(opts) {
@@ -1612,9 +1628,8 @@ const mapAdjOfer = (function(path, opts) {
                   mismoPunto(destino, this.calc.destino)) {
 
                   dibujarRuta.call(this);
-                  this.layer.addTo(adjofer.map);
                   this.value = {
-                     polilinea: this.calc.polilinea,
+                     layer: this.calc.layer,
                      destino: this.calc.destino
                   }
                   resolve(false);
@@ -1623,7 +1638,7 @@ const mapAdjOfer = (function(path, opts) {
 
                espera.push("rutas");
 
-               this.value = this.calc.destino = this.calc.polilinea = null;
+               this.value = this.calc.destino = this.calc.layer = null;
                this.calc.origen = adjofer.origen;
 
                const origen = adjofer.origen.getLatLng(),
@@ -1661,22 +1676,34 @@ const mapAdjOfer = (function(path, opts) {
             const data = JSON.parse(xhr.responseText);
             this.calc.destino = destino;
             this.calc.origen = adjofer.origen;
-            this.calc.polilinea = data;
-            this.value = {polilinea: data, destino: destino};
+            this.value = {destino: destino};
 
-            dibujarRuta.call(this);
+            this.calc.layer = this.value.layer = dibujarRuta.call(this, data);
          }
 
-         function dibujarRuta() {
-            const ruta = this.calc.polilinea,
-                  coords = ruta.features[0].geometry.coordinates,
-                  point  = coords[Math.floor(.9*coords.length)];
+         function dibujarRuta(ruta) {
+            let layer;
+
+            // Si no se proporciona ruta, es porque
+            // se reaprovecha la marca almacenada en calc.
+            if(ruta === undefined) {
+               layer = this.calc.layer;
+               ruta = layer.feature;
+               this.layer.addLayer(layer);
+            }
+            else {
+               this.layer.addData(ruta);
+               ruta = ruta.features[0];
+               layer = this.layer.getLayers()[0];
+            }
 
             this.layer.addTo(adjofer.map);
-            this.layer.addData(ruta);
 
-            const layer = this.layer.getLayers()[0];
+            const coords = ruta.geometry.coordinates,
+                  point  = coords[Math.floor(.9*coords.length)];
+
             if(ors.rutaPopup) layer.openPopup({lat: point[1], lng: point[0]});
+            return layer;
          }
 
          Ruta.prototype.remove = function() {
