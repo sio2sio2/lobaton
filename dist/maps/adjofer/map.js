@@ -254,6 +254,14 @@ const mapAdjOfer = (function(path, opts) {
          }
       },
       /**
+       * Devuelve las capas de las áreas de las isocronas dibujadas en el mapa.
+       *
+       * @returns {Array}
+       */
+      getIsocronas: function(maciza) {
+         return this.ors.isocronas.get(maciza);
+      },
+      /**
        * Establece la ruta entre el origen y un centro
        */
       setRuta: function(centro) {
@@ -1488,9 +1496,15 @@ const mapAdjOfer = (function(path, opts) {
             for(const a of this.calc.areas) this.layer.addLayer(a);
          }
 
-         //TODO:: Falta definir una API para poder acceder cómodamente a las áreas
-         // y las áreas macizas, a fin de poder cómodamente en la interfaz virtual
-         // lo que se ha hecho aquí con el menú contextual.
+
+         /**
+          * Devuelve las capas de las áreas que constityen las isocronas.
+          */
+         Isocronas.prototype.get = function(maciza) {
+            let areas = this.layer.getLayers();
+            if(maciza) areas = areas.map(a => a.feature.properties.area);
+            return areas;
+         }
 
          return Isocronas;
       })();
