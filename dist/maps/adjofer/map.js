@@ -22,6 +22,7 @@
 const mapAdjOfer = (function(path, opts) {
    "use strict";
 
+
    // Issue #27
    /**
     * Crea una propiedad a la que se asocia un tipo de evento,
@@ -193,7 +194,7 @@ const mapAdjOfer = (function(path, opts) {
 
                      // Issue #41
                      if(this.options.light) centro.once("dataset", e => {
-                        centro.on("click", e => {
+                        e.target.on("click", e => {
                            this.seleccionado = this.seleccionado === e.target?null:e.target
                         });
                      });
@@ -244,11 +245,15 @@ const mapAdjOfer = (function(path, opts) {
          else this.origen = null;
       },
       /**
-       * Establece las isocronas referidas al origen
+       * Establece las isocronas referidas a un origen
+       * @param {?L.LatLng|L.Marker} o Referencia para la isocronas. Si no ser
+       * proporciona se entenderá que es el origen de coordenadas.
        */
-      setIsocronas: function(a) {
-         this.isocronas = !!a;
-         if(a && this.options.light && this.origen) {
+      setIsocronas: function(o) {
+         if(o && o.getLatLng) o = o.getLanLng();
+         if(o === true) o = undefined;
+         this.isocronas = o;
+         if(o && this.options.light && this.origen) {
             this.origen.unbindContextMenu();
             this.origen.bindContextMenu(contextMenuOrigen.call(this));
          }
@@ -313,7 +318,7 @@ const mapAdjOfer = (function(path, opts) {
          // Al llegar a nivel 14 de zoom se ven todas las marcas.
          disableClusteringAtZoom: 14,
          spiderfyOnMaxZoom: false,
-         iconCreateFunction: L.utils.noFilteredIconCluster
+         iconCreateFunction: L.utils.noFilteredIconCluster,
       }).addTo(this.map);
 
       if(this.options.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
@@ -377,11 +382,10 @@ const mapAdjOfer = (function(path, opts) {
                get: function() {
                   return this.ors.isocronas.areas;
                },
-               set: function(value) {  // true crea isocronas; null las elimina.
-                  const old = this.isocronas,
-                        origen_old = this.ors.isocronas.calc.origem;
-                  if(value) {
-                     this.ors.isocronas.create().then((response) => {
+               set: function(value) {
+                  const old = this.isocronas;
+                  if(value || value === undefined) {
+                     this.ors.isocronas.create(value).then((response) => {
                         if(response || response === undefined) this.contador++;
                         if(response !== null) { 
                            this.fire("isochroneset", {oldval: old, newval: this.isocronas});
@@ -487,7 +491,7 @@ const mapAdjOfer = (function(path, opts) {
                destino.unbindContextMenu();
                destino.bindContextMenu(contextMenuCentro.call(this, destino));
             }
-            if(this.options.light && this.origen) {
+            if(this.origen) {
                this.origen.unbindContextMenu();
                this.origen.bindContextMenu(contextMenuOrigen.call(this));
             }
@@ -505,6 +509,28 @@ const mapAdjOfer = (function(path, opts) {
          });
          // Fin issue #47
 
+         // Issue #55
+         this.on("routeset", e => {
+            if(e.newval) {
+               e.newval.destino.once("remove", e => {
+                  // Al desaparecer el centro, hay ruta y él es el destino.
+                  if(this.ruta.destino === e.target) {
+                     this.setRuta(null);
+                     // La ruta se despidió a la francesa; vamos, que se fue
+                     // porque desapareció el destino, y no por haberse eliminado.
+                     e.target._francesa = true;
+                  }
+               });
+               e.newval.destino.once("add", e => {
+                  // Al volver a aparecer, él sigue siendo el destino
+                  if(this.ors.ruta.calc.destino === e.target && e.target._francesa) {
+                     this.setRuta(e.target);
+                  }
+                  delete e.target._francesa;
+               });
+            }
+         });
+         // Fin issue #55
       }
 
    }
