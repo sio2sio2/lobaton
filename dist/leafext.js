@@ -1513,9 +1513,18 @@
       applyF: function(name) {
          const filter = this.options.filter;
          if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
-         const res = filter[name].call(this, filter.getParams(name));
+         const params = filter.getParams(name),
+               res = filter[name].call(this, params);
          if(res) {
-           if(this._filtered.indexOf(name) === -1) this._filtered.push(name) 
+            if(this._filtered.indexOf(name) === -1) {
+               this._filtered.push(name) 
+               // Issue #56
+               // El evento sólo se produce cuando un centro sin filtrar, se filtra.
+               if (this._filtered.length === 1) {
+                  this.fire("filtered", {name: name, opts: params});
+               }
+               // Fin issue #56
+            }
          }
          else this.unapplyF(name);
          return res;
@@ -1530,8 +1539,17 @@
       unapplyF: function(name) {
          const filter = this.options.filter;
          if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filtro al crear la clase de marca?");
-         const idx = this._filtered.indexOf(name)
-         if(idx !== -1) this._filtered.splice(idx, 1);
+         const params = filter.getParams(name),
+               idx = this._filtered.indexOf(name);
+         if(idx !== -1) {
+            this._filtered.splice(idx, 1);
+            // Issue #56
+            // El evento sólo se produce cuando un centro filtrado, deja de estarlo
+            if (this._filtered.length === 0) {
+               this.fire("unfiltered", {name: name, opts: params});
+            }
+            // Fin issue #56
+         }
          return idx !== 1;
       }
       // Fin issue #5

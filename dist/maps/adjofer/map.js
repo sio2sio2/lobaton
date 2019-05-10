@@ -1325,12 +1325,13 @@ const mapAdjOfer = (function(path, opts) {
           * en curso; ``false``, si se recuperaron las últimas isocronas, ``true``, si
           * se generaron unas nuevas; e ``undefined`, si se produjo un error.
           *
-          * @param {Function} callback  Función que se ejecutará al generarse las
-          * isocronas sobre el mapa.
+          * @param {L.LatLng} point  Punto que se tomará como referencia
+          * para el cálculo de las isocronas. Si no se proporciona, se
+          * toma el origen de los viajes.
           */
-         Isocronas.prototype.create = async function() {
-            if(this.areas) this.remove();
-            
+         Isocronas.prototype.create = async function(point) {
+            point = point || adjofer.origen.getLatLng();
+
             return new Promise((resolve, reject) => {
                if(this.areas === null) {
                   resolve(null);
@@ -1340,17 +1341,21 @@ const mapAdjOfer = (function(path, opts) {
                espera.push("isocronas");
 
                // Si repetimos origen, entonces rescatamos las isocronas calculadas.
-               if(mismoPunto(adjofer.origen, this.calc.origen)) {
-                  redibujarAnillos.call(this);
-                  this.layer.addTo(adjofer.map);
-                  this.areas = this.calc.areas;
+               if(mismoPunto(point, this.calc.origen)) {
+                  if(!this.areas) {  // Se llegaron a borrar.
+                     redibujarAnillos.call(this);
+                     this.layer.addTo(adjofer.map);
+                     this.areas = this.calc.areas;
+                  }
                   resolve(false);
                   return;
                }
-               else this.areas = this.calc.origen = this.calc.areas = null;
+               else {
+                  if(this.areas) this.remove();
+                  this.areas = this.calc.origen = this.calc.areas = null;
+               }
 
-               let point  = adjofer.origen.getLatLng(),
-                   params = Object.assign({locations: [[point.lng, point.lat]]},
+               let params = Object.assign({locations: [[point.lng, point.lat]]},
                                            this.options);
 
                if(ors.loading) ors.loading("isocronas");
@@ -1360,7 +1365,7 @@ const mapAdjOfer = (function(path, opts) {
                   contentType: "application/json; charset=UTF-8",
                   params: params,
                   callback: xhr => {
-                     crearIsocronas.call(this, xhr).then(() => {
+                     crearIsocronas.call(this, xhr, point).then(() => {
                         espera.remove("isocronas");
                         resolve(true);
                      });
@@ -1375,7 +1380,7 @@ const mapAdjOfer = (function(path, opts) {
          }
 
 
-         async function crearIsocronas(xhr) {
+         async function crearIsocronas(xhr, point) {
             if(ors.loading) ors.loading("isocronas");
 
             const started = (new Date()).getTime();
@@ -1416,7 +1421,7 @@ const mapAdjOfer = (function(path, opts) {
                                                           (new Date().getTime() - started));
 
                   if(i === data.features.length) {
-                     this.calc.origen = adjofer.origen;
+                     this.calc.origen = point;
                      this.areas = this.calc.areas = this.layer.getLayers();
                      resolve();
                   }
@@ -1628,7 +1633,7 @@ const mapAdjOfer = (function(path, opts) {
                }
             });
 
-            addDescriptor(this, "value", false, true); // value= {polininea, destino}
+            addDescriptor(this, "value", false, true); // value= {polilinea, destino}
             addDescriptor(this, "calc", {origen: null,
                                          destino: null,
                                          layer: null}, true);
@@ -1745,8 +1750,8 @@ const mapAdjOfer = (function(path, opts) {
 
       function mismoPunto(x, y) {
          if(x === null || y === null) return false;
-         x = x.getLatLng();
-         y = y.getLatLng();
+         if(x.getLatLng) x = x.getLatLng();
+         if(y.getLatLng) y = y.getLatLng();
          return x.lat === y.lat && x.lng === y.lng;
       }
 
