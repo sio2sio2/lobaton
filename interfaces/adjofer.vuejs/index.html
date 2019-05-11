@@ -175,7 +175,7 @@
                           <div class="form-group row">
                             <label class="etiqueta col-form-label" :for="opcion.opcion_id">{{opcion.opcion_label}}</label>
                             <div class="custom-switch custom-switch-xs pl-0 ">
-                              <input :name="cor.correccion_name" class="custom-switch-input correccion" :id="opcion.opcion_id" type="checkbox" :value="opcion.opcion_valor" :checked="opcion.opcion_checked">
+                              <input :name="cor.correccion_name" class="custom-switch-input correccion" :id="opcion.opcion_id" type="checkbox" :value="opcion.opcion_valor" :checked="opcion.opcion_checked" v-on:change="cambiaCorreccion">
                               <label class="custom-switch-btn" :for="opcion.opcion_id"></label>
                             </div>
                           </div>

@@ -955,21 +955,16 @@ const mapAdjOfer = (function(path, opts) {
          }
       }
 
-      // Elimina enseñanzas que no son bilingües
+      // Elimina enseñanzas bilingües
       this.Centro.register("bilingue", {
          attr: "oferta",
-         // opts= { bil: ["Inglés", "Francés"] } => Filtra enseñanzas que no sean bilingues de francés o inglés.
+         // opts= { bil: ["Inglés", "Francés"] } => Elimina enseñanzas bilingües de inglés y francés.
          func: function(idx, oferta, opts) {
-            if(!opts.bil || opts.bil.length === 0) return false;
-            return opts.bil.indexOf(oferta[idx].idi) === -1
+            return !!(opts.inv ^ (opts.bil.indexOf(oferta[idx].idi) !== -1));
          },
-         // Si los idiomas nuevos incluyen a todos los antiguos,
-         // la corrección antigua era más restrictiva.
          apply: function(oldopts, newopts) {
-            for(const idioma of oldopts.bil) {
-               if(newopts.bil.indexOf(idioma) === -1) return false;
-            }
-            return true;
+            // Las enseñanzas que no son bilingües, tiene idi a null.
+            return applyConInv("bil", ["Inglés", "Francés", "Alemán", null], oldopts, newopts);
          },
          // Sólo son pertinentes los puestos bilingües.
          chain: [{

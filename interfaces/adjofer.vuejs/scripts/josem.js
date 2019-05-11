@@ -40,36 +40,6 @@ window.onload = function() {
    // Cuando el usuario seleccione una especialidad, se cargarán los datos y se ocultará el selector
    poblarSelectores();
    
-   //Vamos a hacer que un cambio en uno de los filtros de corrección se aplique instantáneamente
-   $(document).on("change", ".correccion", function(e) {
-      //Eliminamos los paréntesis y demás elementos del nombre de la corrección
-      cor = sanitizeNombreCorreccion(e.target.name);
-
-      if ($("input[name='" + e.target.name + "']").filter(":checked").length > 0) {
-         /*
-            Recorreremos todos los valores activos de la corrección cambiada. 
-            Recordar que una misma corrección puede tener varios valores posibles aplicados (bilingÑuismo en inglés y francés, etc.)
-         */
-         let params = {
-            [$(this).closest("fieldset").attr("name")]: $("input[name='" + e.target.name + "']").filter(":checked").map(function () {
-                  return $(this).val();
-            }).get()
-         };
-
-         // Aplicamos la corrección
-         aplicaCorreccion(cor, params);
-      }
-      else {
-         // O la deshacemos
-         deshaceCorreccion(cor);
-      }
-
-      //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
-      if (g.seleccionado !== null){
-         displayInfoCentro(g.seleccionado);
-      }
-   });
-
    //Filtros
 
    //Vamos a enlazar los checkboxes para que efectúen el filtrado o no de los correspondientes centros
@@ -89,6 +59,30 @@ window.onload = function() {
    // Esta funcionalidad hace que la barra lateral (sidebar) se abra y cierre pulsando los botones oportunos
    document.getElementById("sidebarCollapse").addEventListener('click', toogleSidebar);
    document.getElementById("close").addEventListener('click', toogleSidebar);
+}
+
+/**
+ * Aplica/desaplica la corrección al cambiar el input correspondiente
+ */
+function cambiaCorreccion(e) {
+   const cor = sanitizeNombreCorreccion(e.target.name);
+   const fieldset = e.target.closest("fieldset");
+   const inputs = fieldset.querySelectorAll(`input[name='${e.target.name}']:checked`);
+
+   if(inputs.length>0) {
+      params = { [fieldset.getAttribute("name")]: Array.prototype.map.call(inputs, e => e.value) }
+
+      // Para quedarse con las enseñanzas bilingües hay que invertir el sentido de las opciones.
+      if(cor === "bilingue") params.inv = true;
+
+      aplicaCorreccion(cor, params);
+   }
+   else deshaceCorreccion(cor);
+
+   //Se haga o deshaga la corrección, vamos a actualizar la información del centro que estuviera seleccionado, si es que había alguno
+   if (g.seleccionado !== null) {
+      displayInfoCentro(g.seleccionado);
+   }
 }
 
 /**
@@ -249,6 +243,9 @@ function cargaCorrecciones(){
       el: '#correcciones',
       data: {
             correcciones: menuCorrecciones
+      },
+      methods: {
+         cambiaCorreccion: cambiaCorreccion
       },
       template: "#template_correccion"
    });
