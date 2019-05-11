@@ -924,6 +924,37 @@ const mapAdjOfer = (function(path, opts) {
     */
    function createCorrections() {
       const self = this;
+
+      // Sin tener en cuenta inv, si los elementos antiguos incluyen a
+      // todos los nuevos, la corrección antigua incluye a la nueva.
+      // Por tanto, debe devolverse verdadero cuando
+      // (N=nuevos; y=interseccion; o=unión; A=antiguos):
+      //
+      // NyA = N
+      // !AyN = Vacio
+      // !Ny!A = !A
+      // Ao!N = Todo
+      function applyConInv(attr, todos, oldopts, newopts) {
+         if(!oldopts.inv && newopts.inv) {  //A, !N
+            const union = [].concat(oldopts[attr]);
+            for(const p of newopts[attr]) {
+               if(oldopts[attr].indexOf(p) === -1) union.push(p);
+            }
+            return union.length === todos.length;
+         }
+         else {
+            const inters = [];
+            for(const p of newopts[attr]) {
+               if(oldopts[attr].indexOf(p) !== -1) inters.push(p);
+            }
+            if(newopts.inv) return inters.length === oldopts[attr].length;  //!N, !A
+            else {
+               if(oldopts.inv) return inters.length === 0;  // !A, N
+               else return inters.length === newopts[attr].length; // N, A
+            }
+         }
+      }
+
       // Elimina enseñanzas que no son bilingües
       this.Centro.register("bilingue", {
          attr: "oferta",
@@ -931,6 +962,14 @@ const mapAdjOfer = (function(path, opts) {
          func: function(idx, oferta, opts) {
             if(!opts.bil || opts.bil.length === 0) return false;
             return opts.bil.indexOf(oferta[idx].idi) === -1
+         },
+         // Si los idiomas nuevos incluyen a todos los antiguos,
+         // la corrección antigua era más restrictiva.
+         apply: function(oldopts, newopts) {
+            for(const idioma of oldopts.bil) {
+               if(newopts.bil.indexOf(idioma) === -1) return false;
+            }
+            return true;
          },
          // Sólo son pertinentes los puestos bilingües.
          chain: [{
@@ -980,6 +1019,9 @@ const mapAdjOfer = (function(path, opts) {
          // opts= {puesto: ["00590059", "11590107"], inv: false}
          func: function(idx, adj, opts) {
             return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
+         },
+         apply: function(oldopts, newopts) {
+            return applyConInv("puesto", Object.keys(self.general.puestos), oldopts, newopts);
          }
       });
 
@@ -989,6 +1031,9 @@ const mapAdjOfer = (function(path, opts) {
          // opts= {ens: ["23GMSMR168", "23GSASI820"], inv: false}
          func: function(idx, oferta, opts) {
             return !!(opts.inv ^ (opts.ens.indexOf(oferta[idx].ens) !== -1));
+         },
+         apply: function(oldopts, newopts) {
+            return applyConInv("ens", Object.keys(self.general.ens), oldopts, newopts);
          },
          chain: [{
             corr: "adjpue",
@@ -1080,7 +1125,7 @@ const mapAdjOfer = (function(path, opts) {
       // Elimina las enseñanzas que no sean del turno indicado.
       this.Centro.register("turno", {
          attr: "oferta",
-         // opts= {turno: 1, inv: true}  => 1: mañana, 2: tarde: 3, ambos.
+         // opts= {turno: 1, inv: true}  => 1: mañana, 2: tarde
          func: function(idx, oferta, opts) {
             if(oferta[idx].tur === null) return false; // Semipresenciales
             const map = {
@@ -1088,7 +1133,7 @@ const mapAdjOfer = (function(path, opts) {
                "vespertino": 2,
                "ambos": 3
             }
-            // ESO y BAC noo tiene turno,
+            // ESO y BAC no tiene turno,
             // pero si es enseñanza de adultos es por la tarde.
             const turno = map[oferta[idx].tur || (oferta[idx].adu?"vespertino":"matutino")];
 
@@ -1199,6 +1244,26 @@ const mapAdjOfer = (function(path, opts) {
                   tipo = map[this.getData().mod.dif] || 0;
 
             return !!(opts.inv ^ !!(tipo & opts.tipo));
+         }
+      });
+
+      // Elimina los centros que tengan alguna enseñanza del turno suministrado.
+      this.Centro.registerF("turno", {
+         attrs: "oferta",
+         // opts= {turno: 1}  => 1: mañana, 2: tarde.
+         func: function(opts) {
+            const map = {
+               "matutino": 1,
+               "vespertino": 2,
+               "ambos": 3
+            }
+            for(const ens of this.getData().oferta) {
+               if(ens.filters.length > 0) continue; // Está filtrado.
+               if(ens.tur === null) continue;  // Semipresenciales.
+               const turno = map[ens.tur || (ens.adu?"vespertino":"matutino")];
+               if(turno & opts.turno) return true;
+            }
+            return false;
          }
       });
 

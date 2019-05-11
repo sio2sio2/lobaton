@@ -996,6 +996,7 @@
          Marker.setFilterStyle = setFilterStyleMarker;
          Marker.hasFilter = hasFilterMarker;
          // Fin issue #5
+         Marker.appliedCorrection = appliedCorrectionMarker;  // Issue #58
       }
       return Marker;
    }
@@ -1247,6 +1248,23 @@
       return filter.getFilters().indexOf(name) !== -1
    }
    // Fin issue #5
+
+   // Issue #58
+   /**
+    * Comprueba si ya se ha aplicado una corrección con unas determinadas opciones
+    * @param {String} name  El nombre de la corrección.
+    * @param {Object} opts  Las nuevas opciones de aplicación.
+    * @param {String} type  El tipo de comprobación que se quiere hacer: si "manual",
+    * sólo se pretende comprobar si las opciones son equivalentes a la que se aplicaran
+    * con anterioridad manualmente; si "auto", si la aplicación manual ya la incluyen
+    * aplicaciones automáticas anteriores de la corrección. Cualquier otro valor prueba
+    * con la manual y las automáticas.
+    */
+   function appliedCorrectionMarker(name, opts, type) {
+      const corr = this.prototype.options.corr;
+      return corr.isApplied(name, opts, type);
+   }
+   // Fin issue #58
 
    const MarkerInitialize = L.Marker.prototype.initialize;
    const MarkerSetIcon = L.Marker.prototype.setIcon;
@@ -1910,6 +1928,7 @@
             obj.func.prop = {
                name: name,
                add: obj.add,
+               apply: obj.apply || equals,  // Issue #58
                default_auto: obj.autochain || false,  // Issue #39
                params: null,  // Issue #23.
                // Issue #37
@@ -1922,6 +1941,38 @@
             return this;
          }
 
+         // Issue #58
+         /** 
+          * Comprueba si las opciones de aplicación suministradas son inútiles,
+          * porque ya hay al menos otra aplicación de la corrección que abarca
+          * tales opciones.
+          *
+          * @param {String} name Nombre de la corrección.
+          * @param {Object} params Opciones de aplicación.
+          * @param {Object} type Tipo de comprobación que puede ser "*manual*",
+          * si sólo se pretende consultar la anterior aplicación manual de la
+          * corrección, "*auto*", si sólo se pretenden consultar las aplicaciones
+          * automáticas de la corrección; y cualquier otro valor para consultar
+          * todas.
+          */
+         CorrSys.prototype.isApplied = function(name, params, type) {
+            const opts = this.getOptions(name);
+                  
+            let a_params = [] 
+
+            if(type !== "auto" && opts.params) a_params.push(opts.params);
+            if(type !== "manual") {
+               let params = this.getAutoParams(name);
+               params = Object.keys(params).map(c => params[c]);
+               a_params.push.apply(a_params, params);
+            }
+
+            for(const oldparams of a_params) {
+               if(opts.apply(oldparams, params)) return true;
+            }
+            return false;
+         }
+         // Fin issue #58
 
          // Issue #37
          /**
@@ -1987,7 +2038,7 @@
 
          /**
           * Devuelve el nombre de todas las correcciones aplicadas
-          * manualmente y a las opciones con las que se aplican.
+          * manualmente y las opciones con las que se aplican.
           *
           * @returns {Object} Un objeto cuyas claves son los nombres
           * de las correcciones aplicadas y cuyos valores son las opciones.
