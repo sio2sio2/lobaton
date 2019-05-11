@@ -1985,6 +1985,25 @@
             }
          }
 
+         /**
+          * Devuelve el nombre de todas las correcciones aplicadas
+          * manualmente y a las opciones con las que se aplican.
+          *
+          * @returns {Object} Un objeto cuyas claves son los nombres
+          * de las correcciones aplicadas y cuyos valores son las opciones.
+          */
+         CorrSys.prototype.getAppliedCorrections = function() {
+            const ret = {},
+                  corrs = this.getCorrections();
+
+            for(const name in corrs) {
+               const opts = corrs[name].prop;
+               if(!opts.params) continue;
+               ret[name] = opts;
+            }
+
+            return ret;
+         }
 
          /**
           * Devuelve las propiedades corregibles.
@@ -2414,7 +2433,7 @@
       }
 
       /**
-       * Obtiene las opción de filrado de un determinado filtro.
+       * Obtiene las opción de filtrado de un determinado filtro.
        * @memberof FilterSys
        *
        * @param {string} name    El nombre del filtro.

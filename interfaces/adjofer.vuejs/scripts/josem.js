@@ -17,7 +17,6 @@ window.onload = function() {
    g.on("dataloaded", function(){
       // Si había algún centro seleccionado y/o mostrado, lo deseleccionamos y ocultamos.
       // Esto es útil tras cambiar de especialidad sobre todo
-      g.seleccionado = null;
       ocultarInfoCentro();
 
       //Lo primero que haremos tras cargar los datos será cargar las correcciones oportunas
@@ -162,6 +161,7 @@ function poblarSelectores() {
 
          g.cluster.clearLayers();
          g.Centro.reset();
+         g.seleccionado = null;
          g.setRuta(null);
          g.agregarCentros(`../../json/${this.value}.json`);
          this.value = "";
@@ -283,13 +283,7 @@ function displayInfoCentro(centro) {
                * DecodificaCentro devuelve el nombre de un centro dado un código. 
                * Utilizado principalmente para obtener el nombre del centro en enseñanzas trasladadas
                */
-               decodificaCentro: function(codCentro){
-                     let c;
-                     for(c of centro.constructor.store) {  // centro.constructor === g.Centro
-                        if(c.getData().id.cod === codCentro) break;
-                     }
-                     return c.getData().id.nom;
-               },
+               decodificaCentro: codigo => g.Centro.get(codigo).getData().id.nom,
                /*
                 * Devuelve el nombre de un puesto dado su código
                 */

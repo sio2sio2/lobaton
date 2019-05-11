@@ -108,6 +108,32 @@ const mapAdjOfer = (function(path, opts) {
    }
 
 
+   function mapAdjOfer(opts) {
+      // Issue #57
+      const url = new URL(window.location.href),
+            status = url.searchParams.get("status");
+
+      if(status) opts = Object.assign(opts, getOpts(status));
+
+      // Fin issue #57
+
+      return new MapAdjOfer(opts);
+   }
+
+   function getOpts(status) {
+      status = JSON.parse(atob(status));
+
+      const ret = {
+         zoom: status.zoo,
+         center: status.cen
+      }
+      delete status.zoo;
+      delete status.cen;
+      ret.status = status;
+
+      return ret;
+   }
+
    const MapAdjOfer = L.Evented.extend({
       /** @lends MapAdjOfer.prototype */
 
@@ -128,6 +154,7 @@ const mapAdjOfer = (function(path, opts) {
          L.Util.setOptions(this, options);
          loadMap.call(this);
          createMarker.call(this);
+         setStatus.call(this, options.status);  // Issue #57
       },
 
       /**
@@ -212,6 +239,7 @@ const mapAdjOfer = (function(path, opts) {
             }
          });
       },
+
       /**
        * Calcula la dirección postal del origen
        */
@@ -228,6 +256,7 @@ const mapAdjOfer = (function(path, opts) {
             this.origen.bindContextMenu(contextMenuOrigen.call(this));
          }
       },
+
       /**
        * Establece el origen de los viajes.
        *
@@ -244,6 +273,7 @@ const mapAdjOfer = (function(path, opts) {
          }
          else this.origen = null;
       },
+
       /**
        * Establece las isocronas referidas a un origen
        * @param {?L.LatLng|L.Marker} o Referencia para la isocronas. Si no ser
@@ -258,6 +288,7 @@ const mapAdjOfer = (function(path, opts) {
             this.origen.bindContextMenu(contextMenuOrigen.call(this));
          }
       },
+
       /**
        * Devuelve las capas de las áreas de las isocronas dibujadas en el mapa.
        *
@@ -266,6 +297,7 @@ const mapAdjOfer = (function(path, opts) {
       getIsocronas: function(maciza) {
          return this.ors.isocronas.get(maciza);
       },
+
       /**
        * Establece la ruta entre el origen y un centro
        */
@@ -276,9 +308,70 @@ const mapAdjOfer = (function(path, opts) {
             this.origen.bindContextMenu(contextMenuOrigen.call(this));
          }
       },
+
       geoCodificar: function(query) {
          this.direccion = query
+      },
+
+      // Issue #57
+      /**
+       * Obtiene un objeto que describe el estado del mapa.
+       * @param {Boolean} encode  Si ``true``, se codifica el objeto en base64.
+       */
+      getStatus(encode) {
+         const origen = this.origen && this.origen.getLatLng(),
+               filter = this.Centro.prototype.options.filter,
+               corr   = this.Centro.prototype.options.corr;
+
+         function getCoords(point) {
+            return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
+         }
+
+         let status = {
+            esp: this.general.entidad[0],  // Especialidad.
+            cen: getCoords(this.map.getCenter()),
+            zoo: this.map.getZoom(),
+         }
+
+         if(this.seleccionado) status.sel = this.seleccionado.getData().id.cod;
+         if(origen) status.ori = getCoords(origen);
+
+         const filters = {};
+         for(const name of filter.getFilters()) {
+            filters[name] = filter.getParams(name);
+         }
+         // Hay que sustituir el área por un índice que la represente.
+         if(filters.hasOwnProperty("lejos")) {
+            const macizas = this.getIsocronas(true);
+            for(const idx in macizas) {
+               if(macizas[idx] === filters.lejos.area) {
+                  delete filters.lejos.area;
+                  filters.lejos.idx = Number(idx);
+                  break;
+               }
+            }
+         }
+         if(filter.lejos.area) {
+            console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
+            delete filters.lejos;
+         }
+         if(Object.keys(filters).length > 0) status.fil = filters;
+         
+
+         const corrs = {},
+               ac = corr.getAppliedCorrections();
+         for(const name in ac) {
+            const opts = ac[name];
+            corrs[name] = {par: opts.params, aut: opts.auto}
+         }
+         if(Object.keys(corrs).length > 0) status.cor = corrs;
+
+         if(this.isocronas) status.iso = 1;
+         if(this.ruta) status.des = this.ruta.destino.getData().id.cod;
+
+         return encode?btoa(JSON.stringify(status)):status;
       }
+      // Fin issue #57
    });
 
 
@@ -556,9 +649,87 @@ const mapAdjOfer = (function(path, opts) {
        }
       });
 
+      /**
+       * Obtiene la marca de un centro a partir de su código.
+       * @param {String|Number} codigo  El código del centro.
+       * @returns {L.Marker} La marca del centro cuyo código es el suministrado.
+       */
+      this.Centro.get = function(codigo) {
+         codigo = Number(codigo);
+         for(const c of this.store) {
+            if(c.getData().id.cod === codigo) return c;
+         }
+      }
+
       createCorrections.call(this);
       createFilters.call(this);
    }
+
+
+   // Issue #57
+   /**
+    * Fija la vista inicial del mapa en función del estado
+    * que se haya pasado a través del parámetro URL status.
+    *
+    * @param {Object} status  El estado del mapa.
+    */
+   function setStatus(status) {
+      if(!status) return;
+
+      console.log("DEBUG", status, status.fil.lejos);
+      let lejos;
+
+      // Los filtros pueden aplicarse antes de obtener datos.
+      if(status.fil) {
+         if(status.fil.lejos) {  // Pero este lo dejamos para después.
+            lejos = status.fil.lejos;
+            delete status.fil.lejos;
+         }
+         for(const name in status.fil) {
+            this.Centro.filter(name, status.fil[name]);
+         }
+      }
+
+      if(status.esp) {  // Debe cargarse una especialidad.
+         this.once("dataloaded", e => {
+            if(status.sel) this.seleccionado = this.Centro.get(status.sel);
+            if(!status.cor) return;
+            for(const name in status.cor) {
+               const opts = status.cor[name];
+               this.Centro.correct(name, opts.par, !!opts.aut);
+            }
+            this.Centro.invoke("refresh");
+
+            if(this.ors && status.des) {
+               const destino = this.Centro.get(status.des);
+               if(status.iso) this.on("routeset", e => this.setIsocronas());
+               this.setRuta(destino);
+            }
+         });
+         this.agregarCentros(`../../json/${status.esp}.json`);
+      }
+
+      // Origen
+      if(status.ori) this.setOrigen({lat: status.ori[0], lng: status.ori[1]});
+
+      // Isocronas: se está suponiendo que tardan bastante más
+      // que en cargar los datos de los centros. En puridad, habría
+      // meterlo dentro del dataloaded anterior
+      if(this.ors && status.iso) {
+         if(lejos) {
+            this.once("isochroneset", e => {
+               const area = this.getIsocronas(true)[lejos.idx];
+               this.ors.isocronas.dibujarAreaMaciza(area);
+               this.Centro.filter("lejos", {area: area});
+               this.Centro.invoke("refresh");
+            });
+         }
+         // Si hay que pintar una ruta, se generan las isocronas
+         // después para evitar que interfieran las dos cargas (ambas cargan loading).
+         if(!status.des) this.setIsocronas();
+      }
+   }
+   // Fin issue #57
 
 
    // Issue #51
@@ -1490,7 +1661,7 @@ const mapAdjOfer = (function(path, opts) {
                      const maciza = area.feature.properties.area;
                      adjofer.Centro.filter("lejos", {area: maciza});
                      adjofer.Centro.invoke("refresh");
-                     dibujarAreaMaciza.call(this, maciza);
+                     this.dibujarAreaMaciza(maciza);
                   },
                   index: 1,
                })
@@ -1516,7 +1687,7 @@ const mapAdjOfer = (function(path, opts) {
             }
          }
 
-         function dibujarAreaMaciza(area) {
+         Isocronas.prototype.dibujarAreaMaciza = function(area) {
             this.layer.clearLayers().addData(area);
             const a = this.layer.getLayers()[0];
             a.bindContextMenu(contextMenuArea.call(this, a));
@@ -1532,7 +1703,7 @@ const mapAdjOfer = (function(path, opts) {
           * Devuelve las capas de las áreas que constityen las isocronas.
           */
          Isocronas.prototype.get = function(maciza) {
-            let areas = this.layer.getLayers();
+            let areas = this.calc.areas;
             if(maciza) areas = areas.map(a => a.feature.properties.area);
             return areas;
          }
@@ -1854,5 +2025,5 @@ const mapAdjOfer = (function(path, opts) {
    }
 
 
-   return new MapAdjOfer(opts);
+   return mapAdjOfer(opts);
 });
