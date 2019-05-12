@@ -575,10 +575,11 @@ entonces debería alterarse la opción <code class="docutils literal notranslate
 </div>
 <p>Y si se pretende alterar el estilo de una marca ya existente usar el meodo
 homónimo para la marca en particular:</p>
-<blockquote>
-<div>// centro es una marca que representa un centro concreto.
-const Icono = g.getIcon(«solicitud»);
-centro.setIcon(new Icono());</div></blockquote>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="c1">// centro es una marca que representa un centro concreto.</span>
+<span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">getIcon</span><span class="p">(</span><span class="s2">&quot;solicitud&quot;</span><span class="p">);</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">());</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -665,7 +666,7 @@ corrección <em>ofens</em>. No es necesario añadir el tercer argumentoa
 </div>
 </dd>
 <dt><em>turno</em></dt>
-<dd><p class="first">Elimina enseñanzas que no sean del turno indicado, de manera que <strong>1</strong>
+<dd><p class="first">Elimina enseñanzas que sean del turno indicado, de manera que <strong>1</strong>
 representa la mañana y <strong>2</strong> la tarde:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;turno&quot;</span><span class="p">,</span> <span class="p">{</span>
    <span class="nx">turno</span> <span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -673,7 +674,7 @@ representa la mañana y <strong>2</strong> la tarde:</p>
 <span class="p">});</span>
 </pre></div>
 </div>
-<p class="last">En este caso, se eliminan las enseñanzas que no se impartan por
+<p class="last">En este caso, se eliminan las enseñanzas que se impartan por
 la mañana.</p>
 </dd>
 <dt><em>nueva</em></dt>

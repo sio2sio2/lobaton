@@ -358,7 +358,7 @@ Métodos
       g.options.icon = "solicitud";
    
    Y si se pretende alterar el estilo de una marca ya existente usar el meodo
-   homónimo para la marca en particular:
+   homónimo para la marca en particular::
 
       // centro es una marca que representa un centro concreto.
       const Icono = g.getIcon("solicitud");
@@ -442,7 +442,7 @@ Sobre la *oferta*
          `true`, porque el encadenamiento se lanza automáticamente.`
 
    *turno*
-      Elimina enseñanzas que no sean del turno indicado, de manera que **1**
+      Elimina enseñanzas que sean del turno indicado, de manera que **1**
       representa la mañana y **2** la tarde::
 
          Centro.correct("turno", {
@@ -450,7 +450,7 @@ Sobre la *oferta*
             inv: false
          });
 
-      En este caso, se eliminan las enseñanzas que no se impartan por
+      En este caso, se eliminan las enseñanzas que se impartan por
       la mañana.
 
    *nueva*

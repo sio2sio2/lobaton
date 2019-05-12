@@ -981,7 +981,7 @@ const mapAdjOfer = (function(path, opts) {
             // Las enseñanzas que no son bilingües, tiene idi a null.
             return applyConInv("bil", ["Inglés", "Francés", "Alemán", null], oldopts, newopts);
          },
-         // Sólo son pertinentes los puestos bilingües.
+         // Sólo son pertinentes los puestos no bilingües (o sí, si inv=true).
          chain: [{
             corr: "adjpue",
             func: function(opts) {
@@ -995,7 +995,7 @@ const mapAdjOfer = (function(path, opts) {
                                  .map(e => map[e]);
                //Puestos a eliminar.
                const puestos = Object.keys(self.general.puestos)
-                                     .filter(pue => !cod.some(c => pue.startsWith(c)));
+                                     .filter(pue => opts.inv ^ cod.some(c => pue.startsWith(c)));
                return puestos.length>0?{puesto: puestos}:false;
             }
          }]
@@ -1132,7 +1132,7 @@ const mapAdjOfer = (function(path, opts) {
          }]
       });
 
-      // Elimina las enseñanzas que no sean del turno indicado.
+      // Elimina las enseñanzas que sean del turno indicado.
       this.Centro.register("turno", {
          attr: "oferta",
          // opts= {turno: 1, inv: true}  => 1: mañana, 2: tarde
@@ -1147,7 +1147,7 @@ const mapAdjOfer = (function(path, opts) {
             // pero si es enseñanza de adultos es por la tarde.
             const turno = map[oferta[idx].tur || (oferta[idx].adu?"vespertino":"matutino")];
 
-            return !!(opts.inv ^ !(turno & opts.turno));
+            return !(opts.inv ^ !(turno & opts.turno));
          }
       });
 
