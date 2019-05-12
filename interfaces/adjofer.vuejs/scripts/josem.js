@@ -47,7 +47,6 @@ window.onload = function() {
    // No tiene sentido eliminar vacantes no telefónicas, si no se han añadido:
    ligarVacantes();
 
-
    // Si se pasó parámetro status a través de la URL, hay que ajustar el
    // estado de la interfaz a las correcciones y filtros aplicados.
    if(g.status) estableceEstados();
@@ -66,7 +65,6 @@ window.onload = function() {
  * de las correcciones y filtros aplicados.
  */
 function estableceEstados() {
-   // TODO: Hay que hacer un método para g.Centro.
    const filters = g.Centro.getFilterStatus();
 
    for(const f in filters) {
@@ -77,6 +75,27 @@ function estableceEstados() {
 
    // TODO:: Falta aplicarlo a las correcciones.
 }
+
+/**
+ * Liga los campos del formulario "Añadir vacantes telefónicas" y "Eliminar vacantes
+ * no telefónicas", ya que sin lo primero no tiene sentido lo segundo.
+ */
+function ligarVacantes() {
+   // Si se desaplica la corrección que añade las telefónicas,
+   // desaplicamos la corrección que filtra por ellas.
+   g.Centro.on("uncorrect:vt+", e => g.Centro.uncorrect("vt"));
+
+   // Ligamos los aspectos en la interfaz
+   const agregar = document.getElementById("corr:vt+");
+   agregar.addEventListener("change", e => {
+      const eliminar = document.getElementById("vac");
+      if(!eliminar) return;
+
+      eliminar.disabled = !e.target.checked;
+      if(!e.target.checked) eliminar.checked = false;
+   });
+}
+
 
 /**
  * Aplica/desaplica la corrección al cambiar el input correspondiente
@@ -156,20 +175,6 @@ function aplicarCambioBinario(e) {
    // Cuando una aplicación/desaplicación no se lleva a cabo
    // (por ejemplo, porque ya estaba se devuelve falso. 
    if(aplicacion) g.Centro.invoke("refresh");
-}
-
-
-/**
- * Liga los campos del formulario "Añadir vacantes telefónicas" y "Eliminar vacantes
- * no telefónicas", ya que sin lo primero no tiene sentido lo segundo.
- */
-function ligarVacantes() {
-   const agregar = document.getElementById("corr:vt+");
-         
-   agregar.addEventListener("change", e => {
-      const eliminar = document.getElementById("vac");
-      eliminar.disabled = !e.target.checked;
-   });
 }
 
 
@@ -283,10 +288,11 @@ function cargaCorrecciones(){
    });
 
 
-   // Asocia eliminar vacantes telefónicas, a añadirlas.
+   // La corrección que elimina vacantes telefónicas
+   // está asociada a que se hayan incluido en los ajustes.
    const agregar = document.getElementById("corr:vt+"),
          eliminar = document.getElementById("vac");
-   eliminar.disabled = !agregar.checked;
+   agregar.dispatchEvent(new Event("change"));
 }
 
 /**
