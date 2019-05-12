@@ -154,7 +154,17 @@ const mapAdjOfer = (function(path, opts) {
          L.Util.setOptions(this, options);
          loadMap.call(this);
          createMarker.call(this);
-         setStatus.call(this, options.status);  // Issue #57
+
+         // Issue #57
+         Object.defineProperty(this, "status", {
+            value: !!options.status,
+            writable:false,
+            enumerable: true,
+            configurable: false,
+         });
+
+         setStatus.call(this, options.status);
+         // Fin #issue 57
       },
 
       /**

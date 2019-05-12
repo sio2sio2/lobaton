@@ -282,17 +282,24 @@
                 <fieldset class="form-group" name="campos_ajustes">
                   <legend>Ajustes generales</legend>
                   <div class="form-group row">
-                    <label class="etiqueta col-form-label" for="ocultar_centros_oferta">Ocultar centros sin oferta</label>
+                    <label class="etiqueta col-form-label" for="filtro:oferta">Ocultar centros sin oferta</label>
                     <div class="custom-switch custom-switch-xs pl-0 ">
-                      <input name="ocultar_centros_oferta" class="custom-switch-input filtro" id="ocultar_centros_oferta" type="checkbox" checked="checked">
-                      <label class="custom-switch-btn" for="ocultar_centros_oferta"></label>
+                      <input name="oferta" data-opts='{"min": 1}' class="custom-switch-input filtro" id="filtro:oferta" type="checkbox">
+                      <label class="custom-switch-btn" for="filtro:oferta"></label>
                     </div>
                   </div>
                   <div class="form-group row">
-                    <label class="etiqueta col-form-label" for="ocultar_centros_adj">Ocultar centros sin adjudicaciones</label>
+                    <label class="etiqueta col-form-label" for="filtro:adj">Ocultar centros sin adjudicaciones</label>
                     <div class="custom-switch custom-switch-xs pl-0 ">
-                      <input name="ocultar_centros_adj" class="custom-switch-input filtro" id="ocultar_centros_adj" type="checkbox" >
-                      <label class="custom-switch-btn" for="ocultar_centros_adj"></label>
+                      <input name="adj" data-opts='{"min": 1}' class="custom-switch-input filtro" id="filtro:adj" type="checkbox">
+                      <label class="custom-switch-btn" for="filtro:adj"></label>
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label class="etiqueta col-form-label" for="corr:vt+">Añadir vacantes telefónicas</label>
+                    <div class="custom-switch custom-switch-xs pl-0 ">
+                      <input name="vt+" data-opts='{}' class="custom-switch-input corr" id="corr:vt+" type="checkbox">
+                      <label class="custom-switch-btn" for="corr:vt+"></label>
                     </div>
                   </div>
                 </fieldset>

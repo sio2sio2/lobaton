@@ -40,25 +40,42 @@ window.onload = function() {
    // Cuando el usuario seleccione una especialidad, se cargarán los datos y se ocultará el selector
    poblarSelectores();
    
-   //Filtros
+   // Filtros y correcciones en ajustes (no requieren que el usuario establezca valores)
+   document.querySelectorAll("#ajustes input[id^='filtro:'], #ajustes input[id^='corr:']")
+           .forEach(input => input.addEventListener("change", aplicarCambioBinario));
 
-   //Vamos a enlazar los checkboxes para que efectúen el filtrado o no de los correspondientes centros
-   document.getElementById("ocultar_centros_oferta").addEventListener("change", function(e) {
-      filtrarCentrosSinOferta(this.checked);
-   });
+   // No tiene sentido eliminar vacantes no telefónicas, si no se han añadido:
+   ligarVacantes();
 
-   document.getElementById("ocultar_centros_adj").addEventListener("change", function(e) {
-      filtrarCentrosSinAdjudicaciones(this.checked);
-   });
 
-   //Por defecto, el filtrado de centros con enseñanzas mínimas estará activo
-   filtrarCentrosSinAdjudicaciones(false);
-   filtrarCentrosSinOferta(true);
-
+   // Si se pasó parámetro status a través de la URL, hay que ajustar el
+   // estado de la interfaz a las correcciones y filtros aplicados.
+   if(g.status) estableceEstados();
+   else { // En caso contrario, se aplica por defecto el filtro de centros sin oferta.
+      document.getElementById("filtro:oferta").checked = true;
+      document.getElementById("filtro:oferta").dispatchEvent(new Event("change"));
+   }
 
    // Esta funcionalidad hace que la barra lateral (sidebar) se abra y cierre pulsando los botones oportunos
    document.getElementById("sidebarCollapse").addEventListener('click', toogleSidebar);
    document.getElementById("close").addEventListener('click', toogleSidebar);
+}
+
+/**
+ * Establece los estados de los campos de formulario en función
+ * de las correcciones y filtros aplicados.
+ */
+function estableceEstados() {
+   // TODO: Hay que hacer un método para g.Centro.
+   const filters = g.Centro.getFilterStatus();
+
+   for(const f in filters) {
+      const input = document.getElementById(`filtro:${f}`);
+      if(input) input.checked = true;
+   }
+
+
+   // TODO:: Falta aplicarlo a las correcciones.
 }
 
 /**
@@ -72,7 +89,8 @@ function cambiaCorreccion(e) {
    if(inputs.length>0) {
       params = { [fieldset.getAttribute("name")]: Array.prototype.map.call(inputs, e => e.value) }
 
-      // Para quedarse con las enseñanzas bilingües hay que invertir el sentido de las opciones.
+      // Para quedarse con las enseñanzas bilingües hay que invertir el sentido de las opciones:
+      // El sentido normal del filtro es desecharlas
       if(cor === "bilingue") params.inv = true;
 
       aplicaCorreccion(cor, params);
@@ -119,25 +137,41 @@ function sanitizeNombreCorreccion(cor) {
    return cor;
 }
 
-function filtrarCentrosSinAdjudicaciones(mostrar){
-   if(mostrar){
-      g.Centro.filter("adj", {min: 1});
+
+/**
+ * Aplica filtros o correcciones en los que el usuario no tiene que establecer
+ * las opciones de aplicación, sino que estas ya vienen dadas.
+ * Cuáles sean estas opciones, se establece en el valor de data-opts.
+ */
+function aplicarCambioBinario(e) {
+   let aplicacion,
+       tipo = e.target.id.startsWith("filtro")?"filter":"correct";
+
+   if(e.target.checked) {
+      const opts = JSON.parse(e.target.getAttribute("data-opts"));
+      aplicacion = g.Centro[tipo](e.target.name, opts);
    }
-   else {
-      g.Centro.unfilter("adj");
-   }
-   g.Centro.invoke("refresh");
+   else aplicacion = g.Centro[`un${tipo}`](e.target.name);
+
+   // Cuando una aplicación/desaplicación no se lleva a cabo
+   // (por ejemplo, porque ya estaba se devuelve falso. 
+   if(aplicacion) g.Centro.invoke("refresh");
 }
 
-function filtrarCentrosSinOferta(mostrar){
-   if(mostrar){
-      g.Centro.filter("oferta", {min: 1});
-   }
-   else {
-      g.Centro.unfilter("oferta");
-   }
-   g.Centro.invoke("refresh");
+
+/**
+ * Liga los campos del formulario "Añadir vacantes telefónicas" y "Eliminar vacantes
+ * no telefónicas", ya que sin lo primero no tiene sentido lo segundo.
+ */
+function ligarVacantes() {
+   const agregar = document.getElementById("corr:vt+");
+         
+   agregar.addEventListener("change", e => {
+      const eliminar = document.getElementById("vac");
+      eliminar.disabled = !e.target.checked;
+   });
 }
+
 
 function poblarSelectores() {
    //Deberíamos cargar esta variable desde otro sitio, ya que no debería poder cambiarlo
@@ -164,8 +198,6 @@ function poblarSelectores() {
       // jQuery. Nota para poder localizar mejor el uso de la librería por si decidimos eliminarla
 
    });
-
-   
 }
 
 function cargaCorrecciones(){
@@ -211,11 +243,11 @@ function cargaCorrecciones(){
    menuCorrecciones.push({
       nombre: "Vacantes telefónicas",
       correccion_id: "vac",
-      correccion_name: "vt+",
-      descripcion: "Añade las vacantes telefónicas a las adjudicaciones",
+      correccion_name: "vt",
+      descripcion: "Elimina vacantes que no sean telefónicas",
       values: [{
          opcion_id: "vac",
-         opcion_label: "Añadir vacantes",
+         opcion_label: "Eliminar vacantes",
          opcion_valor: "Vac",
          opcion_checked: ""
          }]
@@ -249,6 +281,12 @@ function cargaCorrecciones(){
       },
       template: "#template_correccion"
    });
+
+
+   // Asocia eliminar vacantes telefónicas, a añadirlas.
+   const agregar = document.getElementById("corr:vt+"),
+         eliminar = document.getElementById("vac");
+   eliminar.disabled = !agregar.checked;
 }
 
 /**

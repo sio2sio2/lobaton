@@ -963,21 +963,8 @@
          Marker.register = registerCorrMarker;
          Marker.correct = doCorrMarker;
          Marker.uncorrect = undoCorrMarker;
-         // Issue #37
-         /**
-          * Obtiene para una corrección, qué otras correcciones la aplicaron
-          * automáticamente y con qué opciones.
-          * @memberof Marker
-          *
-          * @params {String} name   El nombre de una corrección.
-          *
-          * @returns {Object} Un objeto en que las claves son los nombres de las correcciones
-          * responsables y los valores con qué opciones se aplicó la corrección.
-          */
-         Marker.getAutoCorrect = function(name) {
-            return this.prototype.options.corr.getAutoParams(name);
-         }
-         // Fin issue #37
+         Marker.appliedCorrection = appliedCorrectionMarker;  // Issue #58
+         Marker.getCorrectStatus = getCorrectStatusMarker;
          // Issue #5
          if(options.filter) options.filter = new FilterSys(options.filter);
          // No puede definirse en prototypeExtra:
@@ -995,8 +982,8 @@
          Marker.unfilter = unfilterMarker;
          Marker.setFilterStyle = setFilterStyleMarker;
          Marker.hasFilter = hasFilterMarker;
+         Marker.getFilterStatus = getFilterStatusMarker;
          // Fin issue #5
-         Marker.appliedCorrection = appliedCorrectionMarker;  // Issue #58
       }
       return Marker;
    }
@@ -1156,6 +1143,40 @@
    }
    // Fin issue #23
 
+
+   /**
+    * Devuelve el estado actual de las correcciones aplicadas sobre las marcas
+    * de un tipo.
+    * @method Marker.getCorrectStatus
+    *
+    * @params {String} name   El nombre de una corrección.
+    *
+    * @returns {Object} Un objeto con dos objetos a su vez. El objeto *manual*, cuyas
+    * claves son los nombres de las correcciones aplicadas manualmente y cuyos valores son
+    * las opciones de corrección; y el objeto *auto* cuyas claves son los nombres de
+    * las correcciones que se han aplicado automáticamente y cuyo valor es un objeto
+    * en que las claves son los nombres de la correcciones que al aplicarse
+    * manualmente la desencadenaron y cuyos valores son las opciones de aplicación
+    * de la corrección automática.
+    */
+   function getCorrectStatusMarker(name) {
+      const corr = this.prototype.options.corr,
+            ret = {
+               manual: {},
+               auto: {}
+            }
+
+      let corrs = corr.getAppliedCorrections();
+      for(const name in corrs) ret.manual[name] = corrs[name];
+
+      for(const name in corr.getCorrections()) {
+         const auto = corr.getAutoParams(name);
+         if(Object.keys(auto).length>0) ret.auto[name] = auto;
+      }
+
+      return ret;
+   }
+
    // Issue #5
    /**
     * Registra para una clase de marcas un filtro.
@@ -1246,6 +1267,30 @@
       if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
       return filter.getFilters().indexOf(name) !== -1
+   }
+
+   /**
+    * Devuelve el estado actual de los filtros aplicados sobre las marcas del tipo
+    * @method Marker.getFilterStatus
+    *
+    * @param {String} name  Nombre de filtro. Si se especifica uno, sólo se devuelven
+    * las opciones de aplicación de ese filtro en concreto.
+    *
+    * @returns {Object} Un objeto en que las claves son los nombres de los filtros y
+    * los correspondientes valores sus opciones de aplicación; o bien, si se proporcionó
+    * un nombre de filtro, las opciones de aplicación de ese filtro.
+    */
+   function getFilterStatusMarker(name) {
+      const filter = this.prototype.options.filter;
+      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+
+      if(name) return filter.getParams(name);
+
+      const ret = {};
+      for(const name of filter.getFilters()) {
+         ret[name] =  filter.getParams(name);
+      }
+      return ret;
    }
    // Fin issue #5
 
@@ -2484,7 +2529,7 @@
       }
 
       /**
-       * Obtiene las opción de filtrado de un determinado filtro.
+       * Obtiene las opciones de filtrado de un determinado filtro.
        * @memberof FilterSys
        *
        * @param {string} name    El nombre del filtro.
