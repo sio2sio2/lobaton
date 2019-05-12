@@ -519,6 +519,8 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
    de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
    clase "*chupachups*".
 
+.. _leafext-marca:
+
 Acceso a marcas
 ===============
 La inserción de los datos en la capa, genera para cada uno de ellos la marca que
@@ -566,6 +568,8 @@ la librería:
 
 * Consulte `en línea el resultado del ejemplo
   <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
+
+.. _leafext-corr:
 
 Correcciones
 ============
@@ -818,6 +822,151 @@ automáticamente y con qué opciones, puede usarse el método
 
    Centro.getAutoCorrect("of");  // {adjcol: {ens: ["DAM"]}}
 
+Comprobación de su estado
+-------------------------
+Para conocer cuál el estado de aplicación de las correcciones sobre las marcas,
+la clase provee dos métodos de clase. El primero es
+:js:meth:`Marker.getCorrectStatus`::
+
+   const aplicadas = Centro.getCorrectStatus()
+
+que devuelve dos objetos: ``aplicadas.manual`` donde se desglosan las
+correcciones que se aplicaron manualmente; y ``aplicadas.auto`` donde se
+desglosan las correcciones que se aplicaron automáticamente como consecuencia de
+algún encadenamiento. En el primer objeto, las claves son los nombres de las
+correcciones y los valores, sus opciones de aplicación. El segundo objeto es
+algo más complejo, porque una misma corrección ha podido aplicarse varias
+veces automáticamente. En este caso las claves son, de nuevo, los nombres de las
+correcciones, pero los valores son a su vez un objeto en que las claves son los
+nombres de las correcciones aplicadas manualmente que provocaron la
+aplicación automática y los valores las opciones de aplicación automática. Por
+ejemplo, este estado::
+
+   manual: {
+      bilingue: {bil: ["Inglés"], inv: true}}
+   }
+   auto: {
+      adjpue: {
+         bilingue: {puesto: [ "00590107", "DU590107"]}
+      }
+   }
+
+significa que se aplicó manualmente una corrección llamada *bilingue* con las
+opciones expresadas. Además, hay aplicada automáticamente una corrección llamada
+*adjpue*, consecuencia de la aplicación manual de *bilingue* y cuyas opciones de
+aplicación son las indicadas. Obsérvese que estas opciones son opciones de
+aplicación de *adjpue*, no de la aplicación manual de bilingüe.
+
+El segundo método útil para conocer las correcciones aplicadas está más
+relacionado con saber si aplicar una corrección con unas determinads opciones de
+aplicación, tendrá efecto en el mapa o será inútil porque el estado actual ya
+supone directa o indirectamente la aplicación de esa corrección.  Hay al menos
+dos escenarios en los que esto es útil:
+
+#. Si se han aplicado correcciones por alguna razón (p.e. porque al abrir el
+   mapa queremos que se apliquen sin que el usuario tenga que llevarlas a cabo)
+   y es necesario que la interfaz visual se ajuste a ese estado de correcciones
+   que no se han llevado a cabo a través de ella.
+
+#. Cuando existe encadenamiento de correcciones, la aplicación manual de una
+   corrección *A*, desencadena la aplicación automática de otra corrección *B*.
+   De nuevo, esto puede afectar a la interfaz visual, si ésta permitía la
+   aplicación manual de *B*:
+
+Para llevar a cabo esto, existe el método de clase
+:js:meth:`Marker.appliedCorrections`::
+
+   Centro.appliedCorrections("adjcol", {colectivos: ["Interino"]}, "auto");
+
+El método admite tres argumentos: el nombre del filtro, las opciones de
+aplicación y el tipo de comprobación que se desea realizar:
+
+   * *auto*, sólo comprueba si la aplicación requerida (*adjcol* con la
+     opción referido) ya está incluida en alguna de las aplicaciones
+     automáticas; y, por tanto, es inútil. Tiene utilidad para resolver el
+     segundo escenario.
+
+   * *manual*, sólo comprueba si la aplicación requerida ya está incluida
+     en la aplicación manual que se haya hecho anteriormente (si es que se ha
+     hecho). Tine utilidad para resolver el primer escenario.
+
+   * Cualquier otro valor comprueba tanto en la aplicación manual como en las
+     automáticas.
+
+Ahora bien, dado que cada corrección tiene una idiosincrasia propia, para que
+sea posible comparar opciones de aplicación y determinar si unas implican otras,
+es necesario que al registrar la corrección se indique cuál es el algoritmo.
+Por tanto:
+
+.. code-block:: js
+   :emphasize-lines: 11-17
+
+   // Desecha las enseñanzas que se facilitan.
+   Centro.register("of", {
+      attr: "oferta",
+      // opts = {ens: ["DAM"] }
+      func: function(idx, oferta, opts) {
+         return opts.ens.indexOf(oferta[i]) !== -1;
+      },
+      // Si las opciones contienen al menos todas las enseñanzas
+      // que tienen las nuevas, entonces la aplicación actual es más
+      // restrictiva.
+      apply: function(opts, newopts) {
+         for(const ens of newopts.ens) {
+            // Hay una enseñanza en las nuevas opciones que no está en las actuales.
+            if(opts.ens.indexOf(ens) === -1) return false;
+         }
+         return true;
+      }
+   });
+
+La función compara las opciones actuales (*opts*) con las nuevas opciones
+(*newopts*) y devuelve ``true`` si la aplicación de las nuevas opciones no
+provocase ningún cambio en caso de poder aplicar la corrección sin desaplicar la
+aplicación actual.
+
+.. note:: En caso de que no se facilite ninguna función, la comparación se
+   limitará a ver si las opciones de aplicación son iguales.
+
+.. _leafext-event-corr:
+
+Eventos
+-------
+La aplicación y eliminación de correcciones tiene asociados eventos. Este, por
+ejemplo, se lanzaría cada vez que se aplica una corrección "*adjcol*"::
+
+   Centro.on("correct:adjcol", e => {
+      const modo = e.auto?"automáticamente":"manualmente";
+      console.log(`Ha aplicado ${modo} una corrección ${e.name}:`, e.opts);
+   }); 
+
+El objeto evento tiene los siguientes atributos relevantes:
+
+``target``
+   Contiene. como se espera, el nombre del evento ("*correct:adjcol*" en el ejemplo).
+
+``name``
+   Contiene el nombre de la corrección.
+
+``auto``
+   Booleano que informa de si la corrección se aplicó manualmente (``false``) o fue
+   consecuencia de un encadenamiento (``true``).
+
+``opts``
+   Opciones con las que se aplicó la corrección.
+
+También es posible usar "*correct:\**" para que el evento esté asociado a
+cualquier tipo de corrección.
+
+Análogamente, pueden usarse los eventos "*uncorrect:\**" o
+"*uncorrect:adjcol*", para atrapar el momento en que se desaplica una
+corrección.
+
+.. warning:: Observe que el evento se asocia al tipo de marca, no a las marcas
+   individuales.
+
+.. _leafext-filtro:
+
 Filtros
 =======
 El :dfn:`sistema de filtros` posibilita eliminar entidades que cumplan con los
@@ -885,6 +1034,44 @@ Para eliminar un filtro, basto con su nombre::
    Centro.unfilter("adjmin");
 
 aunque deberemos refrescar para trasladar el efecto del filtro al dibujo.
+
+Comprobación de su estado
+-------------------------
+La marca dispone de dos métodos para hacer comprobaciones sobre los filtros
+aplicados:
+
+* :js:meth:`Marker.hasFilter` que informa de si se ha aplicado el filtro::
+
+      Centro.hasFilter("adjcol");
+
+* :js:meth:`Marker.getFilterStatus` que devuelve un objeto en las claves
+  son los nombres de los filtros aplicados y los valores las opciones
+  correspondientes de aplicación.
+
+.. _leafext-event-filter:
+
+Eventos
+-------
+De manera simétrica a como hay definidos :ref:`eventos para la aplicación y
+remoción de correcciones <leafext-event-corr>` también se definen para
+la aplicación y remoción de correcciones, usando la misma sintaxis::
+
+   Centro.on("filter:adj", e => {
+      console.log(`Ha aplicado el filtro ${e.name}:`, e.opts);
+   }); 
+
+La única salvedad en que en este caso, no existe el atributo ``auto``, ya que
+no tiene sentido.
+
+Además, las marcas individuales definen los eventos *filtered* y *unfiltered*
+que se desencadenan cuando la marca cambia de no filtrada a filtrada y de
+filtrada o no filtrada respectivamente. En este segundo caso, el objeto evento
+añade dos atributos reveladores: ``name`` que indica el filtro que provoca el
+cambio y ``opts`` que contiene las opciones de filtro::
+
+   centro.on("filtered", e => {
+      console.log(`Me acaba de filtrar el filtro '${e.name}' por culpa de:`, e.opts);
+   });
 
 .. _dev-map-style-filter:
 
@@ -1197,6 +1384,59 @@ Y añadir algo de *javascript* a las soluciones anteriores::
    });
 
    interm.clearLayers();
+
+|API|
+*****
+
+Iconos
+======
+
+.. js:autofunction:: L.utils.createMutableIconClass
+
+.. js:autoclass:: Icon
+   :members: ready, onready, options, Options
+
+.. js:autoclass:: L.utils.Converter
+   :members:
+
+Marcas
+======
+
+.. js:autoclass:: Marker
+   :members: store, reset, register, correct, uncorrect, getCorrectStatus, appliedCorrections, registerF, filter, unfilter, hasFilter, getFilterStatus, invoke, refresh, changeData, getData, options, Options
+
+Correcciones
+============
+
+.. js:autoclass:: CorrSys
+
+   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
+      detalles de su implementación recurra a los comentarios incluidos en el
+      código fuente.
+
+.. js:autoclass:: Correctable
+   :members: total, walk, CorrValue
+
+Filtros
+=======
+
+.. js:autoclass:: FilterSys
+
+   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
+      detalles de su implementación recurra a los comentarios incluidos en el
+      código fuente.
+
+Otras utilidades
+================
+
+.. js:autofunction:: L.utils.noFilteredIconCluster
+
+.. js:autofunction:: L.utils.grayFilter
+
+.. js:autofunction:: L.utils.load
+
+.. |API| replace:: :abbr:`API (Application Programming Interface)`
+
 
 .. rubric:: Notas al pie
 

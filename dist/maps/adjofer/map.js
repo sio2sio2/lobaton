@@ -935,6 +935,11 @@ const mapAdjOfer = (function(path, opts) {
    function createCorrections() {
       const self = this;
 
+      // Función para determinar si unas condiciones implican otras.
+      // Es aplicable a opciones que consisten en un array con valores.
+      // Por ejemplo: {bil: ["Inglés", "Francés"]} que implica que se
+      // eliminan enseñanzas que cumplan con alguno de los valores. En
+      // este caso, bilingües de Inglés o de Francés.
       // Sin tener en cuenta inv, si los elementos antiguos incluyen a
       // todos los nuevos, la corrección antigua incluye a la nueva.
       // Por tanto, debe devolverse verdadero cuando
@@ -943,7 +948,7 @@ const mapAdjOfer = (function(path, opts) {
       // NyA = N
       // !AyN = Vacio
       // !Ny!A = !A
-      // Ao!N = Todo
+      // Ao!N = Todos
       function applyConInv(attr, todos, oldopts, newopts) {
          if(!oldopts.inv && newopts.inv) {  //A, !N
             const union = [].concat(oldopts[attr]);
