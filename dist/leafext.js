@@ -1547,7 +1547,7 @@
          if(ret = arr.unapply(name)) {
             // Issue #5
             const filter = this.options.filter;
-            if(filter) for(const f of filter.getFilters(opts.attr)) this.unapplyF(f);
+            if(filter) for(const f of filter.getFilters(opts.attr)) this.applyF(f);
             // Fin issue #5
 
             this._updateIcon({[opts.attr]: arr});
