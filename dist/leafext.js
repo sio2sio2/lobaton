@@ -2227,7 +2227,8 @@
 
             // Si se borran los opciones de corrección (se fijan a null), se deben
             // borrar recursivamente las opciones calculadas del resto de la cadena.
-            if(opts === null) {
+            // Issue #60: o si se fijan unas nuevas opciones manuales, resetear las calculadas.
+            if(opts === null || !prename) {
                for(const chain of sc[postname].prop.chain) {
                   if(this.looped(name, chain.corr)) continue;
                   this.setParams(postname + " " + chain.corr, null);
