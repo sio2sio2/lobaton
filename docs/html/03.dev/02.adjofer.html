@@ -545,11 +545,8 @@ Cuanto menor sea, mayor será la prelación. El dato es útil para la correcció
 <a class="reference internal" href="#adjofer-correct-adjref"><span class="std std-ref">adjref</span></a>.</li>
 <li>Las características de cada enseñanza son las siguientes:<ul>
 <li><em>ens</em>, código de la enseñanza.</li>
-<li><dl class="first docutils">
-<dt><em>mod</em>, modalidad de enseñanza que puede ser <em>pres</em> (presencial),</dt>
-<dd><em>semi</em> (semipresencial) y <em>dist</em> (a distancia).</dd>
-</dl>
-</li>
+<li><em>mod</em>, modalidad de enseñanza que puede ser <em>pres</em> (presencial),
+<em>semi</em> (semipresencial) y <em>dist</em> (a distancia).</li>
 <li><em>idi</em>, idioma (Inglés, Francés o Alemán).</li>
 <li><em>adu</em>, enseñanza de adultos.</li>
 <li><em>ext</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, si la enseñanza se extinguió y el curso presente ya no existe.</li>
@@ -697,6 +694,14 @@ del centro cuyo código es el suministrado:</p>
 <code class="descname">general</code><a class="headerlink" href="#general" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Almacena la información general del mapa que ofrece el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> de
 datos.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="status">
+<code class="descname">status</code><a class="headerlink" href="#status" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Valor booleano que es <code class="docutils literal notranslate"><span class="pre">true</span></code> si se pasó un parámetro <em>status</em> en la <abbr title="Uniform Resource Locator">URL</abbr>
+que hizo al mapa recrear un estado concreto. Véase el métod
+<a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -868,6 +873,23 @@ lejos</span></a>.</p>
 suministrado. Como argumento debe usarse la marca del centro. Si se
 proporciona <code class="docutils literal notranslate"><span class="pre">null</span></code>, la ruta anteriomente calculada y dibujada, se elimina.</p>
 <p>La generación de la ruta tiene asociado el evento <a class="reference internal" href="#adjofer-event-routeset"><span class="std std-ref">routeset</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getStatus">
+<code class="descname">getStatus</code><span class="sig-paren">(</span><em>encode</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve un objeto que describe el estado actual del mapa (centro, zoom,
+origen, isochronas, correcciones, filtros. etc.). Si se pasa <code class="docutils literal notranslate"><span class="pre">true</span></code> como
+argumento, el objeto se codifica en base64 para que sea apto para construir
+el enlace:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>http://ruta/a/la/aplicacion?status=XXXX
+</pre></div>
+</div>
+<p>donde XXXX es el resultado codificado que devuelve el método. Al requirir la
+página de la aplicación con este parámetro <em>status</em>, la aplicación será capaz
+de recrear sobre el mapa el antiguo estado. la labor del programador de la
+interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
+centro, si existen isocronas, cuáles son los filtros aplicados, etc.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1141,7 +1163,7 @@ realizan sobre el mapa:</p>
 <dl class="docutils" id="adjofer-event-dataloaded">
 <dt><em>dataloaded</em></dt>
 <dd>Se desencadena al terminar de cargar los datos el método
-<code class="xref js js-meth docutils literal notranslate"><span class="pre">MapAdjOfer.agregarCentros()</span></code>.</dd>
+<a class="reference internal" href="#agregarCentros" title="agregarCentros"><code class="xref js js-meth docutils literal notranslate"><span class="pre">agregarCentros()</span></code></a>.</dd>
 </dl>
 <dl class="docutils" id="adjofer-event-markerselect">
 <dt><em>markerselect</em></dt>

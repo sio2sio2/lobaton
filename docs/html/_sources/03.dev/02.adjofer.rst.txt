@@ -397,7 +397,7 @@ Algunas apuntes clave para entender los datos son:
 
   * *ens*, código de la enseñanza.
   * *mod*, modalidad de enseñanza que puede ser *pres* (presencial),
-           *semi* (semipresencial) y *dist* (a distancia).
+    *semi* (semipresencial) y *dist* (a distancia).
   * *idi*, idioma (Inglés, Francés o Alemán).
   * *adu*, enseñanza de adultos.
   * *ext*, ``true``, si la enseñanza se extinguió y el curso presente ya no existe.
@@ -529,6 +529,12 @@ Atributos
 
    Almacena la información general del mapa que ofrece el objeto `GeoJSON`_ de
    datos.
+
+.. js:attribute:: status
+
+   Valor booleano que es ``true`` si se pasó un parámetro *status* en la |URL|
+   que hizo al mapa recrear un estado concreto. Véase el métod
+   :js:meth:`getStatus`.
 
 .. js:attribute:: seleccionado
 
@@ -676,6 +682,24 @@ Métodos
 
    La generación de la ruta tiene asociado el evento :ref:`routeset
    <adjofer-event-routeset>`.
+
+.. js:method:: getStatus(encode)
+
+   Devuelve un objeto que describe el estado actual del mapa (centro, zoom,
+   origen, isochronas, correcciones, filtros. etc.). Si se pasa ``true`` como
+   argumento, el objeto se codifica en base64 para que sea apto para construir
+   el enlace:
+
+   .. code-block:: none
+
+      http://ruta/a/la/aplicacion?status=XXXX
+
+
+   donde XXXX es el resultado codificado que devuelve el método. Al requirir la
+   página de la aplicación con este parámetro *status*, la aplicación será capaz
+   de recrear sobre el mapa el antiguo estado. la labor del programador de la
+   interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
+   centro, si existen isocronas, cuáles son los filtros aplicados, etc.
 
 .. js:method:: getIcon(estilo)
 
@@ -921,7 +945,7 @@ realizan sobre el mapa:
 
 *dataloaded*
    Se desencadena al terminar de cargar los datos el método
-   :js:meth:`MapAdjOfer.agregarCentros`.
+   :js:meth:`agregarCentros`.
 
 .. _adjofer-event-markerselect:
 
