@@ -244,14 +244,341 @@ estilo:</p>
 </div>
 <div class="section" id="datos">
 <span id="adjofer-datos"></span><h2>3.2.3. Datos<a class="headerlink" href="#datos" title="Enlazar permanentemente con este título">¶</a></h2>
-<p>Los datos se facilitan en formato <a class="reference external" href="https://geojson.org/">GeoJSON</a> en que la primera <em>feature</em>
-describe generales de los datos suministrados (p.e. qué nombre se corresponde
-con cada código de puesto) y las restantes <em>features</em> son los datos centro a
-centro.</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Por hacer</p>
-<p class="last">Completar esta descripción.</p>
+<p>Los datos se facilitan en un formato <a class="reference external" href="https://geojson.org/">GeoJSON</a> en que la primera <em>feature</em>
+describe aspectos generales de los datos suministrados (p.e. qué nombre se
+corresponde con cada código de puesto) y cada una de las restantes <em>features</em>
+se corresponde con los datos relevantes de un centro.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;curso&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;adjoferta&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;objetivo&quot;</span><span class="p">:</span> <span class="s2">&quot;especialidad&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;entidad&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="mi">590107</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;spider&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;cgt&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+               <span class="nt">&quot;vt&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+               <span class="nt">&quot;organica&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ofertafp&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ofertasec&quot;</span><span class="p">:</span> <span class="s2">&quot;2019\/20&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;limite&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;00590059&quot;</span><span class="p">:</span> <span class="s2">&quot;APOYO AL ÁREA CIENTÍFICA O TECNOLÓGICA&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;00590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática P.E.S&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;11590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Inglés) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;CI590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Nueva implantación) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;DU590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Dual) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ED590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (IEDA) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;SP590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Semipresencial) P.E.S.&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;colectivos&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Suprimido&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;C&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Desplazado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;N&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;ExDirector&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;E&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Adscrito&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;F&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Reingresado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DA&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;SaludPropia&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DB&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Conciliación&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DC&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;CargoElecto&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;G&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Provisional&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;PueEspec&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;H&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;EnPracticas&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;I&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Aprobado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DZ&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;InterCom&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;J&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Interino&quot;</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;23GMSMR168&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Sistemas Microinformáticos y Redes&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGM&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSASI820&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Administración de Sistemas Informáticos en Red&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSDA859&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Desarrollo de Aplicaciones Web&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSDAM517&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Desarrollo de Aplicaciones Multiplataforma&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BAE&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Artes Escénicas&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BAP&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Artes Plásticas&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BCT&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Ciencias&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BHCS&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Humanidades y Ciencias Sociales&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mf">0.2</span>
+         <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="mf">-3.0248339999999998</span><span class="p">,</span>
+               <span class="mf">36.746941</span>
+            <span class="p">]</span>
+         <span class="p">},</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;cod&quot;</span><span class="p">:</span> <span class="mi">4000110</span><span class="p">,</span>
+               <span class="nt">&quot;nom&quot;</span><span class="p">:</span> <span class="s2">&quot;I.E.S. Abdera&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;dom&quot;</span><span class="p">:</span> <span class="s2">&quot;C\/ Marisma, 6&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;mun&quot;</span><span class="p">:</span> <span class="s2">&quot;Adra&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;cp&quot;</span><span class="p">:</span> <span class="mi">4770</span><span class="p">,</span>
+               <span class="nt">&quot;pro&quot;</span><span class="p">:</span> <span class="s2">&quot;Almeria&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BHCS&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;semi&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BHCS&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BCT&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;23GSDA859&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;tur&quot;</span><span class="p">:</span> <span class="s2">&quot;matutino&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esp&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;pla&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                  <span class="nt">&quot;pro&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">true</span>
+               <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;bil&quot;</span><span class="p">:</span> <span class="p">[</span>
+                  <span class="mi">11</span>
+               <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;pla&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;00590107&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;fun&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;org&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;norg&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;vi&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="nt">&quot;vt&quot;</span><span class="p">:</span> <span class="mi">0</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;col&quot;</span><span class="p">:</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esc&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="mi">2</span><span class="p">,</span>
+                     <span class="mi">9</span><span class="p">,</span>
+                     <span class="mi">7</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;pue&quot;</span><span class="p">:</span> <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;pet&quot;</span><span class="p">:</span> <span class="s2">&quot;15&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;per&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ubi&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;col&quot;</span><span class="p">:</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esc&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="mi">1</span><span class="p">,</span>
+                     <span class="mi">7</span><span class="p">,</span>
+                     <span class="mi">6</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;pue&quot;</span><span class="p">:</span> <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;pet&quot;</span><span class="p">:</span> <span class="s2">&quot;7&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;per&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ubi&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">}</span>
+            <span class="p">]</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+   <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
 </div>
+<p>Algunas apuntes clave para entender los datos son:</p>
+<ul class="simple">
+<li>La «<em>o</em>» en los colectivos representa el orden de prelación de cada colectivo.
+Cuanto menor sea, mayor será la prelación. El dato es útil para la corrección
+<a class="reference internal" href="#adjofer-correct-adjref"><span class="std std-ref">adjref</span></a>.</li>
+<li>Las características de cada enseñanza son las siguientes:<ul>
+<li><em>ens</em>, código de la enseñanza.</li>
+<li><dl class="first docutils">
+<dt><em>mod</em>, modalidad de enseñanza que puede ser <em>pres</em> (presencial),</dt>
+<dd><em>semi</em> (semipresencial) y <em>dist</em> (a distancia).</dd>
+</dl>
+</li>
+<li><em>idi</em>, idioma (Inglés, Francés o Alemán).</li>
+<li><em>adu</em>, enseñanza de adultos.</li>
+<li><em>ext</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, si la enseñanza se extinguió y el curso presente ya no existe.</li>
+<li><em>ene</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, en extinción, pero sigue aún existiendo.</li>
+<li><em>nue</em>, nueva implantación: <strong>1</strong>, en primer año; <strong>2</strong>, en segundo año;
+<strong>0</strong>, no es una nueva enseñanza.</li>
+<li><em>mar</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si la enseñanza es deseable.</li>
+<li><em>tur</em>, que puede ser <em>matutino</em>, <em>vespertino</em> o <em>ambos</em>. Sólo aparece en
+enseñanzas de formación profesional. En las enseñanzas de secundaria y
+bachillerato, se sobreentiende que la enseñanza de adultos es por la tarde.</li>
+<li><em>esp</em>, <em>especial</em> que puede ser «<em>parcial</em>», «<em>dual</em>»</li>
+<li><em>pla</em>, número de plazas (F.P.).</li>
+<li><em>aum</em>, que representa la variación de plazas y puede ser un número positivo
+o negativo.</li>
+<li><em>pro</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si es un programa específico de formación profesional.</li>
+</ul>
+</li>
+<li>Las características de cada adjudicación son las siguientes:<ul>
+<li><em>col</em>, letra que representa al colectivo.</li>
+<li><em>esc</em>, escalafón o tiempo de servicio, si es funcionario interino.</li>
+<li><em>pue</em>, puesto de adjudicación.</li>
+<li><em>pet</em>, número de petición.</li>
+<li><em>per</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si la vacante se adjudicó en el concurso de traslados y,
+consecuentemente, no estará disponible más en el procedimiento.</li>
+<li><em>ubi</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si el funcionario obtuvo plaza en el concurso de traslados y,
+en principio, no volverá a ocupar esa plaza.</li>
+</ul>
+</li>
+</ul>
 </div>
 <div class="section" id="creacion-del-objeto">
 <h2>3.2.4. Creación del objeto<a class="headerlink" href="#creacion-del-objeto" title="Enlazar permanentemente con este título">¶</a></h2>
@@ -373,11 +700,24 @@ datos.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="seleccionado">
+<code class="descname">seleccionado</code><a class="headerlink" href="#seleccionado" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Establece un centro como el seleccionado, lo que se notará visualmente
+rodeando el icono con una circunferencia roja. Es la única propiedad
+a la que podríamos asociar valor directamente:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">seleccionado</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">21002100</span><span class="p">);</span>  <span class="c1">// Seleccionamos el centro 21002100.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">seleccionado</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>     <span class="c1">// Deshacemos la selección.</span>
+</pre></div>
+</div>
+<p>La selección de un centro tiene asociado el evento <a class="reference internal" href="#adjofer-event-markerselect"><span class="std std-ref">markerselect</span></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="origen">
 <code class="descname">origen</code><a class="headerlink" href="#origen" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Marca que representa el origen del viaje. Puede no existir, si no se ha
 definido ningún origen, y cambia al cambiar de origen. El establecimniento
-del origen está asociado al evento g.</p>
+del origen está asociado al evento <a class="reference internal" href="#adjofer-event-originset"><span class="std std-ref">originset</span></a>.</p>
 <p>Presenta un atributo <code class="docutils literal notranslate"><span class="pre">g.origen.postal</span></code> que almacena la dirección postal,
 si es que se llegó a averiguar.</p>
 <div class="admonition note">
@@ -454,11 +794,7 @@ todo lo que se hubiera hecho anteriormente:</p>
 <span class="nx">g</span><span class="p">.</span><span class="nx">agregarCentros</span><span class="p">(</span><span class="s2">&quot;json/590107.json&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">El fin de la carga de datos está asociado al evento
-«<em>dataloaded</em>».</p>
-</div>
+<p>El fin de la carga de datos está asociado al evento <a class="reference internal" href="#adjofer-event-dataloaded"><span class="std std-ref">dataloaded</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -468,20 +804,14 @@ todo lo que se hubiera hecho anteriormente:</p>
 punto; o un objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> con posibles ubicaciones si se suministra una
 dirección. En el primer caso, el punto debe ser un objeto con los atributos
 <code class="docutils literal notranslate"><span class="pre">lat</span></code> y <code class="docutils literal notranslate"><span class="pre">lng</span></code>; y en el segundo, una cadena.</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">La geocodificación tiene asociado el evento <em>addressset</em>.</p>
-</div>
+<p>La geocodificación tiene asociado el evento <a class="reference internal" href="#adjofer-event-addressset"><span class="std std-ref">addressset</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="setOrigen">
 <code class="descname">setOrigen</code><span class="sig-paren">(</span><em>latlng</em><span class="sig-paren">)</span><a class="headerlink" href="#setOrigen" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Establece el origen de los viajes en el punto pasado como argumento.</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">La obtención del origen tiene asociado el evento <em>originset</em>.</p>
-</div>
+<p>La obtención del origen tiene asociado el evento <a class="reference internal" href="#adjofer-event-originset"><span class="std std-ref">originset</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -516,11 +846,7 @@ podrá obtener tanto las coordenadas como la dirección postal.</p>
 ninguno, se entiende que el punto es el origen del viaje, y si <code class="docutils literal notranslate"><span class="pre">null</span></code> se
 eliminan las isocronas que pudieran haberse generado anterioremente.  No
 puede haber más de un juego de isocronas</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">La generación de las isocronas tiene asociado el evento
-<em>isochroneset</em>.</p>
-</div>
+<p>La generación de las isocronas tiene asociado el evento <a class="reference internal" href="#adjofer-event-isochroneset"><span class="std std-ref">isochroneset</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -541,11 +867,7 @@ lejos</span></a>.</p>
 <dd><p>Calcula una ruta entre el origen de viajes y el centro de destino
 suministrado. Como argumento debe usarse la marca del centro. Si se
 proporciona <code class="docutils literal notranslate"><span class="pre">null</span></code>, la ruta anteriomente calculada y dibujada, se elimina.</p>
-<div class="admonition note">
-<p class="first admonition-title">Nota</p>
-<p class="last">La generación de las isocronas tiene asociado el evento
-<em>routeset</em>.</p>
-</div>
+<p>La generación de la ruta tiene asociado el evento <a class="reference internal" href="#adjofer-event-routeset"><span class="std std-ref">routeset</span></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -720,6 +1042,8 @@ requiere opciones:</p>
 </pre></div>
 </div>
 </dd>
+</dl>
+<dl class="docutils" id="adjofer-correct-adjref">
 <dt><em>adjref</em></dt>
 <dd><p class="first">Elimina adjudicaciones hechas a adjudicatarios con mayor prioridad
 que el adjudicatario que se proporciona como referencia. Para establecer
@@ -748,6 +1072,11 @@ en prácticas.</li>
 </dd>
 </dl>
 </div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Recuerde que la aplicación de una corrección C tiene asociado el
+evento «<em>correct:C</em>»; y su desaplicación, el evento «<em>uncorrect:C</em>».</p>
+</div>
 </div>
 <div class="section" id="filtros">
 <span id="adjofer-filtros"></span><h2>3.2.8. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h2>
@@ -796,12 +1125,25 @@ Puede aplicarse pasando  un <code class="docutils literal notranslate"><span cla
 </div>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Recuerde que la aplicación de un filtro <em>F</em> tiene asociado el
+evento «<em>filter:F</em>»; y su desaplicación, el evento «<em>unfilter:F</em>». Además,
+las marcas concretas disparan el evento «<em>filtered</em>», si un filtro las
+filtra desde un estado no filtrado, y disparan el evento «<em>unfiltered</em>» si
+su remoción las restituye desde un estado filtrado.</p>
+</div>
 </div>
 <div class="section" id="eventos">
 <span id="adjofer-eventos"></span><h2>3.2.9. Eventos<a class="headerlink" href="#eventos" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Hay toda una serie de eventos que pueden ayudarnos a capturar acciones que se
 realizan sobre el mapa:</p>
-<dl class="docutils">
+<dl class="docutils" id="adjofer-event-dataloaded">
+<dt><em>dataloaded</em></dt>
+<dd>Se desencadena al terminar de cargar los datos el método
+<code class="xref js js-meth docutils literal notranslate"><span class="pre">MapAdjOfer.agregarCentros()</span></code>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-markerselect">
 <dt><em>markerselect</em></dt>
 <dd><p class="first">Se desencadena al seleccionar o deseleccionar un centro. En el objeto de
 evento <code class="docutils literal notranslate"><span class="pre">e.oldval</span></code> y <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> contienen respectivamente la marca
@@ -817,17 +1159,25 @@ anteriormente y posteriomente seleccionadas:</p>
 </pre></div>
 </div>
 </dd>
+</dl>
+<dl class="docutils" id="adjofer-event-addressset">
 <dt><em>addressset</em></dt>
 <dd>Se desencadena tras resolver una geocodificación con <a class="reference external" href="https://openrouteservice.org/">OpenRouteService</a> a
 través del método <a class="reference internal" href="#geoCodificar" title="geoCodificar"><code class="xref js js-meth docutils literal notranslate"><span class="pre">geoCodificar()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> contiene el resultado
 de la geocodificación.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-originset">
 <dt><em>originset</em></dt>
 <dd>Se desencadena tras establecer un origen de viajes. Dispone de <code class="docutils literal notranslate"><span class="pre">e.oldval</span></code> y
 <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> como el evento <em>markerselect</em>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-isochroneset">
 <dt><em>isochroneset</em></dt>
 <dd>Se desencadena al terminar de generar un juego de isocronas a través del
 método <a class="reference internal" href="#setIsocronas" title="setIsocronas"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setIsocronas()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> proporcionará el
 nuevo valor del atributo <a class="reference internal" href="#isocronas" title="isocronas"><code class="xref js js-attr docutils literal notranslate"><span class="pre">isocronas</span></code></a>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-routeset">
 <dt><em>routeset</em></dt>
 <dd>Se desencadena al terminar de generar la ruta entre el origen y el centro
 definido como destino mediante el método <a class="reference internal" href="#setRuta" title="setRuta"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setRuta()</span></code></a>. <cite>e.newval</cite>

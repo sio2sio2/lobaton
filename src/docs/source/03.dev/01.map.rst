@@ -826,7 +826,7 @@ Comprobación de su estado
 -------------------------
 Para conocer cuál el estado de aplicación de las correcciones sobre las marcas,
 la clase provee dos métodos de clase. El primero es
-:js:meth:`Marker.getCorrectStatus`::
+js:meth:`Marker.getCorrectStatus`::
 
    const aplicadas = Centro.getCorrectStatus()
 
@@ -874,7 +874,7 @@ dos escenarios en los que esto es útil:
    aplicación manual de *B*:
 
 Para llevar a cabo esto, existe el método de clase
-:js:meth:`Marker.appliedCorrections`::
+js:meth:`Marker.appliedCorrections`::
 
    Centro.appliedCorrections("adjcol", {colectivos: ["Interino"]}, "auto");
 
@@ -1040,11 +1040,11 @@ Comprobación de su estado
 La marca dispone de dos métodos para hacer comprobaciones sobre los filtros
 aplicados:
 
-* :js:meth:`Marker.hasFilter` que informa de si se ha aplicado el filtro::
+* js:meth:`Marker.hasFilter` que informa de si se ha aplicado el filtro::
 
       Centro.hasFilter("adjcol");
 
-* :js:meth:`Marker.getFilterStatus` que devuelve un objeto en las claves
+* js:meth:`Marker.getFilterStatus` que devuelve un objeto en las claves
   son los nombres de los filtros aplicados y los valores las opciones
   correspondientes de aplicación.
 

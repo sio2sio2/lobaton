@@ -91,12 +91,339 @@ A esta dependencias habría que añadir los scripts propios del mapa:
 
 Datos
 *****
-Los datos se facilitan en formato `GeoJSON`_ en que la primera *feature*
-describe generales de los datos suministrados (p.e. qué nombre se corresponde
-con cada código de puesto) y las restantes *features* son los datos centro a
-centro.
+Los datos se facilitan en un formato `GeoJSON`_ en que la primera *feature*
+describe aspectos generales de los datos suministrados (p.e. qué nombre se
+corresponde con cada código de puesto) y cada una de las restantes *features*
+se corresponde con los datos relevantes de un centro.
 
-.. todo:: Completar esta descripción.
+.. code-block:: json
+
+   {
+      "type": "FeatureCollection",
+      "features": [
+         {
+            "type": "Feature",
+            "properties": {
+               "curso": "2018\/19",
+               "tipo": "adjoferta",
+               "objetivo": "especialidad",
+               "entidad": [
+                  590107
+               ],
+               "spider": {
+                  "cgt": false,
+                  "vt": true,
+                  "organica": "2018\/19",
+                  "ofertafp": "2018\/19",
+                  "ofertasec": "2019\/20"
+               },
+               "limite": false,
+               "puestos": {
+                  "00590059": "APOYO AL ÁREA CIENTÍFICA O TECNOLÓGICA",
+                  "00590107": "Informática P.E.S",
+                  "11590107": "Informática (Inglés) P.E.S.",
+                  "CI590107": "Informática (Nueva implantación) P.E.S.",
+                  "DU590107": "Informática (Dual) P.E.S.",
+                  "ED590107": "Informática (IEDA) P.E.S.",
+                  "SP590107": "Informática (Semipresencial) P.E.S."
+               },
+               "colectivos": {
+                  "B": {
+                     "o": 0,
+                     "v": "Suprimido"
+                  },
+                  "C": {
+                     "o": 1,
+                     "v": "Desplazado"
+                  },
+                  "N": {
+                     "o": 2,
+                     "v": "ExDirector"
+                  },
+                  "E": {
+                     "o": 3,
+                     "v": "Adscrito"
+                  },
+                  "F": {
+                     "o": 4,
+                     "v": "Reingresado"
+                  },
+                  "DA": {
+                     "o": 5,
+                     "v": "SaludPropia"
+                  },
+                  "DB": {
+                     "o": 6,
+                     "v": "Conciliación"
+                  },
+                  "DC": {
+                     "o": 6,
+                     "v": "CargoElecto"
+                  },
+                  "G": {
+                     "o": 8,
+                     "v": "Provisional"
+                  },
+                  "M": {
+                     "o": 9,
+                     "v": "PueEspec"
+                  },
+                  "H": {
+                     "o": 10,
+                     "v": "EnPracticas"
+                  },
+                  "I": {
+                     "o": 11,
+                     "v": "Aprobado"
+                  },
+                  "DZ": {
+                     "o": 12,
+                     "v": "InterCom"
+                  },
+                  "J": {
+                     "o": 13,
+                     "v": "Interino"
+                  }
+               },
+               "ens": {
+                  "23GMSMR168": {
+                     "nombre": "Sistemas Microinformáticos y Redes",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ],
+                     "grado": "CFGM"
+                  },
+                  "23GSASI820": {
+                     "nombre": "Administración de Sistemas Informáticos en Red",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ],
+                     "grado": "CFGS"
+                  },
+                  "23GSDA859": {
+                     "nombre": "Desarrollo de Aplicaciones Web",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ],
+                     "grado": "CFGS"
+                  },
+                  "23GSDAM517": {
+                     "nombre": "Desarrollo de Aplicaciones Multiplataforma",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ],
+                     "grado": "CFGS"
+                  },
+                  "BAE": {
+                     "nombre": "Bachillerato de Artes Escénicas",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "CI590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ]
+                  },
+                  "BAP": {
+                     "nombre": "Bachillerato de Artes Plásticas",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "CI590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ]
+                  },
+                  "BCT": {
+                     "nombre": "Bachillerato de Ciencias",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "CI590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ]
+                  },
+                  "BHCS": {
+                     "nombre": "Bachillerato de Humanidades y Ciencias Sociales",
+                     "puestos": [
+                        "00590107",
+                        "11590107",
+                        "CI590107",
+                        "DU590107",
+                        "ED590107",
+                        "SP590107"
+                     ]
+                  }
+               },
+               "version": 0.2
+            }
+         },
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [
+                  -3.0248339999999998,
+                  36.746941
+               ]
+            },
+            "properties": {
+               "id": {
+                  "cod": 4000110,
+                  "nom": "I.E.S. Abdera",
+                  "dom": "C\/ Marisma, 6",
+                  "mun": "Adra",
+                  "cp": 4770,
+                  "pro": "Almeria"
+               },
+               "oferta": [
+                  {
+                     "ens": "BHCS",
+                     "mod": "semi",
+                     "idi": null,
+                     "adu": true,
+                     "ext": false,
+                     "ene": false,
+                     "nue": 0,
+                     "mar": false
+                  },
+                  {
+                     "ens": "BHCS",
+                     "mod": "pres",
+                     "idi": "Inglés",
+                     "adu": false,
+                     "ext": false,
+                     "ene": false,
+                     "nue": 0,
+                     "mar": false
+                  },
+                  {
+                     "ens": "BCT",
+                     "mod": "pres",
+                     "idi": "Inglés",
+                     "adu": false,
+                     "ext": false,
+                     "ene": false,
+                     "nue": 0,
+                     "mar": false
+                  },
+                  {
+                     "ens": "23GSDA859",
+                     "mod": "pres",
+                     "idi": null,
+                     "adu": false,
+                     "ext": false,
+                     "ene": false,
+                     "nue": 0,
+                     "tur": "matutino",
+                     "esp": null,
+                     "pla": 20,
+                     "pro": false,
+                     "mar": true
+                  }
+               ],
+               "mod": {
+                  "bil": [
+                     11
+                  ]
+               },
+               "pla": {
+                  "00590107": {
+                     "fun": 3,
+                     "org": 3,
+                     "norg": null,
+                     "vi": 1,
+                     "vt": 0
+                  }
+               },
+               "adj": [
+                  {
+                     "col": "J",
+                     "esc": [
+                        2,
+                        9,
+                        7
+                     ],
+                     "pue": "00590107",
+                     "pet": "15",
+                     "per": false,
+                     "ubi": false
+                  },
+                  {
+                     "col": "J",
+                     "esc": [
+                        1,
+                        7,
+                        6
+                     ],
+                     "pue": "00590107",
+                     "pet": "7",
+                     "per": false,
+                     "ubi": false
+                  }
+               ]
+            }
+         }
+      ]
+   }
+
+Algunas apuntes clave para entender los datos son:
+
+- La "*o*" en los colectivos representa el orden de prelación de cada colectivo.
+  Cuanto menor sea, mayor será la prelación. El dato es útil para la corrección
+  :ref:`adjref <adjofer-correct-adjref>`.
+
+- Las características de cada enseñanza son las siguientes:
+
+  * *ens*, código de la enseñanza.
+  * *mod*, modalidad de enseñanza que puede ser *pres* (presencial),
+           *semi* (semipresencial) y *dist* (a distancia).
+  * *idi*, idioma (Inglés, Francés o Alemán).
+  * *adu*, enseñanza de adultos.
+  * *ext*, ``true``, si la enseñanza se extinguió y el curso presente ya no existe.
+  * *ene*, ``true``, en extinción, pero sigue aún existiendo.
+  * *nue*, nueva implantación: **1**, en primer año; **2**, en segundo año;
+    **0**, no es una nueva enseñanza.
+  * *mar*, ``true`` si la enseñanza es deseable.
+  * *tur*, que puede ser *matutino*, *vespertino* o *ambos*. Sólo aparece en
+    enseñanzas de formación profesional. En las enseñanzas de secundaria y
+    bachillerato, se sobreentiende que la enseñanza de adultos es por la tarde.
+  * *esp*, *especial* que puede ser "*parcial*", "*dual*"
+  * *pla*, número de plazas (F.P.).
+  * *aum*, que representa la variación de plazas y puede ser un número positivo
+    o negativo.
+  * *pro*, ``true`` si es un programa específico de formación profesional.
+
+- Las características de cada adjudicación son las siguientes:
+
+  * *col*, letra que representa al colectivo.
+  * *esc*, escalafón o tiempo de servicio, si es funcionario interino.
+  * *pue*, puesto de adjudicación.
+  * *pet*, número de petición.
+  * *per*, ``true`` si la vacante se adjudicó en el concurso de traslados y,
+    consecuentemente, no estará disponible más en el procedimiento.
+  * *ubi*, ``true`` si el funcionario obtuvo plaza en el concurso de traslados y,
+    en principio, no volverá a ocupar esa plaza.
 
 Creación del objeto
 *******************
@@ -203,11 +530,23 @@ Atributos
    Almacena la información general del mapa que ofrece el objeto `GeoJSON`_ de
    datos.
 
+.. js:attribute:: seleccionado
+
+   Establece un centro como el seleccionado, lo que se notará visualmente
+   rodeando el icono con una circunferencia roja. Es la única propiedad
+   a la que podríamos asociar valor directamente::
+
+      g.seleccionado = g.Centro.get(21002100);  // Seleccionamos el centro 21002100.
+      g.seleccionado = null;     // Deshacemos la selección.
+
+   La selección de un centro tiene asociado el evento :ref:`markerselect
+   <adjofer-event-markerselect>`.
+
 .. js:attribute:: origen
 
    Marca que representa el origen del viaje. Puede no existir, si no se ha
    definido ningún origen, y cambia al cambiar de origen. El establecimniento
-   del origen está asociado al evento g.
+   del origen está asociado al evento :ref:`originset <adjofer-event-originset>`.
    
    Presenta un atributo ``g.origen.postal`` que almacena la dirección postal,
    si es que se llegó a averiguar.
@@ -272,8 +611,8 @@ Métodos
       // Cargamos unos nuevos datos.
       g.agregarCentros("json/590107.json");
 
-   .. note:: El fin de la carga de datos está asociado al evento
-      "*dataloaded*".
+   El fin de la carga de datos está asociado al evento :ref:`dataloaded
+   <adjofer-event-dataloaded>`.
 
 .. js:method:: geoCodificar(query)
 
@@ -282,13 +621,15 @@ Métodos
    dirección. En el primer caso, el punto debe ser un objeto con los atributos
    ``lat`` y ``lng``; y en el segundo, una cadena.
 
-   .. note:: La geocodificación tiene asociado el evento *addressset*.
+   La geocodificación tiene asociado el evento :ref:`addressset
+   <adjofer-event-addressset>`.
 
 .. js:method:: setOrigen(latlng)
 
    Establece el origen de los viajes en el punto pasado como argumento.
 
-   .. note:: La obtención del origen tiene asociado el evento *originset*.
+   La obtención del origen tiene asociado el evento :ref:`originset
+   <adjofer-event-originset>`.
 
 .. js:method:: calcularOrigen()
 
@@ -314,8 +655,8 @@ Métodos
    eliminan las isocronas que pudieran haberse generado anterioremente.  No
    puede haber más de un juego de isocronas
 
-   .. note:: La generación de las isocronas tiene asociado el evento
-      *isochroneset*.
+   La generación de las isocronas tiene asociado el evento :ref:`isochroneset
+   <adjofer-event-isochroneset>`.
 
 .. js:method:: getIsocronas(maciza)
 
@@ -333,8 +674,8 @@ Métodos
    suministrado. Como argumento debe usarse la marca del centro. Si se
    proporciona ``null``, la ruta anteriomente calculada y dibujada, se elimina.
 
-   .. note:: La generación de las isocronas tiene asociado el evento
-      *routeset*.
+   La generación de la ruta tiene asociado el evento :ref:`routeset
+   <adjofer-event-routeset>`.
 
 .. js:method:: getIcon(estilo)
 
@@ -489,6 +830,8 @@ Sobre las **adjudicaciones**
 
          Centro.correct("vt", {});
 
+   .. _adjofer-correct-adjref:
+
    *adjref*
       Elimina adjudicaciones hechas a adjudicatarios con mayor prioridad
       que el adjudicatario que se proporciona como referencia. Para establecer
@@ -512,6 +855,9 @@ Sobre las **adjudicaciones**
             esc: 20041111,
             ts: [9, 10, 2]
          });
+
+.. note:: Recuerde que la aplicación de una corrección C tiene asociado el
+   evento "*correct:C*"; y su desaplicación, el evento "*uncorrect:C*".
 
 .. _adjofer-filtros:
 
@@ -558,12 +904,26 @@ Se han definido los siguientes filtros:
       const iso20 = g.getIsocronas(true)[1];   // Área que encierra la isocrona de 20 min
       g.Centro.filter("lejos", {area: iso20}); // Filtro centros alejados en más de 20 min
 
+.. note:: Recuerde que la aplicación de un filtro *F* tiene asociado el
+   evento "*filter:F*"; y su desaplicación, el evento "*unfilter:F*". Además,
+   las marcas concretas disparan el evento "*filtered*", si un filtro las
+   filtra desde un estado no filtrado, y disparan el evento "*unfiltered*" si
+   su remoción las restituye desde un estado filtrado.
+
 .. _adjofer-eventos:
 
 Eventos
 *******
 Hay toda una serie de eventos que pueden ayudarnos a capturar acciones que se
 realizan sobre el mapa:
+
+.. _adjofer-event-dataloaded:
+
+*dataloaded*
+   Se desencadena al terminar de cargar los datos el método
+   :js:meth:`MapAdjOfer.agregarCentros`.
+
+.. _adjofer-event-markerselect:
 
 *markerselect*
    Se desencadena al seleccionar o deseleccionar un centro. En el objeto de
@@ -579,19 +939,27 @@ realizan sobre el mapa:
          }
       });
 
+.. _adjofer-event-addressset:
+
 *addressset*
    Se desencadena tras resolver una geocodificación con OpenRouteService_ a
    través del método :js:meth:`geoCodificar`. ``e.newval`` contiene el resultado
    de la geocodificación.
 
+.. _adjofer-event-originset:
+
 *originset*
    Se desencadena tras establecer un origen de viajes. Dispone de ``e.oldval`` y
    ``e.newval`` como el evento *markerselect*.
+
+.. _adjofer-event-isochroneset:
 
 *isochroneset*
    Se desencadena al terminar de generar un juego de isocronas a través del
    método :js:meth:`setIsocronas`. ``e.newval`` proporcionará el
    nuevo valor del atributo :js:attr:`isocronas`.
+
+.. _adjofer-event-routeset:
 
 *routeset*
    Se desencadena al terminar de generar la ruta entre el origen y el centro

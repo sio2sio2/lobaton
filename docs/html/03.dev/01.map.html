@@ -227,7 +227,7 @@ a los datos.</dd>
 <dd>Sistema que permite fijar criterios para hacer desaparecer (o volver a
 mostrar) marcas.</dd>
 </dl>
-<p class="rubric" id="dev-map-util">¿Cuándo puede resultarme útil leafext.js?</p>
+<p class="rubric">¿Cuándo puede resultarme útil leafext.js?</p>
 <p>La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:</p>
 <ol class="arabic simple">
@@ -1003,7 +1003,7 @@ automáticamente y con qué opciones, puede usarse el método
 <h4>3.1.2.5.5. Comprobación de su estado<a class="headerlink" href="#comprobacion-de-su-estado" title="Enlazar permanentemente con este título">¶</a></h4>
 <p>Para conocer cuál el estado de aplicación de las correcciones sobre las marcas,
 la clase provee dos métodos de clase. El primero es
-<a class="reference internal" href="#Marker.getCorrectStatus" title="Marker.getCorrectStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.getCorrectStatus()</span></code></a>:</p>
+js:meth:<cite>Marker.getCorrectStatus</cite>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">aplicadas</span> <span class="o">=</span> <span class="nx">Centro</span><span class="p">.</span><span class="nx">getCorrectStatus</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1049,7 +1049,7 @@ De nuevo, esto puede afectar a la interfaz visual, si ésta permitía la
 aplicación manual de <em>B</em>:</li>
 </ol>
 <p>Para llevar a cabo esto, existe el método de clase
-<code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.appliedCorrections()</span></code>:</p>
+js:meth:<cite>Marker.appliedCorrections</cite>:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">appliedCorrections</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">colectivos</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;Interino&quot;</span><span class="p">]},</span> <span class="s2">&quot;auto&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -1209,12 +1209,12 @@ cuando refresquemos las marcas:</p>
 <p>La marca dispone de dos métodos para hacer comprobaciones sobre los filtros
 aplicados:</p>
 <ul>
-<li><p class="first"><a class="reference internal" href="#Marker.hasFilter" title="Marker.hasFilter"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.hasFilter()</span></code></a> que informa de si se ha aplicado el filtro:</p>
+<li><p class="first">js:meth:<cite>Marker.hasFilter</cite> que informa de si se ha aplicado el filtro:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">hasFilter</span><span class="p">(</span><span class="s2">&quot;adjcol&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><a class="reference internal" href="#Marker.getFilterStatus" title="Marker.getFilterStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">Marker.getFilterStatus()</span></code></a> que devuelve un objeto en las claves
+<li><p class="first">js:meth:<cite>Marker.getFilterStatus</cite> que devuelve un objeto en las claves
 son los nombres de los filtros aplicados y los valores las opciones
 correspondientes de aplicación.</p>
 </li>
