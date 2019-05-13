@@ -88,7 +88,7 @@ function ligarVacantes() {
    // Ligamos los aspectos en la interfaz
    const agregar = document.getElementById("corr:vt+");
    agregar.addEventListener("change", e => {
-      const eliminar = document.getElementById("vac");
+      const eliminar = document.getElementById("corr:vt");
       if(!eliminar) return;
 
       eliminar.disabled = !e.target.checked;
@@ -102,6 +102,7 @@ function ligarVacantes() {
  */
 function cambiaCorreccion(e) {
    const cor = sanitizeNombreCorreccion(e.target.name);
+   console.log("DEBUG", cor);
    const fieldset = e.target.closest("fieldset");
    const inputs = fieldset.querySelectorAll(`input[name='${e.target.name}']:checked`);
 
@@ -160,14 +161,14 @@ function sanitizeNombreCorreccion(cor) {
 /**
  * Aplica filtros o correcciones en los que el usuario no tiene que establecer
  * las opciones de aplicación, sino que estas ya vienen dadas.
- * Cuáles sean estas opciones, se establece en el valor de data-opts.
+ * Cuáles sean estas opciones, se establece en el valor de value.
  */
 function aplicarCambioBinario(e) {
    let aplicacion,
        tipo = e.target.id.startsWith("filtro")?"filter":"correct";
 
    if(e.target.checked) {
-      const opts = JSON.parse(e.target.getAttribute("data-opts"));
+      const opts = JSON.parse(e.target.value);
       aplicacion = g.Centro[tipo](e.target.name, opts);
    }
    else aplicacion = g.Centro[`un${tipo}`](e.target.name);
@@ -247,12 +248,12 @@ function cargaCorrecciones(){
    //Añadimos las correcciones de vacantes telefónicas al menú
    menuCorrecciones.push({
       nombre: "Vacantes telefónicas",
-      correccion_id: "vac",
+      correccion_id: "corr:vt",
       correccion_name: "vt",
-      descripcion: "Elimina vacantes que no sean telefónicas",
+      descripcion: "Elimina adjudicaciones que no sean telefónicas",
       values: [{
-         opcion_id: "vac",
-         opcion_label: "Eliminar vacantes",
+	      opcion_id: "corr:vt",
+         opcion_label: "Eliminar adjudicaciones",
          opcion_valor: "Vac",
          opcion_checked: ""
          }]
@@ -261,7 +262,7 @@ function cargaCorrecciones(){
    // Correcciones de adjudicaciones
    menuCorrecciones.push({
       nombre: "Adjudicaciones",
-      correccion_id: "puesto",
+      correccion_id: "corr:adjpue",
       correccion_name: "adjpue[]",
       descripcion: "Elimina las adjudicaciones de los puestos:",
       values: Object.keys(g.general.puestos).map(function(key, index){
@@ -291,7 +292,7 @@ function cargaCorrecciones(){
    // La corrección que elimina vacantes telefónicas
    // está asociada a que se hayan incluido en los ajustes.
    const agregar = document.getElementById("corr:vt+"),
-         eliminar = document.getElementById("vac");
+         eliminar = document.getElementById("corr:vt");
    agregar.dispatchEvent(new Event("change"));
 }
 
