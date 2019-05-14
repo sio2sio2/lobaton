@@ -163,6 +163,9 @@ window.onload = function() {
    createSearchPanel("busqueda");
 
    g.on("markerselect", e => {
+      if(!sidebar._map) { // La barra no está desplegada.
+         document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
+      }
       sidebar.open("centro");
    });
 
