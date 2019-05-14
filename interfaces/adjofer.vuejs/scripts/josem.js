@@ -102,7 +102,6 @@ function ligarVacantes() {
  */
 function cambiaCorreccion(e) {
    const cor = sanitizeNombreCorreccion(e.target.name);
-   console.log("DEBUG", cor);
    const fieldset = e.target.closest("fieldset");
    const inputs = fieldset.querySelectorAll(`input[name='${e.target.name}']:checked`);
 
@@ -113,6 +112,7 @@ function cambiaCorreccion(e) {
       // El sentido normal del filtro es desecharlas
       if(cor === "bilingue") params.inv = true;
 
+      console.log("DEBUG", params);
       aplicaCorreccion(cor, params);
    }
    else deshaceCorreccion(cor);
@@ -262,7 +262,7 @@ function cargaCorrecciones(){
    // Correcciones de adjudicaciones
    menuCorrecciones.push({
       nombre: "Adjudicaciones",
-      correccion_id: "corr:adjpue",
+      correccion_id: "puesto",
       correccion_name: "adjpue[]",
       descripcion: "Elimina las adjudicaciones de los puestos:",
       values: Object.keys(g.general.puestos).map(function(key, index){

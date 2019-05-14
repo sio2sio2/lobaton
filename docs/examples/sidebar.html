@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+   <meta charset="UTF-8">
+   <title>Prueba de sidebar</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <!-- Leaflet -->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+         integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+         crossorigin="">
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin=""></script>
+
+   <!-- Extensión para el soporte de iconos mutables -->
+   <script src="../../dist/leafext.js"></script>
+
+   <!-- Plugin: Añade botón para maximizar el mapa -->
+   <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+   <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet'>
+
+   <!-- Plugin: Agrupa marcas contiguas -->
+   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+
+   <!-- Plugin: Menu contextual con el botón derecho -->
+   <script src="https://aratcliffe.github.io/Leaflet.contextmenu/dist/leaflet.contextmenu.js"></script>
+   <link rel="stylesheet" href="https://aratcliffe.github.io/Leaflet.contextmenu/dist/leaflet.contextmenu.css">
+
+   <!-- Librería turf: necesaria para isocronas -->
+   <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+   <!-- Plugin: Leaflet Control Search -->
+   <script src="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.js"></script>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.css">
+   <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.mobile.min.css">
+   <!-- Fuse.js: Fuzzy-search -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/1.2.2/fuse.min.js"></script>
+
+   <!-- Mapa de oferta y adjudicaciones -->
+   <script src="../../dist/maps/adjofer/map.js"></script>
+
+   <!-- Plugin: Sidebar -->
+   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.1.1/js/leaflet-sidebar.min.js"></script>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.1.1/css/leaflet-sidebar.min.css">
+
+   <!-- Particularidades de esta página -->
+   <script src="scripts/sidebar.js"></script>
+   <link rel="stylesheet" href="../../dist/maps/adjofer/css/adjofer.css">
+
+   <style>
+      /*<![CDATA[*/
+      html { height: 100%; }
+      body {
+         margin: 0; padding: 0;
+         height: 100%;
+      }
+      #map {
+        margin: 0;
+        padding: 0;
+        height: 100%
+      }
+
+      .filtered {
+         filter: grayscale(100%);
+      }
+      /*]]>*/
+   </style>
+   <!-- HTML para los iconos que se decoran con CSS -->
+   <template id="iconocss">
+      <div class="content"><span></span></div>
+      <div class="arrow"></div>
+   </template>
+
+   <div id="map"></div>
+
+   <!-- Barra lateral -->
+   <div id="sidebar" class="leaflet-sidebar collapsed">
+
+      <!-- Navegación -->
+      <div class="leaflet-sidebar-tabs">
+         <!-- Arriba -->
+         <ul role="tablist">
+            <li><a href="#ajustes" role="tab"><i class="fa fa-bars"></i></a></li>
+            <li><a href="#selector" role="tab"><i class="fa fa-users active"></i></a></li>
+            <li><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
+            <li><a href="#correccion" role="tab"><i class="fa fa-filter"></i></a></li>
+            <li><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
+            <li><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
+         </ul>
+
+         <!-- Abajo -->
+         <ul role="tablist">
+            <li><a href="#help" role="tab"><i class="fa fa-question"></i></a></li>
+            <li><a href="https://github.com/sio2sio2/lobaton" target="_blank"><i class="fa fa-github"></i></a></li>
+         </ul>
+      </div>
+
+      <!-- Paneles -->
+      <div class="leaflet-sidebar-content">
+         <div class="leaflet-sidebar-pane" id="ajustes">
+            <h1 class="leaflet-sidebar-header">
+               Ajustes
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Aquí se deben ofrecer los ajustes</p>
+         </div>
+
+         <div class="leaflet-sidebar-pane" id="selector">
+            <h1 class="leaflet-sidebar-header">
+               Especialidad
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Aquí se selecciona la especialidad</p>
+         </div>
+
+
+         <div class="leaflet-sidebar-pane" id="correccion">
+            <h1 class="leaflet-sidebar-header">
+               Filtrado
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Aquí se incluyen las correcciones de datos</p>
+         </div>
+
+         <div class="leaflet-sidebar-pane" id="info">
+            <h1 class="leaflet-sidebar-header">
+               Información
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Información sobre el estado del mapa</p>
+         </div>
+
+         <div class="leaflet-sidebar-pane" id="solicitud">
+            <h1 class="leaflet-sidebar-header">
+               Petición de destinos
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Esta pestaña está dedicada a la petición de destinos</p>
+         </div>
+
+         <div class="leaflet-sidebar-pane" id="help">
+            <h1 class="leaflet-sidebar-header">
+               Ayuda
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <p>Explicación muy simple del funcionamiento</p>
+         </div>
+
+         <div class="leaflet-sidebar-pane" id="busqueda">
+            <h1 class="leaflet-sidebar-header">
+               Búsqueda de centros
+               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+         </div>
+      </div>
+
+   </div>
+</html>
