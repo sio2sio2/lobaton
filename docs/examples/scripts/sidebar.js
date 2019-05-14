@@ -5,7 +5,7 @@ window.onload = function() {
       zoom: 8,
       center: [37.45, -4.5],
       unclusterZoom: 13,
-//      search: false,
+      search: false,
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
       }
@@ -44,26 +44,6 @@ window.onload = function() {
       console.log("Estado de filtros", g.Centro.getFilterStatus());
    });
 
-   /*
-   function poblarSelectores() {
-      const selectEstilo = document.querySelector("select[name='estilo']");
-      const selectEsp = document.querySelector("select[name='especialidad']");
-
-      selectEstilo.addEventListener("change", e => g.setIcon(e.target.value));
-
-      selectEsp.addEventListener("change", function(e) {
-         g.cluster.clearLayers();
-         g.Centro.reset();
-         g.setRuta(null);
-
-         g.agregarCentros(this.value);
-      });
-   }
-
-   poblarSelectores();
-   document.querySelector("select[name='especialidad']").dispatchEvent(new Event("change"));
-   */
-   
    g.agregarCentros("../../json/590107.json");
 
    sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
@@ -157,7 +137,9 @@ window.onload = function() {
 
    createSearchPanel("busqueda");
 
+   // Al seleccionar un centro, muestra automáticamente su información.
    g.on("markerselect", e => {
+      if(!e.newval) return;
       if(!sidebar._map) { // La barra no está desplegada.
          document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
       }
