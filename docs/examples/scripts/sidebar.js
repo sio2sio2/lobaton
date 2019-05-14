@@ -4,6 +4,8 @@ window.onload = function() {
    g = mapAdjOfer("../../dist", {
       zoom: 8,
       center: [37.45, -4.5],
+      unclusterZoom: 13,
+      search: false,
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
       }
@@ -64,20 +66,107 @@ window.onload = function() {
    
    g.agregarCentros("../../json/590107.json");
 
-   // Prueba para meter el cajetín de búsqueda dentro de la barra lateral
-   const data = [
-      {loc:[37, -6], title:"algo inútil"}
-   ]
-
-   g.map.addControl(new L.Control.Search({
-      container: "busqueda",
-      layer: g.cluster,
-      initial: false,
-      collapsed: false,
-   }));
-
-   const sidebar = L.control.sidebar({ container: 'sidebar' })
+   sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
                    .addTo(g.map)
                    .open("selector");
+
+   const Despliegue = L.Control.extend({
+      onAdd: function(map) {
+         const button = L.DomUtil.create("button"),
+               icon = L.DomUtil.create("i", "fa fa-arrow-down");
+
+         button.id = "view-sidebar";
+         button.setAttribute("type", "button");
+         button.appendChild(icon);
+         button.addEventListener("click", e => {
+            this.remove(map);
+         });
+
+         return button;
+      },
+      onRemove: map => {
+         sidebar.addTo(map);
+         // Por alguna extraña razón (que parece un bug del plugin)
+         // hay que volver a eliminar y añadir la barra para que funcione
+         // el despliegue de los paneles.
+         sidebar.remove();
+         sidebar.addTo(map);
+      }
+   });
+
+   document.querySelector("#sidebar i.fa-arrow-up").closest("a")
+           .addEventListener("click", e => {
+      sidebar.remove();
+      new Despliegue({position: "topleft"}).addTo(g.map);
+   });
+
+   document.querySelector("#sidebar i.fa-square-o").closest("a")
+           .addEventListener("click", e => {
+      g.map.toggleFullscreen();
+   });
+
+   function createSearchPanel(id) {
+      const panel = document.createElement("article");
+      document.getElementById(id).appendChild(panel);
+      const input = document.createElement("input");
+      const datalist = document.createElement("datalist");
+      panel.appendChild(input);
+      panel.appendChild(datalist);
+
+      function label(d) {
+         const isFirefox = typeof InstallTrigger !== "undefined";
+         // Firefox no muestra value en la lista de sugerencias, así
+         // que debemos añadir el código de provincia al nombre del centro.
+         return true?`(${String(d.id.cp).substring(0,2)}) ${d.id.nom}`:d.id.nom;
+      }
+
+      function filterData(text) {
+         const pathData = g.Centro.prototype.options.mutable;
+         return new Fuse(
+            g.cluster.getLayers(), {
+               keys: [pathData + ".id.nom"],
+               minMatchCharLength: 2,
+            }).search(text);
+      }
+
+      datalist.id = "sugerencias";
+      input.setAttribute("list", "sugerencias");
+      input.setAttribute("name", "centro");
+      input.setAttribute("placeholder", "Escriba el nombre...");
+
+      input.addEventListener("input", e => {
+         const opts = Array.from(datalist.querySelectorAll("option")).map(o => o.value);
+
+         datalist.innerHTML = "";
+         if(opts.indexOf(e.target.value) !== -1) {
+            e.target.setCustomValidity("");
+            g.seleccionado = g.Centro.get(e.target.value);
+            e.target.value = "";
+            g.map.setView(g.seleccionado.getLatLng(),
+                          g.cluster.options.disableClusteringAtZoom);
+         }
+         else {
+            if(e.target.value.length > 2) {
+               const res = filterData(e.target.value);
+               for(const centro of res)  {
+                  const option = L.DomUtil.create("option", undefined, datalist),
+                        data = centro.getData();
+                  option.value = data.id.cod;
+                  option.textContent = label(data);
+               }
+            }
+            e.target.setCustomValidity("Centro no encontrado");
+         }
+      });
+   }
+
+   createSearchPanel("busqueda");
+
+   g.on("markerselect", e => {
+      if(!sidebar._map) { // La barra no está desplegada.
+         document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
+      }
+      sidebar.open("centro");
+   });
 
 }

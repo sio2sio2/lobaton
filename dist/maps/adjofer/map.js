@@ -141,6 +141,7 @@ const mapAdjOfer = (function(path, opts) {
          id: "map",
          center: [37.07, -6.27],
          zoom: 9,
+         unclusterZoom: 14,
          light: true,      // Issue #41
          search: true,     // Issue #51
          ors: false,       // Issue #42
@@ -393,7 +394,7 @@ const mapAdjOfer = (function(path, opts) {
    function loadMap() {
 
       const options = {},
-            nooptions = ["light", "ors", "id", "search", "icon"];
+            nooptions = ["light", "ors", "id", "search", "icon", "unclusterZoom"];
 
       for(const name in this.options) {
          if(nooptions.indexOf(name) !== -1) continue
@@ -404,7 +405,6 @@ const mapAdjOfer = (function(path, opts) {
 
       this.map = L.map(this.options.id, options);
       this.map.zoomControl.setPosition('bottomright');
-      this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -418,8 +418,8 @@ const mapAdjOfer = (function(path, opts) {
        */
       this.cluster = L.markerClusterGroup({
          showCoverageOnHover: false,
-         // Al llegar a nivel 14 de zoom se ven todas las marcas.
-         disableClusteringAtZoom: 14,
+         // Al llegar a este nivel de zoom se ven todas las marcas.
+         disableClusteringAtZoom: this.options.unclusterZoom,
          spiderfyOnMaxZoom: false,
          iconCreateFunction: L.utils.noFilteredIconCluster,
       }).addTo(this.map);

@@ -1,0 +1,14 @@
+#busqueda input {
+   box-sizing: 100%;
+   width: 100%;
+}
+
+#busqueda article {
+   padding: 10px 0;
+}
+
+#view-sidebar {
+   line-height: 40px;
+   width: 40px;
+   box-sizing: border-box;
+}
