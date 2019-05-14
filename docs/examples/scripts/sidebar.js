@@ -4,6 +4,7 @@ window.onload = function() {
    g = mapAdjOfer("../../dist", {
       zoom: 8,
       center: [37.45, -4.5],
+      unclusterZoom: 13,
       search: false,
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
@@ -65,18 +66,52 @@ window.onload = function() {
    
    g.agregarCentros("../../json/590107.json");
 
-   const sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
+   sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
                    .addTo(g.map)
                    .open("selector");
 
-   document.querySelector("#sidebar i.fa-square-o").addEventListener("click", e => {
+   const Despliegue = L.Control.extend({
+      onAdd: function(map) {
+         const button = L.DomUtil.create("button"),
+               icon = L.DomUtil.create("i", "fa fa-arrow-down");
+
+         button.id = "view-sidebar";
+         button.setAttribute("type", "button");
+         button.appendChild(icon);
+         button.addEventListener("click", e => {
+            this.remove(map);
+         });
+
+         return button;
+      },
+      onRemove: map => {
+         sidebar.addTo(map);
+         // Por alguna extraña razón (que parece un bug del plugin)
+         // hay que volver a eliminar y añadir la barra para que funcione
+         // el despliegue de los paneles.
+         sidebar.remove();
+         sidebar.addTo(map);
+      }
+   });
+
+   document.querySelector("#sidebar i.fa-arrow-up").closest("a")
+           .addEventListener("click", e => {
+      sidebar.remove();
+      new Despliegue({position: "topleft"}).addTo(g.map);
+   });
+
+   document.querySelector("#sidebar i.fa-square-o").closest("a")
+           .addEventListener("click", e => {
       g.map.toggleFullscreen();
    });
 
    function createSearchPanel(id) {
-      const panel = document.getElementById(id);
-      const input = L.DomUtil.create("input", undefined, panel);
-      const datalist = L.DomUtil.create("datalist", undefined, panel);
+      const panel = document.createElement("article");
+      document.getElementById(id).appendChild(panel);
+      const input = document.createElement("input");
+      const datalist = document.createElement("datalist");
+      panel.appendChild(input);
+      panel.appendChild(datalist);
 
       function label(d) {
          const isFirefox = typeof InstallTrigger !== "undefined";
@@ -107,12 +142,10 @@ window.onload = function() {
             e.target.setCustomValidity("");
             g.seleccionado = g.Centro.get(e.target.value);
             e.target.value = "";
-            sidebar.open("centro");
             g.map.setView(g.seleccionado.getLatLng(),
                           g.cluster.options.disableClusteringAtZoom);
          }
          else {
-            console.log("DEBUG", e.target.value.length);
             if(e.target.value.length > 2) {
                const res = filterData(e.target.value);
                for(const centro of res)  {
@@ -128,5 +161,9 @@ window.onload = function() {
    }
 
    createSearchPanel("busqueda");
+
+   g.on("markerselect", e => {
+      sidebar.open("centro");
+   });
 
 }

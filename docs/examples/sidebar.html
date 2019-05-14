@@ -31,11 +31,7 @@
    <!-- Librería turf: necesaria para isocronas -->
    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 
-   <!-- Plugin: Leaflet Control Search -->
-   <script src="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.js"></script>
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.css">
-   <link rel="alternate stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.mobile.min.css">
-   <!-- Fuse.js: Fuzzy-search -->
+   <!-- Fuse.js: Fuzzy-search (cajetín de búsqueda de centros -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/1.2.2/fuse.min.js"></script>
 
    <!-- Mapa de oferta y adjudicaciones -->
@@ -84,6 +80,7 @@
       <div class="leaflet-sidebar-tabs">
          <!-- Arriba -->
          <ul role="tablist">
+            <li><a><i class="fa fa-arrow-up"></i></a></li>
             <li><a href="#ajustes" role="tab"><i class="fa fa-bars"></i></a></li>
             <li><a href="#selector" role="tab"><i class="fa fa-users active"></i></a></li>
             <li><a><i class="fa fa-square-o"></i></a></li>
@@ -95,7 +92,6 @@
 
          <!-- Abajo -->
          <ul role="tablist">
-            <li><a href="#help" role="tab"><i class="fa fa-question"></i></a></li>
             <li><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
             <li><a href="https://github.com/sio2sio2/lobaton" target="_blank"><i class="fa fa-github"></i></a></li>
          </ul>
@@ -156,15 +152,6 @@
             </h1>
 
             <p>Esta pestaña está dedicada a la petición de destinos</p>
-         </div>
-
-         <div class="leaflet-sidebar-pane" id="help">
-            <h1 class="leaflet-sidebar-header">
-               Ayuda
-               <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
-            </h1>
-
-            <p>Explicación muy simple del funcionamiento</p>
          </div>
 
          <div class="leaflet-sidebar-pane" id="busqueda">

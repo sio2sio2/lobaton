@@ -470,6 +470,10 @@ una variable que sea accesible desde el resto del código.
          Estilo del icono. Puede ser "*boliche*" o "*chupachups*". Por defecto,
          *boliche*.
 
+      ``unclusterZoom``
+         Zoom a partir del cual las marcas de centro se mostrarán siembre
+         desagregadas. Por defecto, **14**.
+
      ``ors``
          Objeto que facilita las opciones para generar isocronas, crear rutas y
          geocodificar puntos utilizando la |API| de `OpenRouteService`_. Acepta
