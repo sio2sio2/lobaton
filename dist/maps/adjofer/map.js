@@ -404,7 +404,6 @@ const mapAdjOfer = (function(path, opts) {
 
       this.map = L.map(this.options.id, options);
       this.map.zoomControl.setPosition('bottomright');
-      this.map.addControl(new L.Control.Fullscreen({position: "topright"}));
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
