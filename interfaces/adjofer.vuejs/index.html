@@ -233,12 +233,26 @@
                 </div>
                 <div class="card-body">
                     <template v-for="of in datosCentro.oferta">
-                        <h5 class="card-title">{{info.ens[of.ens].nombre}}</h5>
-                        <!--Si ha sido trasladado-->
+                        <h5 class="card-title" v-bind:class="{'tachado': of.ext}">{{info.ens[of.ens].nombre}} <span v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h5>
                         <p class="card-text info-oferta">
+                          <span v-if="of.ext">(Extinto) </span>
                           <span v-if="of.esp">{{of.esp | capitalize }}. </span>
-                          <span v-if="of.ori">Trasladado desde {{of.ori | decodificaCentro }} </span>
-                          <span v-if="of.tur !== 'matutino'">{{of.tur | capitalize }}. </span>
+                          <!-- Modalidad: presencial, semi o a distancia -->
+                          <span>{{of.mod | traduceModalidad }}. </span>
+                          <!-- Turno -->
+                          <span v-if="of.tur">{{of.tur | capitalize }}. </span>
+                          <!-- Número de plazas (FP) -->
+                          <span v-if="of.pla">{{of.pla }} plazas. </span>
+                          <span v-if="of.aum">({{of.aum }}). </span>
+                          <!-- Si ha sido trasladado -->
+                          <span v-if="of.ori">Trasladado desde {{of.ori | decodificaCentro }}. </span>
+                          <!-- ¿Está en extinción? -->
+                          <span v-if="of.ene">(En extinción) </span>
+                          <!-- ¿Es nueva? -->
+                          <span v-if="of.nue === 1">Nueva implantación (1er año). </span>
+                          <span v-else-if="of.nue === 2">Nueva implantación (2º año). </span>
+                          <!-- ¿Es un programa específico de FP? -->
+                          <span v-if="of.pro">(Programa específico de FP) </span>
                         </p>
                         <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
                     </template>
