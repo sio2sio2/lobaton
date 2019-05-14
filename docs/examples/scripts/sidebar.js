@@ -5,7 +5,7 @@ window.onload = function() {
       zoom: 8,
       center: [37.45, -4.5],
       unclusterZoom: 13,
-      search: false,
+//      search: false,
       ors: {
          key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
       }
@@ -94,13 +94,13 @@ window.onload = function() {
       }
    });
 
-   document.querySelector("#sidebar i.fa-arrow-up").closest("a")
+   document.querySelector("#sidebar i.fa-arrow-up").parentNode
            .addEventListener("click", e => {
       sidebar.remove();
       new Despliegue({position: "topleft"}).addTo(g.map);
    });
 
-   document.querySelector("#sidebar i.fa-square-o").closest("a")
+   document.querySelector("#sidebar i.fa-square-o").parentNode
            .addEventListener("click", e => {
       g.map.toggleFullscreen();
    });
@@ -109,16 +109,9 @@ window.onload = function() {
       const panel = document.createElement("article");
       document.getElementById(id).appendChild(panel);
       const input = document.createElement("input");
-      const datalist = document.createElement("datalist");
+      const ul = document.createElement("ul");
       panel.appendChild(input);
-      panel.appendChild(datalist);
-
-      function label(d) {
-         const isFirefox = typeof InstallTrigger !== "undefined";
-         // Firefox no muestra value en la lista de sugerencias, así
-         // que debemos añadir el código de provincia al nombre del centro.
-         return true?`(${String(d.id.cp).substring(0,2)}) ${d.id.nom}`:d.id.nom;
-      }
+      panel.appendChild(ul);
 
       function filterData(text) {
          const pathData = g.Centro.prototype.options.mutable;
@@ -129,35 +122,37 @@ window.onload = function() {
             }).search(text);
       }
 
-      datalist.id = "sugerencias";
-      input.setAttribute("list", "sugerencias");
       input.setAttribute("name", "centro");
       input.setAttribute("placeholder", "Escriba el nombre...");
 
       input.addEventListener("input", e => {
-         const opts = Array.from(datalist.querySelectorAll("option")).map(o => o.value);
+         ul.innerHTML = "";
+         if(e.target.value.length > 2) {
+            const res = filterData(e.target.value);
+            for(const centro of res)  {
+               const li   = document.createElement("li"),
+                     data = document.createElement("data"),
+                     info = centro.getData();
+               
 
-         datalist.innerHTML = "";
-         if(opts.indexOf(e.target.value) !== -1) {
-            e.target.setCustomValidity("");
-            g.seleccionado = g.Centro.get(e.target.value);
-            e.target.value = "";
-            g.map.setView(g.seleccionado.getLatLng(),
-                          g.cluster.options.disableClusteringAtZoom);
-         }
-         else {
-            if(e.target.value.length > 2) {
-               const res = filterData(e.target.value);
-               for(const centro of res)  {
-                  const option = L.DomUtil.create("option", undefined, datalist),
-                        data = centro.getData();
-                  option.value = data.id.cod;
-                  option.textContent = label(data);
-               }
+               ul.appendChild(li);
+               li.appendChild(data);
+               data.value = info.id.cod;
+               data.innerHTML = `<span>${String(info.id.cod).padStart(8, "0")}</span> <span>${info.id.nom}</span>`;
+
+               li.addEventListener('click', selectCentro);
             }
-            e.target.setCustomValidity("Centro no encontrado");
          }
       });
+
+      function selectCentro(e) {
+         const codigo = this.firstChild.value;
+         this.parentNode.previousElementSibling.value = "";
+         this.parentNode.innerHTML = "";
+         g.seleccionado = g.Centro.get(codigo);
+         g.map.setView(g.seleccionado.getLatLng(),
+                       g.cluster.options.disableClusteringAtZoom);
+      }
    }
 
    createSearchPanel("busqueda");

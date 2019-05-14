@@ -1,10 +1,31 @@
+#busqueda article {
+   padding: 10px 10px;
+}
+
 #busqueda input {
    box-sizing: 100%;
    width: 100%;
 }
 
-#busqueda article {
-   padding: 10px 0;
+#busqueda ul {
+   list-style: none;
+   padding-left: 0;
+}
+
+#busqueda li {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#busqueda li:hover {
+   cursor: pointer;
+   background-color: #eee;
+}
+
+#busqueda data {
+   display: flex;
+   justify-content: space-between;
 }
 
 #view-sidebar {
