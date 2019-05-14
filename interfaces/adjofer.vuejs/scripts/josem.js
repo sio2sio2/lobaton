@@ -344,6 +344,21 @@ function displayInfoCentro(centro) {
                      }
                   }
                   return nombre;
+               },
+               /*
+               * La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
+               */
+               traduceModalidad: function(nombreAbreviado){
+                  let nombre = "A distancia";
+                  switch(nombreAbreviado){
+                     case "pres":
+                        nombre = "Presencial";
+                        break;
+                     case "semi":
+                        nombre = "Semipresencial";
+                        break;
+                  }
+                  return nombre;
                }
             }
          });
