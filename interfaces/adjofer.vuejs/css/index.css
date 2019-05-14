@@ -105,7 +105,7 @@ body, html, #map {
     padding-left: 2em;
 }
 
-.filtrado h5, .filtrado p.puesto-pce {
+.filtrado h5, .filtrado p.puesto-pce, .tachado {
     text-decoration: line-through;
 }
 
