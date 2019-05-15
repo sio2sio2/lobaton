@@ -1,7 +1,14 @@
-#busqueda article {
-   padding: 10px 10px;
+#view-sidebar {
+   line-height: 40px;
+   width: 40px;
+   box-sizing: border-box;
 }
 
+#sidebar .leaflet-sidebar-pane article {
+   padding: 10px;
+}
+
+/* Cajetín de búsqueda */
 #busqueda input {
    box-sizing: 100%;
    width: 100%;
@@ -27,9 +34,10 @@
    display: flex;
    justify-content: space-between;
 }
+/* Fin cajetín */
 
-#view-sidebar {
-   line-height: 40px;
-   width: 40px;
-   box-sizing: border-box;
+/* Elimina la flecha del input con sugerencias */
+#esp input::-webkit-calendar-picker-indicator,
+#esp input::-webkit-list-button {
+   display: none;
 }

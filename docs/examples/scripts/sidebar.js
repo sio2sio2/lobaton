@@ -1,24 +1,37 @@
-window.onload = function() {
+const Interfaz = (function() {
 
-   // Objeto de manipulación del mapa.
-   g = mapAdjOfer("../../dist", {
-      zoom: 8,
-      center: [37.45, -4.5],
-      unclusterZoom: 13,
-      search: false,
-      ors: {
-         key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
+   function Interfaz() {
+      // Objeto de manipulación del mapa.
+      this.g = mapAdjOfer("../../dist", {
+         zoom: 8,
+         center: [37.45, -4.5],
+         unclusterZoom: 13,
+         search: false,
+         ors: {
+            key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
+         }
+      });
+
+      initialize.call(this);
+      createSidebar.call(this);
+      createSearchPanel.call(this, "busqueda");
+   }
+
+
+   // Inicializa el mapa.
+   function initialize() {
+
+      if(!this.g.map.toggleFullscreen) {
+         console.warn("Falta plugin: https://github.com/Leaflet/Leaflet.fullscreen");
       }
-   });
 
-   // Los filtros se conservan al cargar nuevos datos
-   // así que podemos fijarlos de inicio.
-   g.Centro.filter("adj", {min: 1});
-   g.Centro.filter("oferta", {min: 1});
+      if(!L.control.sidebar) {
+         throw new Error("Falta plugin: https://github.com/nickpeihl/leaflet-sidebar-v2");
+      }
 
-   // Acciones que se desencadenan al seleccionar/deseleccionar un centro
-   g.on("markerselect", function(e) {
-      if(e.newval) {
+      // DEBUG: Elimínese esto en producción.
+      this.g.on("markerselect", function(e) {
+         if(!e.newval) return;
          const layer = e.newval;
          console.log("Se ha seleccionado el centro " + layer.getData().id.nom);
          console.log("marca", layer);
@@ -26,65 +39,76 @@ window.onload = function() {
          console.log("filtrado", layer.filtered);
          console.log("oferta", Array.from(layer.getData().oferta));
          console.log("adj", Array.from(layer.getData().adj));
-      }
-      else console.log("Se ha deseleccionado el centro " + e.oldval.getData().id.nom);
-   });
+      });
+   }
 
-   // Tras cargar los datos, se desencadena esto
-   g.on("dataloaded", function() {
-      console.log("Se han acabado de cargar los centros");
 
-      // Aplicamos unas correcciones automáticamente.
-      g.Centro.correct("bilingue", {bil: ["Inglés"]});
-      g.Centro.correct("adjpue", {puesto: ["00590059"]});
-      g.Centro.correct("vt+", {});
-      g.Centro.invoke("refresh");
+   // Crea la barra lateral.
+   function createSidebar() {
 
-      console.log("Estado de correcciones", g.Centro.getCorrectStatus());
-      console.log("Estado de filtros", g.Centro.getFilterStatus());
-   });
+      // Barra lateral
+      this.sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
+                      .addTo(this.g.map)
+                      .open("selector");
 
-   g.agregarCentros("../../json/590107.json");
+      // Botón que sustituye a la barra lateral.
+      const Despliegue = L.Control.extend({
+         onAdd: function(map) {
+            const button = L.DomUtil.create("button"),
+                  icon = L.DomUtil.create("i", "fa fa-arrow-down");
 
-   sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
-                   .addTo(g.map)
-                   .open("selector");
+            button.id = "view-sidebar";
+            button.setAttribute("type", "button");
+            button.appendChild(icon);
+            button.addEventListener("click", e => {
+               this.remove(map);
+            });
 
-   const Despliegue = L.Control.extend({
-      onAdd: function(map) {
-         const button = L.DomUtil.create("button"),
-               icon = L.DomUtil.create("i", "fa fa-arrow-down");
+            return button;
+         },
+         onRemove: map => {
+            this.sidebar.addTo(map);
+            // Por alguna extraña razón (que parece un bug del plugin)
+            // hay que volver a eliminar y añadir la barra para que funcione
+            // el despliegue de los paneles.
+            this.sidebar.remove();
+            this.sidebar.addTo(map);
+         }
+      });
 
-         button.id = "view-sidebar";
-         button.setAttribute("type", "button");
-         button.appendChild(icon);
-         button.addEventListener("click", e => {
-            this.remove(map);
-         });
+      // Botón de enrollado.
+      document.querySelector("#sidebar i.fa-arrow-up").parentNode
+              .addEventListener("click", e => {
+         this.sidebar.remove();
+         new Despliegue({position: "topleft"}).addTo(this.g.map);
+      });
 
-         return button;
-      },
-      onRemove: map => {
-         sidebar.addTo(map);
-         // Por alguna extraña razón (que parece un bug del plugin)
-         // hay que volver a eliminar y añadir la barra para que funcione
-         // el despliegue de los paneles.
-         sidebar.remove();
-         sidebar.addTo(map);
-      }
-   });
+      // Botón para pantalla completa.
+      document.querySelector("#sidebar i.fa-square-o").parentNode
+              .addEventListener("click", e => {
+         this.g.map.toggleFullscreen();
+      });
 
-   document.querySelector("#sidebar i.fa-arrow-up").parentNode
-           .addEventListener("click", e => {
-      sidebar.remove();
-      new Despliegue({position: "topleft"}).addTo(g.map);
-   });
+      // Ocultar los paneles implica también, quitar la barra lateral.
+      document.querySelectorAll("#sidebar .leaflet-sidebar-pane .leaflet-sidebar-close")
+              .forEach(e => e.addEventListener("click", e => {
+         document.querySelector("#sidebar i.fa-arrow-up").parentNode
+                 .dispatchEvent(new Event("click"));
+      }));
 
-   document.querySelector("#sidebar i.fa-square-o").parentNode
-           .addEventListener("click", e => {
-      g.map.toggleFullscreen();
-   });
+      // Al seleccionar un centro, muestra automáticamente su información.
+      this.g.on("markerselect", e => {
+         if(!e.newval) return;
+         if(!this.sidebar._map) { // La barra no está desplegada.
+            document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
+         }
+         this.sidebar.open("centro");
+      });
 
+   }
+
+
+   // Crea el panel de búsqueda.
    function createSearchPanel(id) {
       const panel = document.createElement("article");
       document.getElementById(id).appendChild(panel);
@@ -96,7 +120,7 @@ window.onload = function() {
       function filterData(text) {
          const pathData = g.Centro.prototype.options.mutable;
          return new Fuse(
-            g.cluster.getLayers(), {
+            this.g.cluster.getLayers(), {
                keys: [pathData + ".id.nom"],
                minMatchCharLength: 2,
             }).search(text);
@@ -129,21 +153,130 @@ window.onload = function() {
          const codigo = this.firstChild.value;
          this.parentNode.previousElementSibling.value = "";
          this.parentNode.innerHTML = "";
-         g.seleccionado = g.Centro.get(codigo);
-         g.map.setView(g.seleccionado.getLatLng(),
-                       g.cluster.options.disableClusteringAtZoom);
+         this.g.seleccionado = this.g.Centro.get(codigo);
+         this.g.map.setView(this.g.seleccionado.getLatLng(),
+                            this.g.cluster.options.disableClusteringAtZoom);
       }
+
    }
 
-   createSearchPanel("busqueda");
 
-   // Al seleccionar un centro, muestra automáticamente su información.
-   g.on("markerselect", e => {
-      if(!e.newval) return;
-      if(!sidebar._map) { // La barra no está desplegada.
-         document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
-      }
-      sidebar.open("centro");
-   });
+   // Lógica con vuejs.
+   Interfaz.prototype.initSelector = function() {
 
+      return new Vue({
+         el: "#esp",
+         data: {
+            especialidad: "",
+            g: this.g,
+            todas: {
+               590101: "Administración de empresas",
+               590012: "Alemán",
+               590102: "Análisis y química industrial",
+               590103: "Asesoría y procesos de imagen personal",
+               590008: "Biología y geología",
+               590104: "Construcciones civiles y edificación",
+               590009: "Dibujo",
+               590061: "Economía",
+               590017: "Educación física",
+               590001: "Filosofía",
+               590105: "Formación y orientación laboral",
+               590010: "Francés",
+               590007: "Física y química",
+               590005: "Geografía e historia",
+               590002: "Griego",
+               590106: "Hostelería y turismo",
+               590107: "Informática",
+               590011: "Inglés",
+               590108: "Intervención sociocomunitaria",
+               590013: "Italiano",
+               590003: "Latín",
+               590004: "Lengua castellana y literatura",
+               590006: "Matemáticas",
+               590016: "Música",
+               590109: "Navegación e instalaciones marinas",
+               590110: "Organización y gestión comercial",
+               590111: "Organización y procesos de mantenimiento de vehículos",
+               590112: "Organización y proyectos de fabricación mecánica",
+               590113: "Organización y proyectos de sistemas energéticos",
+               590018: "Orientacion educativa",
+               590015: "Portugués",
+               590114: "Procesos de cultivo acuícola",
+               590117: "Procesos de diagnósticos clínicos y productos ortoprotésicos",
+               590115: "Procesos de producción agraria",
+               590116: "Procesos en la industria alimentaria",
+               590118: "Procesos sanitarios",
+               590119: "Procesos y medios de comunicación",
+               590120: "Procesos y productos de textil, confección y piel",
+               590121: "Procesos y productos de vidrio y cerámica",
+               590122: "Procesos y productos en artes gráficas",
+               590123: "Procesos y productos en madera y mueble",
+               590125: "Sistemas electrotécnicos y automáticos",
+               590124: "Sistemas electrónicos",
+               590019: "Tecnología",
+               591201: "Cocina y pastelería",
+               591202: "Equipos electrónicos",
+               591203: "Estética",
+               591204: "Fabricación e instalación de carpintería y mueble",
+               591206: "Instalaciones electrotécnicas",
+               591207: "Instalaciones y equipos de cría y cultivo",
+               591205: "Instalación y mantenimiento de equipos termicos y de fluídos",
+               591208: "Laboratorio",
+               591209: "Mantenimiento de vehículos",
+               591211: "Mecanizado y mantenimiento de máquinas",
+               591210: "Máquinas, servicios y producción",
+               591212: "Oficina de proyectos de construcción",
+               591213: "Oficina de proyectos de fabricación mecánica",
+               591215: "Operaciones de procesos",
+               591214: "Operaciones y equipos de elaboración de productos alimentarios",
+               591216: "Operaciones y equipos de producción agraria",
+               591217: "Patronaje y confección",
+               591218: "Peluquería",
+               591219: "Procedimientos de diagnostico clinico y ortoprotésico",
+               591220: "Procedimientos sanitarios y asistenciales",
+               591221: "Procesos comerciales",
+               591222: "Procesos de gestión administrativa",
+               591223: "Producción en artes gráficas",
+               591224: "Producción textil y tratamiento fisico-quimicos",
+               591225: "Servicios a la comunidad",
+               591226: "Servicios de restauración",
+               591227: "Sistemas y aplicaciones informáticas",
+               591228: "Soldadura",
+               591021: "Taller de vidrio y cerámica",
+               591229: "Técnicas y procedimientos de imagen y sonido",
+            }
+         },
+         methods: {
+            selEspec: function(e) {
+               // El input es válido, sólo si coincode
+               // con alguna de las sugerencias.
+               if(Object.keys(this.todas).indexOf(this.especialidad) !== -1) {
+                  e.target.setCustomValidity("");
+                  const especialidad = this.todas[this.especialidad];
+                  // TODO:: ¿Ponemos el nombre de la especialidad en algún sitio?
+                  console.log("DEBUG: Nombre:", especialidad);
+
+                  this.g.cluster.clearLayers();
+                  this.g.Centro.reset();
+                  this.g.seleccionado = null;
+                  this.g.setRuta(null);
+                  this.g.agregarCentros(`../../json/${this.especialidad}.json`);
+                  this.especialidad = "";
+               }
+               else { 
+                  e.target.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
+               }
+            }
+         }
+      });
+
+   }
+
+   return Interfaz;
+})();
+
+
+window.onload = function() {
+   interfaz = new Interfaz();
+   interfaz.initSelector();
 }

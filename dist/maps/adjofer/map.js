@@ -981,7 +981,7 @@ const mapAdjOfer = (function(path, opts) {
          }
       });
       this.on("dataloaded", e => {
-         g.Centro.correct("extinta", {});
+         this.Centro.correct("extinta", {});
       });
 
       // Elimina enseñanzas bilingües
