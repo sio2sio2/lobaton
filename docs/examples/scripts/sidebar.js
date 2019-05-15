@@ -160,15 +160,26 @@ const Interfaz = (function() {
 
    }
 
+   /**
+    * Inicializa los atributos que son aplicaciones VueJS.
+    */
+   Interfaz.prototype.initVueJS = function() {
+      // Selector de especialidad (vuejs)
+      Object.defineProperty(this, "selector", {
+         value: initSelector.call(this),
+         configurable: false,
+         enumerable: true
+      });
 
-   // Lógica con vuejs.
-   Interfaz.prototype.initSelector = function() {
+      // Otros...	
+   }
 
+   function initSelector() {
       return new Vue({
          el: "#esp",
          data: {
-            especialidad: "",
-            g: this.g,
+            especialidad: null,
+            interfaz: this,	
             todas: {
                590101: "Administración de empresas",
                590012: "Alemán",
@@ -248,20 +259,27 @@ const Interfaz = (function() {
          },
          methods: {
             selEspec: function(e) {
+               const codigo = e.target.value;
                // El input es válido, sólo si coincode
                // con alguna de las sugerencias.
-               if(Object.keys(this.todas).indexOf(this.especialidad) !== -1) {
+               if(Object.keys(this.todas).indexOf(codigo) !== -1) {
                   e.target.setCustomValidity("");
-                  const especialidad = this.todas[this.especialidad];
+                  const especialidad = this.todas[codigo];
                   // TODO:: ¿Ponemos el nombre de la especialidad en algún sitio?
                   console.log("DEBUG: Nombre:", especialidad);
 
-                  this.g.cluster.clearLayers();
-                  this.g.Centro.reset();
-                  this.g.seleccionado = null;
-                  this.g.setRuta(null);
-                  this.g.agregarCentros(`../../json/${this.especialidad}.json`);
-                  this.especialidad = "";
+                  // Hay que habilitar todos los botones de la barra lateral.
+                  if(!this.especialidad) {
+                     document.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
+                        .forEach(e => e.classList.remove("disabled"));
+                  }
+
+                  this.interfaz.g.cluster.clearLayers();
+                  this.interfaz.g.Centro.reset();
+                  this.interfaz.g.seleccionado = null;
+                  this.interfaz.g.setRuta(null);
+                  this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
+                  this.especialidad = codigo;
                }
                else { 
                   e.target.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
@@ -269,7 +287,6 @@ const Interfaz = (function() {
             }
          }
       });
-
    }
 
    return Interfaz;
@@ -278,5 +295,5 @@ const Interfaz = (function() {
 
 window.onload = function() {
    interfaz = new Interfaz();
-   interfaz.initSelector();
+   interfaz.initVueJS();
 }

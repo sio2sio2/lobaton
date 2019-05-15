@@ -88,15 +88,15 @@
             <li><a href="#ajustes" role="tab"><i class="fa fa-bars"></i></a></li>
             <li><a href="#selector" role="tab"><i class="fa fa-users active"></i></a></li>
             <li><a><i class="fa fa-square-o"></i></a></li>
-            <li><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
-            <li><a href="#centro" role="tab"><i class="fa fa-graduation-cap"></i></a></li>
-            <li><a href="#correccion" role="tab"><i class="fa fa-filter"></i></a></li>
-            <li><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
+            <li class="disabled"><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
+            <li class="disabled"><a href="#centro" role="tab"><i class="fa fa-graduation-cap"></i></a></li>
+            <li class="disabled"><a href="#correccion" role="tab"><i class="fa fa-filter"></i></a></li>
+            <li class="disabled"><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
          </ul>
 
          <!-- Abajo -->
          <ul role="tablist">
-            <li><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
+            <li class="disabled"><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
             <li><a href="https://github.com/sio2sio2/lobaton" target="_blank"><i class="fa fa-github"></i></a></li>
          </ul>
       </div>
@@ -121,8 +121,7 @@
             <div id="esp" class="section-cardbox-content collapse show">
                <label>Escriba o seleccione una especialidad
                   <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
-                         v-model="especialidad" autocomplete=off autofocus
-                         @input="selEspec">
+                         value="" @input="selEspec" autocomplete=off autofocus>
                   <datalist id="especialidades">
                      <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
                   </datalist>
