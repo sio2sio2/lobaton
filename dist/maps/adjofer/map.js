@@ -970,6 +970,20 @@ const mapAdjOfer = (function(path, opts) {
          }
       }
 
+      // El GeoJSON con carácter informativo incluye el primer año
+      // de su extinción una enseñanza ya desaparecida. Debemos
+      // eliminarla aplicándole esta corrección atuomáticamente.
+      this.Centro.register("extinta", {
+         attr: "oferta",
+         // opts= {}
+         func: function(idx, oferta, opts) {
+            return oferta[idx].ext;
+         }
+      });
+      this.on("dataloaded", e => {
+         g.Centro.correct("extinta", {});
+      });
+
       // Elimina enseñanzas bilingües
       this.Centro.register("bilingue", {
          attr: "oferta",
