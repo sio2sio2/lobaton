@@ -171,6 +171,15 @@
                Búsqueda de centros
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
+            <article>
+               <input name="centro" @input="sugerir" placeholder="Escriba el nombre...">
+               <ul>
+                  <li v-for="c in candidatos"><data :value="c.getData().id.cod" @click="seleccionar">
+                     <span>{{String(c.getData().id.cp).padStart(5, "0").substring(0, 2)}}</span>
+                     <span>{{c.getData().id.nom}}</span>
+                  </data> </li>
+               </ul>
+            </article>
          </div>
       </div>
    </div>

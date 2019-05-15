@@ -14,7 +14,6 @@ const Interfaz = (function() {
 
       initialize.call(this);
       createSidebar.call(this);
-      createSearchPanel.call(this, "busqueda");
    }
 
 
@@ -108,70 +107,22 @@ const Interfaz = (function() {
    }
 
 
-   // Crea el panel de búsqueda.
-   function createSearchPanel(id) {
-      const panel = document.createElement("article");
-      document.getElementById(id).appendChild(panel);
-      const input = document.createElement("input");
-      const ul = document.createElement("ul");
-      panel.appendChild(input);
-      panel.appendChild(ul);
-
-      function filterData(text) {
-         const pathData = g.Centro.prototype.options.mutable;
-         return new Fuse(
-            this.g.cluster.getLayers(), {
-               keys: [pathData + ".id.nom"],
-               minMatchCharLength: 2,
-            }).search(text);
-      }
-
-      input.setAttribute("name", "centro");
-      input.setAttribute("placeholder", "Escriba el nombre...");
-
-      input.addEventListener("input", e => {
-         ul.innerHTML = "";
-         if(e.target.value.length > 2) {
-            const res = filterData(e.target.value);
-            for(const centro of res)  {
-               const li   = document.createElement("li"),
-                     data = document.createElement("data"),
-                     info = centro.getData();
-               
-
-               ul.appendChild(li);
-               li.appendChild(data);
-               data.value = info.id.cod;
-               data.innerHTML = `<span>${String(info.id.cod).padStart(8, "0")}</span> <span>${info.id.nom}</span>`;
-
-               li.addEventListener('click', selectCentro);
-            }
-         }
-      });
-
-      function selectCentro(e) {
-         const codigo = this.firstChild.value;
-         this.parentNode.previousElementSibling.value = "";
-         this.parentNode.innerHTML = "";
-         this.g.seleccionado = this.g.Centro.get(codigo);
-         this.g.map.setView(this.g.seleccionado.getLatLng(),
-                            this.g.cluster.options.disableClusteringAtZoom);
-      }
-
-   }
-
    /**
     * Inicializa los atributos que son aplicaciones VueJS.
     */
    Interfaz.prototype.initVueJS = function() {
-      // Selector de especialidad (vuejs)
+      // Selector de especialidad
       Object.defineProperty(this, "selector", {
          value: initSelector.call(this),
          configurable: false,
          enumerable: true
       });
 
-      // Otros...	
+      // Buscador de centros
+      Object.defineProperty(this, "buscador", {
+         value: initBuscador.call(this),
+         enumerable: true
+      });
    }
 
    function initSelector() {
@@ -291,6 +242,45 @@ const Interfaz = (function() {
                else { 
                   e.target.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
                }
+            }
+         }
+      });
+   }
+
+
+   function initBuscador() {
+      return new Vue({
+         el: "#busqueda article",
+         data: {
+            g: this.g,
+            pathData: this.g.Centro.prototype.options.mutable,
+            patron: null
+         },
+         computed: {
+            candidatos: function() {
+               if(!this.patron) return [];
+
+               // Búsqueda difusa (require fuse.js)
+               return new Fuse(
+                  this.g.cluster.getLayers(), {
+                     keys: [this.pathData + ".id.nom"],
+                     minMatchCharLength: 2,
+               }).search(this.patron);
+            }
+         },
+         methods: {
+            sugerir: function(e) {
+               this.patron = "";
+               if(e.target.value.length < 3) return;
+               this.patron = e.target.value;
+            },
+            seleccionar: function(e) {
+               const codigo = e.currentTarget.value;
+               e.currentTarget.closest("ul").previousElementSibling.value = "";
+               this.patron = "";
+               this.g.seleccionado = this.g.Centro.get(codigo);
+               this.g.map.setView(this.g.seleccionado.getLatLng(),
+                                  this.g.cluster.options.disableClusteringAtZoom);
             }
          }
       });
