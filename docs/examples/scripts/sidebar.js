@@ -80,7 +80,7 @@ const Interfaz = (function() {
       document.querySelector("#sidebar i.fa-arrow-up").parentNode
               .addEventListener("click", e => {
          this.sidebar.remove();
-         new Despliegue({position: "topleft"}).addTo(this.g.map);
+         this.sidebar.despliegue = new Despliegue({position: "topleft"}).addTo(this.g.map);
       });
 
       // Botón para pantalla completa.
@@ -274,12 +274,19 @@ const Interfaz = (function() {
                         .forEach(e => e.classList.remove("disabled"));
                   }
 
-                  this.interfaz.g.cluster.clearLayers();
+                  // Para qué vamos a borrar los datos si es la misma especialidad.
+                  if(codigo !== this.especialidad) {
+                     this.interfaz.g.cluster.clearLayers();
+                     this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
+                  }
+
                   this.interfaz.g.Centro.reset();
                   this.interfaz.g.seleccionado = null;
                   this.interfaz.g.setRuta(null);
-                  this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
                   this.especialidad = codigo;
+                  e.target.value = "";
+                  document.querySelector("#sidebar .leaflet-sidebar-tabs li a")
+                          .dispatchEvent(new Event("click"));
                }
                else { 
                   e.target.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
