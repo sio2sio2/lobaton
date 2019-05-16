@@ -328,8 +328,10 @@ const mapAdjOfer = (function(path, opts) {
       /**
        * Obtiene un objeto que describe el estado del mapa.
        * @param {Boolean} encode  Si ``true``, se codifica el objeto en base64.
+       * @param {Object} extra   Opciones extra que proporciona la interfaz visual
+       * y que se añadiran al estado a través del atributo ``extra``.
        */
-      getStatus(encode) {
+      getStatus(encode, extra) {
          const origen = this.origen && this.origen.getLatLng(),
                filter = this.Centro.prototype.options.filter,
                corr   = this.Centro.prototype.options.corr;
@@ -339,10 +341,11 @@ const mapAdjOfer = (function(path, opts) {
          }
 
          let status = {
-            esp: this.general.entidad[0],  // Especialidad.
             cen: getCoords(this.map.getCenter()),
             zoo: this.map.getZoom(),
          }
+
+         if(this.general) status.esp = this.general.entidad[0];  // Especialidad.
 
          if(this.seleccionado) status.sel = this.seleccionado.getData().id.cod;
          if(origen) status.ori = getCoords(origen);
@@ -379,6 +382,8 @@ const mapAdjOfer = (function(path, opts) {
 
          if(this.isocronas) status.iso = 1;
          if(this.ruta) status.des = this.ruta.destino.getData().id.cod;
+
+         if(extra) Object.assign(status, {visual: extra}); // Issue #66
 
          return encode?btoa(JSON.stringify(status)):status;
       }
