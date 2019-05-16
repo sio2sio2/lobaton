@@ -109,7 +109,24 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se deben ofrecer los ajustes</p>
+            <div class="section-cardbox-content">
+               <fieldset class="form-group">
+                  <legend>Ajustes generales</legend>
+                  <ajuste v-for="a in ajustes" :key="a.opt" :a="a"></ajuste>
+               </fieldset>
+            </div>
+
+            <script type="text/x-template" id="ajuste">
+               <div class="form-group row">
+                  <label class="etiqueta col-form-label" :for="a.opt">{{a.desc}}</label>
+                  <div class="custom-switch custom-switch-xs pl-0">
+                     <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
+                            @change="ajustar" :id="a.opt" v-model="checked"
+                            class="custom-switch-input filtro">
+                     <label class="custom-switch-btn" :for="a.opt"></label>
+                  </div>
+               </div>
+            </script>
          </div>
 
          <div class="leaflet-sidebar-pane" id="selector">

@@ -6,7 +6,7 @@ const Interfaz = (function() {
       filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
       incluirTlfo: false,     // Incluir vacantes telefónicas.
       incluirCGT: false,      // Incluir correcciones por CGT.
-      mostrarBorrado: true,   // Muestra enseñanzas y adj. borradas.
+      ocultarBorrado: false,   // Oculta enseñanzas y adj. borradas.
    }
 
    function Interfaz(opts) {
@@ -141,6 +141,14 @@ const Interfaz = (function() {
       // Aplicador de correcciones a los datos
       Object.defineProperty(this, "filtrador", {
          value: initFiltrador.call(this),
+         writable: false,
+         configurable: false,
+         enumerable: true
+      });
+
+      // Ajustes de la interfaz
+      Object.defineProperty(this, "ajustes", {
+         value: initAjustes.call(this),
          writable: false,
          configurable: false,
          enumerable: true
@@ -479,6 +487,73 @@ const Interfaz = (function() {
 
                if(res) this.g.Centro.invoke("refresh");
             }
+         }
+      });
+   }
+
+   function initAjustes() {
+      const self = this;
+
+      Vue.component("ajuste", {
+         props: ["a"],
+         template: "#ajuste",
+         data: function() {
+            return {
+               checked: false,
+            }
+         },
+         methods: {
+            ajustar: function(e) {
+               if(this.a.accion) {
+                  this.a.accion.call(this);
+                  return;
+               }
+               self.options[this.a.opt] = this.checked;
+               if(this.a.tipo === "visual") return;
+               
+               const [accion, nombre] = this.a.tipo.split(":"),
+                     res = this.checked?self.g.Centro[accion](nombre, this.a.value || {})
+                                       :self.g.Centro[`un${accion}`](nombre);
+
+               if(res) self.g.Centro.invoke("refresh");
+            }
+         }
+      });
+
+      return new Vue({
+         el: "#ajustes :nth-child(2)",
+         data: {
+            g: this.g,
+            ajustes: [
+               {
+                  desc: "Ocultar centros sin oferta",
+                  opt: "filtrarOferta",
+                  tipo: "filter:oferta",
+                  value: {min: 1}
+                  //accion: function(name, value) {},
+               },
+               {
+                  desc: "Ocultar centros sin adjudicaciones",
+                  opt: "filtrarAdj",
+                  tipo: "filter:adj",
+                  value: {min: 1}
+               },
+               {
+                  desc: "Ocultar datos de centro filtrados",
+                  opt: "ocultarBorrado",
+                  tipo: "visual"
+               },
+               {
+                  desc: "Incluir vacantes telefónicas",
+                  opt: "incluirTlfo",
+                  tipo: "correct:vt+"
+               },
+               {
+                  desc: "Corregir con el CGT",
+                  opt: "incluirCGT",
+                  tipo: "correct:cgt"
+               }
+            ]
          }
       });
    }
