@@ -90,7 +90,7 @@
             <li><a><i class="fa fa-square-o"></i></a></li>
             <li class="disabled"><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
             <li class="disabled"><a href="#centro" role="tab"><i class="fa fa-graduation-cap"></i></a></li>
-            <li class="disabled"><a href="#correccion" role="tab"><i class="fa fa-filter"></i></a></li>
+            <li class="disabled"><a href="#correcciones" role="tab"><i class="fa fa-filter"></i></a></li>
             <li class="disabled"><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
          </ul>
 
@@ -139,13 +139,36 @@
          </div>
 
 
-         <div class="leaflet-sidebar-pane" id="correccion">
+         <div class="leaflet-sidebar-pane" id="correcciones">
             <h1 class="leaflet-sidebar-header">
                Filtrado
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se incluyen las correcciones de datos</p>
+            <div class="section-cardbox-content">
+               <correccion v-for="c in correcciones" :c="c" :key="c.correccion" />
+            </div>
+
+            <script type="text/x-template" id="correccion">
+               <fieldset :id="c.id" class="form-group">
+                  <legend>{{c.titulo}}</legend>
+                  <small class="help form-text text-muted">{{c.desc}}</small>
+                  <opcion-corr v-for="o in c.opciones" @aplicar="prepararOperacion"
+                               :name="c.campo" :o="o" :extra="c.extra" :key="o.value"/>
+               </fieldset>
+            </script>
+
+            <script type="text/x-template" id="opcion-corr">
+               <div class="form-group row">
+                   <label class="etiqueta col-form-label" :for="o.value">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 ">
+                     <input type="checkbox" :id="o.value" :name="name" class="custom-switch-input correccion"
+                            :value="o.value" @change="$emit('aplicar')" v-model="checked">
+                     <label class="custom-switch-btn" :for="o.value"></label>
+                   </div>
+               </div>
+            </script>
+
          </div>
 
          <div class="leaflet-sidebar-pane" id="info">

@@ -1,6 +1,17 @@
 const Interfaz = (function() {
 
-   function Interfaz() {
+   // Opciones predeterminadas al arrancar la interfaz.
+   const defaults = {
+      filtrarOferta: true,    // Filtrar centros sin oferta.
+      filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
+      incluirTlfo: false,     // Incluir vacantes telefónicas.
+      incluirCGT: false,      // Incluir correcciones por CGT.
+      mostrarBorrado: true,   // Muestra enseñanzas y adj. borradas.
+   }
+
+   function Interfaz(opts) {
+      this.options = Object.assign({}, defaults, opts);
+
       // Objeto de manipulación del mapa.
       this.g = mapAdjOfer("../../dist", {
          zoom: 8,
@@ -114,6 +125,7 @@ const Interfaz = (function() {
       // Selector de especialidad
       Object.defineProperty(this, "selector", {
          value: initSelector.call(this),
+         writable: false,
          configurable: false,
          enumerable: true
       });
@@ -121,6 +133,16 @@ const Interfaz = (function() {
       // Buscador de centros
       Object.defineProperty(this, "buscador", {
          value: initBuscador.call(this),
+         writable: false,
+         configurable: false,
+         enumerable: true
+      });
+
+      // Aplicador de correcciones a los datos
+      Object.defineProperty(this, "filtrador", {
+         value: initFiltrador.call(this),
+         writable: false,
+         configurable: false,
          enumerable: true
       });
    }
@@ -250,7 +272,7 @@ const Interfaz = (function() {
 
    function initBuscador() {
       return new Vue({
-         el: "#busqueda article",
+         el: "#busqueda :nth-child(2)",
          data: {
             g: this.g,
             pathData: this.g.Centro.prototype.options.mutable,
@@ -276,11 +298,149 @@ const Interfaz = (function() {
             },
             seleccionar: function(e) {
                const codigo = e.currentTarget.value;
-               e.currentTarget.closest("ul").previousElementSibling.value = "";
+               this.$el.querySelector("input").value = "";
                this.patron = "";
                this.g.seleccionado = this.g.Centro.get(codigo);
                this.g.map.setView(this.g.seleccionado.getLatLng(),
                                   this.g.cluster.options.disableClusteringAtZoom);
+            }
+         }
+      });
+   }
+
+   function initFiltrador() {
+
+      Vue.component("correccion", {
+         props: ["c"],
+         template: "#correccion",
+         methods: {
+            prepararOperacion: function() {
+               const tipo = this.c.tipo,
+                     nombre = this.c.nombre,
+                     opts = this.c.getOpts?this.c.getOpts.call(this):this.recogerValores();
+
+               if(opts) Object.assign(opts, this.c.extra);
+               this.$parent.aplicarOperacion(tipo, nombre, opts, this.c.auto);
+            },
+            recogerValores: function() {
+               const key = this.c.campo,
+                     value = Array.from(this.$el.querySelectorAll("input:checked"))
+                                                .map(e => e.value);
+               return value.length>0?{[key]: value}:false;
+            }
+         }
+      });
+
+      Vue.component("opcion-corr", {
+         props: ["o", "name", "extra"],
+         data: function() {
+            return {
+               checked: false,
+            }
+         },
+         template: "#opcion-corr",
+      });
+
+      // Al cargar datos, los puestos y las enseñanzas varían
+      // por lo que las correcciones adjpue y oferta, también lo hacen.
+      this.g.on("dataloaded", e => {
+         this.filtrador.puestos = this.g.general.puestos;
+         const res = {};
+         for(const ens in this.g.general.ens) {
+            const value = this.g.general.ens[ens];
+            res[ens] = value.grado?`${value.grado} ${value.nombre}`:value.nombre;
+         }
+         this.filtrador.ens = res;
+      });
+
+      return new Vue({
+         el: "#correcciones :nth-child(2)",
+         data: {
+            g: this.g,
+            puestos: {},
+            ens: {},
+            corrFijas: [
+               {
+                  titulo: "Bilingüismo",
+                  desc: "Muestra únicamente centros bilingües en",
+                  nombre: "bilingue",  // Nombre de la corrección
+                  tipo: "correct",  // Tipo: corrección o filtro.
+                  campo: "bil",  // Nombre de la opción de corrección: {bil: ["Inglés"]}
+                  extra: {inv: true},  // Opciones de corrección extra 
+                  auto: true,  // Aplica correcciones encadenadas.
+                  // getOpts: function() {} Mecanismo alternativo para obtener las correcciones.
+                  opciones: [
+                     {
+                        label: "Inglés",
+                        value: "Inglés"
+                     },
+                     {
+                        label: "Francés",
+                        value: "Francés"
+                     },
+                     {
+                        label: "Alemán",
+                        value: "Alemán"
+                     }
+                  ]
+               },
+               {
+                  titulo: "Vacantes telefónicas",
+                  desc: "Elimina adjudicaciones no telefónicas",
+                  nombre: "vt",
+                  tipo: "correct",
+                  campo: "x",
+                  opciones: [{
+                     label: "Eliminar adjudicaciones",
+                     value: "vt:x"
+                  }]
+               },
+               /*
+               {
+                  titulo: "Turno",
+                  desc: "Elimina según el turno de la enseñanza",
+                  nombre: "turno",
+                  tipo: "correct",
+                  campo: "turno"
+               }
+               */
+            ]
+         },
+         computed: {
+            id: function() { return `${this.tipo}:${this.nombre}`; },
+            correcciones: function() {
+               const oferta = {
+                  titulo: "Enseñanzas",
+                  desc: "Elimina la oferta del centro",
+                  nombre: "oferta",
+                  tipo: "correct",
+                  campo: "ens"
+               }
+               oferta.opciones = Object.keys(this.ens)
+                                        .map(c => new Object({label: this.ens[c], value: c}));
+
+               const puestos = {
+                  titulo: "Adjudicaciones",
+                  desc: "Elimina adjudicaciones de los puestos",
+                  nombre: "adjpue",
+                  tipo: "correct",
+                  campo: "puesto"
+               }
+               puestos.opciones = Object.keys(this.puestos)
+                                         .map(c => new Object({label: this.puestos[c], value: c}));
+               return this.corrFijas.concat([oferta, puestos]);
+            }
+         },
+         methods: {
+            aplicarOperacion: function(tipo, nombre, opts, auto) {
+               const res = opts?this.g.Centro[tipo](nombre, opts, auto)
+                               :this.g.Centro[`un${tipo}`](nombre);
+               
+               //TODO:: Si es auto, se han desencadenado automáticamente
+               // correcciones y, en consecuencia, debería marcarse automáticamente
+               // algunas otras correcciones.
+
+               if(res) this.g.Centro.invoke("refresh");
             }
          }
       });
