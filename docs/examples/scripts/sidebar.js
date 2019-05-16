@@ -313,11 +313,27 @@ const Interfaz = (function() {
       Vue.component("correccion", {
          props: ["c"],
          template: "#correccion",
+         computed: {
+            // Identificador para el fieldset de la corrección.
+            id: function() { return `${this.c.tipo}:${this.c.nombre}`; },
+         },
          methods: {
-            prepararOperacion: function() {
+            prepararOperacion: function(id) {
+               // Si las opciones son excluyentes, al marcar una
+               // se desmarcan las restantes. No puede usarse "radio",
+               // porque no marcar ninguna opción también es posible.
+               if(this.c.excluyentes) {
+                  const input = document.getElementById(id);
+                  if(input.checked) {
+                     this.$el.querySelectorAll("input").forEach(i => {
+                        if(i !== input && i.checked) i.checked = false;
+                     });
+                  }
+               }
+
                const tipo = this.c.tipo,
                      nombre = this.c.nombre,
-                     opts = this.c.getOpts?this.c.getOpts.call(this):this.recogerValores();
+                     opts = this.c.getOpts?this.c.getOpts.call(this, id):this.recogerValores();
 
                if(opts) Object.assign(opts, this.c.extra);
                this.$parent.aplicarOperacion(tipo, nombre, opts, this.c.auto);
@@ -332,11 +348,16 @@ const Interfaz = (function() {
       });
 
       Vue.component("opcion-corr", {
-         props: ["o", "name", "extra"],
+         props: ["o", "idx"],
          data: function() {
             return {
                checked: false,
             }
+         },
+         computed: {
+            id: function() {
+               return `${this.$parent.id}_${this.idx}`;
+            },
          },
          template: "#opcion-corr",
       });
@@ -368,7 +389,8 @@ const Interfaz = (function() {
                   campo: "bil",  // Nombre de la opción de corrección: {bil: ["Inglés"]}
                   extra: {inv: true},  // Opciones de corrección extra 
                   auto: true,  // Aplica correcciones encadenadas.
-                  // getOpts: function() {} Mecanismo alternativo para obtener las correcciones.
+                  // getOpts: function() {}  // Mecanismo alternativo para obtener las opciones de correcciones.
+                  // excluyentes: true  // En plan Los Inmortales: sólo puede marcarse una.
                   opciones: [
                      {
                         label: "Inglés",
@@ -389,25 +411,39 @@ const Interfaz = (function() {
                   desc: "Elimina adjudicaciones no telefónicas",
                   nombre: "vt",
                   tipo: "correct",
-                  campo: "x",
+                  campo: "da.igual",
                   opciones: [{
                      label: "Eliminar adjudicaciones",
-                     value: "vt:x"
+                     value: "cualquiera"
                   }]
                },
-               /*
                {
                   titulo: "Turno",
-                  desc: "Elimina según el turno de la enseñanza",
+                  desc: "Elimina enseñanzas de",
                   nombre: "turno",
                   tipo: "correct",
-                  campo: "turno"
+                  campo: "turno",
+                  excluyentes: true,
+                  getOpts: function(id) {
+                     const key = this.c.campo,
+                           input = document.getElementById(id);
+
+                     return input.checked?{[key]: input.value}:false;
+                  },
+                  opciones: [
+                     {
+                        label: "Mañana",
+                        value: 1
+                     },
+                     {  
+                        label: "Tarde",
+                        value: 2
+                     }
+                  ]
                }
-               */
             ]
          },
          computed: {
-            id: function() { return `${this.tipo}:${this.nombre}`; },
             correcciones: function() {
                const oferta = {
                   titulo: "Enseñanzas",
@@ -439,6 +475,7 @@ const Interfaz = (function() {
                //TODO:: Si es auto, se han desencadenado automáticamente
                // correcciones y, en consecuencia, debería marcarse automáticamente
                // algunas otras correcciones.
+               // Opcion B) --> Usar los eventos correct:* y uncorrect:*
 
                if(res) this.g.Centro.invoke("refresh");
             }

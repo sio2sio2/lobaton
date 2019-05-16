@@ -150,11 +150,11 @@
             </div>
 
             <script type="text/x-template" id="correccion">
-               <fieldset :id="c.id" class="form-group">
+               <fieldset :id="id" class="form-group">
                   <legend>{{c.titulo}}</legend>
                   <small class="help form-text text-muted">{{c.desc}}</small>
-                  <opcion-corr v-for="o in c.opciones" @aplicar="prepararOperacion"
-                               :name="c.campo" :o="o" :extra="c.extra" :key="o.value"/>
+                  <opcion-corr v-for="(o, index) in c.opciones" @aplicar="prepararOperacion" 
+                               :o="o" :idx="index" :key="index" />
                </fieldset>
             </script>
 
@@ -162,8 +162,8 @@
                <div class="form-group row">
                    <label class="etiqueta col-form-label" :for="o.value">{{o.label}}</label>
                    <div class="custom-switch custom-switch-xs pl-0 ">
-                     <input type="checkbox" :id="o.value" :name="name" class="custom-switch-input correccion"
-                            :value="o.value" @change="$emit('aplicar')" v-model="checked">
+                     <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
+                            :value="o.value" @change="$emit('aplicar', id)" v-model="checked">
                      <label class="custom-switch-btn" :for="o.value"></label>
                    </div>
                </div>
