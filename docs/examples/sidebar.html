@@ -118,12 +118,12 @@
 
             <script type="text/x-template" id="ajuste">
                <div class="form-group row">
-                  <label class="etiqueta col-form-label" :for="a.opt">{{a.desc}}</label>
+                  <label class="etiqueta col-form-label" :for="a.tipo">{{a.desc}}</label>
                   <div class="custom-switch custom-switch-xs pl-0">
                      <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
-                            @change="ajustar" :id="a.opt" v-model="checked"
+                            @change="ajustar" :id="a.tipo" v-model.lazy="checked"
                             class="custom-switch-input filtro">
-                     <label class="custom-switch-btn" :for="a.opt"></label>
+                     <label class="custom-switch-btn" :for="a.tipo"></label>
                   </div>
                </div>
             </script>
@@ -177,11 +177,11 @@
 
             <script type="text/x-template" id="opcion-corr">
                <div class="form-group row">
-                   <label class="etiqueta col-form-label" :for="o.value">{{o.label}}</label>
+                   <label class="etiqueta col-form-label" :for="id">{{o.label}}</label>
                    <div class="custom-switch custom-switch-xs pl-0 ">
                      <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
-                            :value="o.value" @change="$emit('aplicar', id)" v-model="checked">
-                     <label class="custom-switch-btn" :for="o.value"></label>
+                            :value="o.value" @change="$emit('aplicar', id)" v-model="checked" :disabled="disabled">
+                     <label class="custom-switch-btn" :for="id"></label>
                    </div>
                </div>
             </script>

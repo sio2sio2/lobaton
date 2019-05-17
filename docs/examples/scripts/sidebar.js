@@ -6,7 +6,7 @@ const Interfaz = (function() {
       filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
       incluirTlfo: false,     // Incluir vacantes telefónicas.
       incluirCGT: false,      // Incluir correcciones por CGT.
-      ocultarBorrado: false,   // Oculta enseñanzas y adj. borradas.
+      ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
    }
 
    function Interfaz(opts) {
@@ -38,6 +38,12 @@ const Interfaz = (function() {
       if(!L.control.sidebar) {
          throw new Error("Falta plugin: https://github.com/nickpeihl/leaflet-sidebar-v2");
       }
+
+      // Al dejar de incluir las vacantes telefónicas,
+      // deja de tener sentido aplicar la eliminación de adj. no telefónicas.
+      this.g.Centro.on("uncorrect:vt+", e => {
+         if(this.g.Centro.uncorrect("vt")) this.g.Centro.invoke("refresh");
+      });
 
       // DEBUG: Elimínese esto en producción.
       this.g.on("markerselect", function(e) {
@@ -119,6 +125,20 @@ const Interfaz = (function() {
 
 
    /**
+    * Devuelve el estado presente del mapa.
+    */
+   Object.defineProperty(Interfaz.prototype, "status", {
+      get: function() {
+         return this.g.getStatus(true, {
+            ocu: this.options.ocultarBorrado
+         });
+      },
+      configurable: false,
+      enumerable: true
+   });
+
+
+   /**
     * Inicializa los atributos que son aplicaciones VueJS.
     */
    Interfaz.prototype.initVueJS = function() {
@@ -138,17 +158,17 @@ const Interfaz = (function() {
          enumerable: true
       });
 
-      // Aplicador de correcciones a los datos
-      Object.defineProperty(this, "filtrador", {
-         value: initFiltrador.call(this),
+      // Ajustes de la interfaz
+      Object.defineProperty(this, "ajustes", {
+         value: initAjustes.call(this),
          writable: false,
          configurable: false,
          enumerable: true
       });
 
-      // Ajustes de la interfaz
-      Object.defineProperty(this, "ajustes", {
-         value: initAjustes.call(this),
+      // Aplicador de correcciones a los datos
+      Object.defineProperty(this, "filtrador", {
+         value: initFiltrador.call(this),
          writable: false,
          configurable: false,
          enumerable: true
@@ -360,6 +380,7 @@ const Interfaz = (function() {
          data: function() {
             return {
                checked: false,
+               disabled: false
             }
          },
          computed: {
@@ -386,12 +407,13 @@ const Interfaz = (function() {
          el: "#correcciones :nth-child(2)",
          data: {
             g: this.g,
+            ajustes: this.ajustes,
             puestos: {},
             ens: {},
             corrFijas: [
                {
                   titulo: "Bilingüismo",
-                  desc: "Muestra únicamente centros bilingües en",
+                  desc: "Muestra sólo enseñanzas bilingües en",
                   nombre: "bilingue",  // Nombre de la corrección
                   tipo: "correct",  // Tipo: corrección o filtro.
                   campo: "bil",  // Nombre de la opción de corrección: {bil: ["Inglés"]}
@@ -480,11 +502,6 @@ const Interfaz = (function() {
                const res = opts?this.g.Centro[tipo](nombre, opts, auto)
                                :this.g.Centro[`un${tipo}`](nombre);
                
-               //TODO:: Si es auto, se han desencadenado automáticamente
-               // correcciones y, en consecuencia, debería marcarse automáticamente
-               // algunas otras correcciones.
-               // Opcion B) --> Usar los eventos correct:* y uncorrect:*
-
                if(res) this.g.Centro.invoke("refresh");
             }
          }
@@ -499,23 +516,32 @@ const Interfaz = (function() {
          template: "#ajuste",
          data: function() {
             return {
-               checked: false,
+               checked: self.options[this.a.opt]
+            }
+         },
+         watch: {
+            checked: function() {
+               self.options[this.a.opt] = this.checked;
             }
          },
          methods: {
+            // Qué acción se desencadena al cambiar el ajuste.
             ajustar: function(e) {
+               this.$parent.options[this.a.opt] = this.checked;
+
                if(this.a.accion) {
                   this.a.accion.call(this);
                   return;
                }
-               self.options[this.a.opt] = this.checked;
+
                if(this.a.tipo === "visual") return;
                
                const [accion, nombre] = this.a.tipo.split(":"),
-                     res = this.checked?self.g.Centro[accion](nombre, this.a.value || {})
-                                       :self.g.Centro[`un${accion}`](nombre);
+                     Centro = this.$parent.g.Centro,
+                     res = this.checked?Centro[accion](nombre, this.a.value || {})
+                                       :Centro[`un${accion}`](nombre);
 
-               if(res) self.g.Centro.invoke("refresh");
+               if(res) Centro.invoke("refresh");
             }
          }
       });
@@ -524,6 +550,7 @@ const Interfaz = (function() {
          el: "#ajustes :nth-child(2)",
          data: {
             g: this.g,
+            options: this.options,
             ajustes: [
                {
                   desc: "Ocultar centros sin oferta",
@@ -558,6 +585,124 @@ const Interfaz = (function() {
       });
    }
 
+
+   /**
+    * Define el estado inicial del mapa.
+    */
+   Interfaz.prototype.setStatus = function() {
+      const status = this.g.status;
+
+      function reflejarOpciones(opts) {
+         opts = opts || this.options;
+         for(const ajuste of this.ajustes.$children) {
+            const input = ajuste.$el.querySelector("input");
+            if(opts[input.name]) {
+               ajuste.checked = true;
+               input.dispatchEvent(new Event("change"));
+            }
+         }
+      }
+
+      if(status) {
+         for(const filter in this.g.Centro.getFilterStatus()) {
+            reflejarFiltro.call(this, {name: filter, type: `filter:${name}`});
+         }
+
+         const corr = this.g.Centro.getCorrectStatus();
+         for(const c in corr.manual) {
+            const opts = corr.manual[c];
+            reflejarCorreccion.call(this, {
+               name: c, type: `correct:${c}`,
+               opts: opts.params,
+               auto: opts.auto
+            });
+         }
+
+         if(status.visual) {
+            const opts = {};
+            reflejarOpciones.call(this, {
+               ocultarBorrado: status.visual.ocu
+            });
+         }
+      }
+      else {
+         reflejarOpciones.call(this);
+      }
+
+      // Nos aseguramos de que al (des)aplicarse un filtro o corrección
+      // automáticos, se refleja en la interfaz.
+      this.g.Centro.on("filter:* unfilter:*", reflejarFiltro.bind(this));
+      this.g.Centro.on("correct:* uncorrect:*", reflejarCorreccion.bind(this));
+
+   }
+
+   function reflejarFiltro(e) {
+      const on = e.type.startsWith("filter:"),
+            input = document.getElementById(`filter:${name}`);
+      if(input && input.tagName === "INPUT") input.checked = on;
+   }
+      
+
+   function reflejarCorreccion(e) {
+      const on = e.type.startsWith("correct:");
+      let f, corr = this.g.Centro.getCorrectStatus();
+
+      switch(e.name) {
+         case "bilingue":
+         case "adjpue":
+         case "oferta":
+            corr = this.g.Centro.getCorrectStatus();
+
+            for(f of this.filtrador.$children) {
+               if(f.c.tipo === "correct" && f.c.nombre === e.name) break
+            }
+
+            // Para cada ítem comprobamos si el valor que representa
+            // ese ítem está aplicado o no.
+            const params = corr.manual[e.name] && corr.manual[e.name].params;
+            for(const i of f.$children) {
+               let checked = false, disabled = false;
+               checked = params && params[f.c.campo].indexOf(i.o.value) !== -1;
+               if(corr.auto[e.name]) {
+                  for(const n in corr.auto[e.name]) {
+                     const params = corr.auto[e.name][n];
+                     if(params && params[f.c.campo].indexOf(i.o.value) !== -1) {
+                        checked = true
+                        disabled = true;
+                        break;
+                     }
+                  }
+               }
+               i.disabled = disabled;
+               i.checked = checked;
+            }
+
+            break;
+
+         case "vt":
+            for(f of this.filtrador.$children) {
+               if(f.c.tipo === "correct" && f.c.nombre === e.name) break
+            }
+            f.$children[0].checked = on;
+            break;
+
+         case "vt+":
+            for(f of this.ajustes.$children) {
+               if(f.a.tipo === `correct:${e.name}`) break;
+            }
+            f.checked = on;
+
+            // Si no se incluyen vacantes telefónicas,
+            // se deshabilita eliminar adj. no telefónicas.
+            for(f of this.filtrador.$children) {
+               if(f.c.tipo === "correct" && f.c.nombre === "vt") break
+            }
+            f.$children[0].disabled = !on;
+
+            break;
+      }
+   }
+
    return Interfaz;
 })();
 
@@ -565,4 +710,5 @@ const Interfaz = (function() {
 window.onload = function() {
    interfaz = new Interfaz();
    interfaz.initVueJS();
+   interfaz.setStatus();
 }
