@@ -17,6 +17,7 @@ const Interfaz = (function() {
          zoom: 8,
          center: [37.45, -4.5],
          unclusterZoom: 13,
+         autostatus: false,
          search: false,
          ors: {
             key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
@@ -589,11 +590,10 @@ const Interfaz = (function() {
    /**
     * Define el estado inicial del mapa.
     */
-   Interfaz.prototype.setStatus = function() {
+   Interfaz.prototype.init = function() {
       const status = this.g.status;
 
       function reflejarOpciones(opts) {
-         opts = opts || this.options;
          for(const ajuste of this.ajustes.$children) {
             const input = ajuste.$el.querySelector("input");
             if(opts[input.name]) {
@@ -603,38 +603,25 @@ const Interfaz = (function() {
          }
       }
 
-      if(status) {
-         for(const filter in this.g.Centro.getFilterStatus()) {
-            reflejarFiltro.call(this, {name: filter, type: `filter:${name}`});
-         }
-
-         const corr = this.g.Centro.getCorrectStatus();
-         for(const c in corr.manual) {
-            const opts = corr.manual[c];
-            reflejarCorreccion.call(this, {
-               name: c, type: `correct:${c}`,
-               opts: opts.params,
-               auto: opts.auto
-            });
-         }
-
-         if(status.visual) {
-            const opts = {};
-            reflejarOpciones.call(this, {
-               ocultarBorrado: status.visual.ocu
-            });
-         }
-      }
-      else {
-         reflejarOpciones.call(this);
-      }
-
-      // Nos aseguramos de que al (des)aplicarse un filtro o corrección
-      // automáticos, se refleja en la interfaz.
+      // Nos aseguramos de que al (des)aplicarse
+      // un filtro o corrección se refleja en la interfaz.
       this.g.Centro.on("filter:* unfilter:*", reflejarFiltro.bind(this));
       this.g.Centro.on("correct:* uncorrect:*", reflejarCorreccion.bind(this));
 
+      let opciones = {};
+      if(status) {
+         this.g.setStatus();  // Aplicamos el estado del mapa.
+         // Lo único que queda por reflejar son las opciones
+         // exclusivas de la interfaz virtual.
+         if(status.visual) {
+            opciones = {ocultarBorrado: status.visual.ocu}
+         }
+      }
+      else opciones = this.options;
+
+      reflejarOpciones.call(this, opciones);
    }
+
 
    function reflejarFiltro(e) {
       const on = e.type.startsWith("filter:"),
@@ -710,5 +697,5 @@ const Interfaz = (function() {
 window.onload = function() {
    interfaz = new Interfaz();
    interfaz.initVueJS();
-   interfaz.setStatus();
+   interfaz.init();
 }

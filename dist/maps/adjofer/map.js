@@ -142,6 +142,7 @@ const mapAdjOfer = (function(path, opts) {
          center: [37.07, -6.27],
          zoom: 9,
          unclusterZoom: 14,
+         autostatus: true, // Aplica el status inicial directamente.
          light: true,      // Issue #41
          search: true,     // Issue #51
          ors: false,       // Issue #42
@@ -164,7 +165,7 @@ const mapAdjOfer = (function(path, opts) {
             configurable: false,
          });
 
-         setStatus.call(this, options.status);
+         if(options.autostatus) this.setStatus();
          // Fin #issue 57
       },
 
@@ -686,9 +687,10 @@ const mapAdjOfer = (function(path, opts) {
     * Fija la vista inicial del mapa en función del estado
     * que se haya pasado a través del parámetro URL status.
     *
-    * @param {Object} status  El estado del mapa.
     */
-   function setStatus(status) {
+   MapAdjOfer.prototype.setStatus = function() {
+      const status = this.options.status;
+
       if(!status) return;
 
       console.log("DEBUG", status, status.fil.lejos);

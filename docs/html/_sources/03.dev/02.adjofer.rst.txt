@@ -470,9 +470,14 @@ una variable que sea accesible desde el resto del código.
          Estilo del icono. Puede ser "*boliche*" o "*chupachups*". Por defecto,
          *boliche*.
 
-      ``unclusterZoom``
+     ``unclusterZoom``
          Zoom a partir del cual las marcas de centro se mostrarán siembre
          desagregadas. Por defecto, **14**.
+
+     ``autostatus``
+         Aplica automáticamente la configuración proporcionada a través del
+         parámetro URL *status*. Por defecto, ``true``. Véase el método
+         :js:meth:`setStatus`.
 
      ``ors``
          Objeto que facilita las opciones para generar isocronas, crear rutas y
@@ -704,6 +709,12 @@ Métodos
    de recrear sobre el mapa el antiguo estado. la labor del programador de la
    interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
    centro, si existen isocronas, cuáles son los filtros aplicados, etc.
+
+.. js:method:: setStatus()
+
+   Aplica la conifguración proporcionada a través del parámetro |URL| *status*.
+   Sólo es necesario en caso de que se haya establecido la opción
+   *autostatus* a ``false``.
 
 .. js:method:: getIcon(estilo)
 

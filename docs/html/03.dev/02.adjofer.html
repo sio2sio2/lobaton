@@ -620,16 +620,17 @@ que representa el origen de los viajes, la marca de los centros y las
 <dd><p class="first last">Crea un cajetín para localizar centros por nombre. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">icon</span></code></dt>
-<dd><blockquote class="first">
-<div><p>Estilo del icono. Puede ser «<em>boliche</em>» o «<em>chupachups</em>». Por defecto,
+<dd><p class="first last">Estilo del icono. Puede ser «<em>boliche</em>» o «<em>chupachups</em>». Por defecto,
 <em>boliche</em>.</p>
-</div></blockquote>
-<dl class="last docutils">
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">unclusterZoom</span></code></dt>
 <dd><p class="first last">Zoom a partir del cual las marcas de centro se mostrarán siembre
 desagregadas. Por defecto, <strong>14</strong>.</p>
 </dd>
-</dl>
+<dt><code class="docutils literal notranslate"><span class="pre">autostatus</span></code></dt>
+<dd><p class="first last">Aplica automáticamente la configuración proporcionada a través del
+parámetro URL <em>status</em>. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>. Véase el método
+<a class="reference internal" href="#setStatus" title="setStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setStatus()</span></code></a>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ors</span></code></dt>
 <dd><p class="first">Objeto que facilita las opciones para generar isocronas, crear rutas y
@@ -898,6 +899,14 @@ página de la aplicación con este parámetro <em>status</em>, la aplicación se
 de recrear sobre el mapa el antiguo estado. la labor del programador de la
 interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
 centro, si existen isocronas, cuáles son los filtros aplicados, etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setStatus">
+<code class="descname">setStatus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Aplica la conifguración proporcionada a través del parámetro <abbr title="Uniform Resource Locator">URL</abbr> <em>status</em>.
+Sólo es necesario en caso de que se haya establecido la opción
+<em>autostatus</em> a <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
