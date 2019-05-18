@@ -623,6 +623,11 @@ que representa el origen de los viajes, la marca de los centros y las
 <dd><p class="first last">Estilo del icono. Puede ser «<em>boliche</em>» o «<em>chupachups</em>». Por defecto,
 <em>boliche</em>.</p>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">loading</span></code></dt>
+<dd><p class="first last">Función que construye un indicador para notar la carga de datos remotos.
+Si es <code class="docutils literal notranslate"><span class="pre">true</span></code>, usa el indicador interno; y si <code class="docutils literal notranslate"><span class="pre">false</span></code>, se prescindirá
+de indicador alguno. Valor predeterminado: <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">unclusterZoom</span></code></dt>
 <dd><p class="first last">Zoom a partir del cual las marcas de centro se mostrarán siembre
 desagregadas. Por defecto, <strong>14</strong>.</p>
@@ -645,10 +650,8 @@ argumento el objeto <a class="reference external" href="https://geojson.org/">Ge
 los valores <code class="docutils literal notranslate"><span class="pre">true</span></code> si se desea usar la función predefinida,
 o <code class="docutils literal notranslate"><span class="pre">false</span></code> si no desea mostrar <em>popup</em>. Valor predeterminado:
 <code class="docutils literal notranslate"><span class="pre">true</span></code>.</li>
-<li><code class="docutils literal notranslate"><span class="pre">loading</span></code>: Función que construye un indicador para notar la carga
-de datos remotos. Si es <code class="docutils literal notranslate"><span class="pre">true</span></code>, usa el indicador interna; y si
-<code class="docutils literal notranslate"><span class="pre">false</span></code>, se prescindirá de indicador alguno. Valor predeterminado:
-<code class="docutils literal notranslate"><span class="pre">true</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">loading</span></code>: Tiene exactamente el mismo significado que la opción
+general. Su valor predeterminado es el que tenga la opción general.</li>
 <li><code class="docutils literal notranslate"><span class="pre">chunkProgress</span></code>: Función para mostrar el progreso en operaciones
 lentas (cálculo de isocronas). Si <code class="docutils literal notranslate"><span class="pre">true</span></code>, se usa el indicador interna,
 y si <code class="docutils literal notranslate"><span class="pre">false</span></code>, se prescinde de indicador.  Valor predeterminado:
@@ -658,6 +661,12 @@ y si <code class="docutils literal notranslate"><span class="pre">false</span></
 </dl>
 <p>Pueden, además, añadirse opciones propias del objeto <a class="reference external" href="https://leafletjs.com/reference-1.5.0.html#map">L.Map</a> como
 en el ejemplo <code class="docutils literal notranslate"><span class="pre">zoom</span></code> o <code class="docutils literal notranslate"><span class="pre">center</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Si no se facilita centro (opción <code class="docutils literal notranslate"><span class="pre">center</span></code>), la aplicación
+intentará averiguar las coordenadas del dispositivo para situar en ellas
+el centro.</p>
+</div>
 </li>
 </ul>
 </dd></dl>

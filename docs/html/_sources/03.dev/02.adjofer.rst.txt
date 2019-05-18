@@ -470,6 +470,11 @@ una variable que sea accesible desde el resto del código.
          Estilo del icono. Puede ser "*boliche*" o "*chupachups*". Por defecto,
          *boliche*.
 
+     ``loading``
+        Función que construye un indicador para notar la carga de datos remotos.
+        Si es ``true``, usa el indicador interno; y si ``false``, se prescindirá
+        de indicador alguno. Valor predeterminado: ``true``.
+
      ``unclusterZoom``
          Zoom a partir del cual las marcas de centro se mostrarán siembre
          desagregadas. Por defecto, **14**.
@@ -492,10 +497,8 @@ una variable que sea accesible desde el resto del código.
            los valores ``true`` si se desea usar la función predefinida,
            o ``false`` si no desea mostrar *popup*. Valor predeterminado:
            ``true``.
-         * ``loading``: Función que construye un indicador para notar la carga
-           de datos remotos. Si es ``true``, usa el indicador interna; y si
-           ``false``, se prescindirá de indicador alguno. Valor predeterminado:
-           ``true``.
+         * ``loading``: Tiene exactamente el mismo significado que la opción
+           general. Su valor predeterminado es el que tenga la opción general.
 
          * ``chunkProgress``: Función para mostrar el progreso en operaciones
            lentas (cálculo de isocronas). Si ``true``, se usa el indicador interna,
@@ -504,6 +507,10 @@ una variable que sea accesible desde el resto del código.
 
      Pueden, además, añadirse opciones propias del objeto `L.Map`_ como
      en el ejemplo ``zoom`` o ``center``.
+
+     .. note:: Si no se facilita centro (opción ``center``), la aplicación
+        intentará averiguar las coordenadas del dispositivo para situar en ellas
+        el centro.
 
 Atributos
 *********

@@ -139,6 +139,7 @@ const mapAdjOfer = (function(path, opts) {
       options: {
          id: "map",
          center: [37.45, -4.5],
+         loading: true,    // Presenta un gif que ameniza la carga.
          zoom: 8,
          centeredZoom: 12,
          unclusterZoom: 14,
@@ -160,6 +161,8 @@ const mapAdjOfer = (function(path, opts) {
 
          delete this.options.center;
          delete this.options.zoom;
+
+         if(this.options.loading === true) this.options.loading = ajaxGif;
 
          loadMap.call(this);
          createMarker.call(this);
@@ -243,10 +246,12 @@ const mapAdjOfer = (function(path, opts) {
          const Icono = catalogo[this.options.icon];
          Icono.onready(() => {
             if(typeof datos === "string") {  // Es una URL.
+               if(this.options.loading) this.options.loading();
                L.utils.load({
                   url: datos,
                   callback: xhr => {
                      const datos = JSON.parse(xhr.responseText);
+                     if(this.options.loading) this.options.loading();
                      this.agregarCentros(datos);
                   }
                });
@@ -435,7 +440,8 @@ const mapAdjOfer = (function(path, opts) {
    function loadMap() {
 
       const options = {},
-            nooptions = ["light", "ors", "id", "search", "icon", "unclusterZoom"];
+            nooptions = ["light", "ors", "id", "search", "icon",
+                         "unclusterZoom", "centeredZoom", "loading"];
 
       for(const name in this.options) {
          if(nooptions.indexOf(name) !== -1) continue
@@ -1565,12 +1571,12 @@ const mapAdjOfer = (function(path, opts) {
             espera = [],
             defaults = {
                chunkProgress: true,
-               loading: true,
                rutaPopup: true
             },
             ors = Object.assign({}, defaults, adjofer.options.ors);
 
       if(ors.chunkProgress === true) ors.chunkProgress = progressBar;
+      if(ors.loading === undefined) ors.loading = adjofer.options.loading;
       if(ors.loading === true) ors.loading = ajaxGif;
       if(ors.rutaPopup === true) ors.rutaPopup = crearPopup;
 
