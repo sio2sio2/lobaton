@@ -180,7 +180,7 @@
                    <label class="etiqueta col-form-label" :for="id">{{o.label}}</label>
                    <div class="custom-switch custom-switch-xs pl-0 ">
                      <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
-                            :value="o.value" @change="$emit('aplicar', id)" v-model="checked" :disabled="disabled">
+                            :value="o.value" @change="$emit('aplicar', $event.target)" v-model="checked" :disabled="disabled">
                      <label class="custom-switch-btn" :for="id"></label>
                    </div>
                </div>

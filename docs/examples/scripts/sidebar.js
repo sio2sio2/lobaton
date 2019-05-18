@@ -357,30 +357,36 @@ const Interfaz = (function() {
             id: function() { return `${this.c.tipo}:${this.c.nombre}`; },
          },
          methods: {
-            prepararOperacion: function(id) {
+            prepararOperacion: function(input) {
                // Si las opciones son excluyentes, al marcar una
                // se desmarcan las restantes. No puede usarse "radio",
                // porque no marcar ninguna opción también es posible.
                if(this.c.excluyentes) {
-                  const input = document.getElementById(id);
                   if(input.checked) {
+                     this.$children.forEach(i => {
+                        if(i.$el !== input && i.checked) i.checked = false;
+                     });
+                     /*
                      this.$el.querySelectorAll("input").forEach(i => {
                         if(i !== input && i.checked) i.checked = false;
                      });
+                     */
                   }
                }
 
                const tipo = this.c.tipo,
                      nombre = this.c.nombre,
-                     opts = this.c.getOpts?this.c.getOpts.call(this, id):this.recogerValores();
+                     opts = this.c.getOpts?this.c.getOpts.call(this, input):this.recogerValores();
 
                if(opts) Object.assign(opts, this.c.extra);
                this.$parent.aplicarOperacion(tipo, nombre, opts, this.c.auto);
             },
             recogerValores: function() {
                const key = this.c.campo,
-                     value = Array.from(this.$el.querySelectorAll("input:checked"))
-                                                .map(e => e.value);
+                     // Se recogen todos los valores marcados, pero no los deshabilitados
+                     // puesto que estos se entiende que lso ha marcado una corr. automática
+                     value = this.$children.filter(i => i.checked && !i.disabled)
+                                           .map(e => e.o.value);
                return value.length>0?{[key]: value}:false;
             }
          }
@@ -448,13 +454,14 @@ const Interfaz = (function() {
                   ]
                },
                {
-                  titulo: "Vacantes telefónicas",
-                  desc: "Elimina adjudicaciones no telefónicas",
-                  nombre: "vt",
+                  titulo: "Enseñanzas deseables",
+                  desc: "Elimina la oferta menos apetecible",
+                  nombre: "deseable",
                   tipo: "correct",
                   campo: "da.igual",
+                  auto: true,
                   opciones: [{
-                     label: "Eliminar adjudicaciones",
+                     label: "Elimina enseñanzas",
                      value: "cualquiera"
                   }]
                },
@@ -465,9 +472,8 @@ const Interfaz = (function() {
                   tipo: "correct",
                   campo: "turno",
                   excluyentes: true,
-                  getOpts: function(id) {
-                     const key = this.c.campo,
-                           input = document.getElementById(id);
+                  getOpts: function(input) {
+                     const key = this.c.campo;
 
                      return input.checked?{[key]: input.value}:false;
                   },
@@ -481,6 +487,28 @@ const Interfaz = (function() {
                         value: 2
                      }
                   ]
+               },
+               {
+                  titulo: "Vacantes iniciales",
+                  desc: "Elimine adj. que no responden a vacante incial",
+                  nombre: "vi",
+                  tipo: "correct",
+                  campo: "da.igual",
+                  opciones: [{
+                     label: "Eliminar adjudicaciones",
+                     value: "cualquiera",
+                  }]
+               },
+               {
+                  titulo: "Vacantes telefónicas",
+                  desc: "Elimina adjudicaciones no telefónicas",
+                  nombre: "vt",
+                  tipo: "correct",
+                  campo: "da.igual",
+                  opciones: [{
+                     label: "Eliminar adjudicaciones",
+                     value: "cualquiera"
+                  }]
                }
             ]
          },
@@ -489,7 +517,7 @@ const Interfaz = (function() {
                const oferta = {
                   titulo: "Enseñanzas",
                   desc: "Elimina la oferta del centro",
-                  nombre: "oferta",
+                  nombre: "ofens",
                   tipo: "correct",
                   campo: "ens"
                }
@@ -659,7 +687,7 @@ const Interfaz = (function() {
       switch(e.name) {
          case "bilingue":
          case "adjpue":
-         case "oferta":
+         case "ofens":
             corr = this.g.Centro.getCorrectStatus();
 
             for(f of this.filtrador.$children) {
@@ -689,6 +717,8 @@ const Interfaz = (function() {
             break;
 
          case "vt":
+         case "vi":
+         case "deseable":
             for(f of this.filtrador.$children) {
                if(f.c.tipo === "correct" && f.c.nombre === e.name) {
                   f.$children[0].checked = on;
