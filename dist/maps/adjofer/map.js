@@ -693,7 +693,6 @@ const mapAdjOfer = (function(path, opts) {
 
       if(!status) return;
 
-      console.log("DEBUG", status, status.fil.lejos);
       let lejos;
 
       // Los filtros pueden aplicarse antes de obtener datos.
@@ -710,12 +709,18 @@ const mapAdjOfer = (function(path, opts) {
       if(status.esp) {  // Debe cargarse una especialidad.
          this.once("dataloaded", e => {
             if(status.sel) this.seleccionado = this.Centro.get(status.sel);
-            if(!status.cor) return;
-            for(const name in status.cor) {
-               const opts = status.cor[name];
-               this.Centro.correct(name, opts.par, !!opts.aut);
+
+            if(status.cor) {
+               // Diferimos un cuarto de segundo la ejecución de las correcciones
+               // para darle tiempo a la interfaz visual a prepararse.
+               setTimeout(() => {
+                  for(const name in status.cor) {
+                     const opts = status.cor[name];
+                     this.Centro.correct(name, opts.par, !!opts.aut);
+                  }
+                  this.Centro.invoke("refresh");
+               }, 250);
             }
-            this.Centro.invoke("refresh");
 
             if(this.ors && status.des) {
                const destino = this.Centro.get(status.des);
@@ -731,7 +736,7 @@ const mapAdjOfer = (function(path, opts) {
 
       // Isocronas: se está suponiendo que tardan bastante más
       // que en cargar los datos de los centros. En puridad, habría
-      // meterlo dentro del dataloaded anterior
+      // que meterlo dentro del dataloaded anterior
       if(this.ors && status.iso) {
          if(lejos) {
             this.once("isochroneset", e => {

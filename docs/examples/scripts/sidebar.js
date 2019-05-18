@@ -143,36 +143,35 @@ const Interfaz = (function() {
     * Inicializa los atributos que son aplicaciones VueJS.
     */
    Interfaz.prototype.initVueJS = function() {
-      // Selector de especialidad
-      Object.defineProperty(this, "selector", {
-         value: initSelector.call(this),
-         writable: false,
-         configurable: false,
-         enumerable: true
-      });
-
-      // Buscador de centros
-      Object.defineProperty(this, "buscador", {
-         value: initBuscador.call(this),
-         writable: false,
-         configurable: false,
-         enumerable: true
-      });
-
-      // Ajustes de la interfaz
-      Object.defineProperty(this, "ajustes", {
-         value: initAjustes.call(this),
-         writable: false,
-         configurable: false,
-         enumerable: true
-      });
-
-      // Aplicador de correcciones a los datos
-      Object.defineProperty(this, "filtrador", {
-         value: initFiltrador.call(this),
-         writable: false,
-         configurable: false,
-         enumerable: true
+      Object.defineProperties(this, {
+         // Selector de especialidad
+         selector: {
+            value: initSelector.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
+         },
+         // Buscador de centros
+         buscador: {
+            value: initBuscador.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
+         },
+         // Ajustes de la interfaz
+         ajustes: {
+            value: initAjustes.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
+         },
+         // Aplicador de correcciones a los datos
+         filtrador: {
+            value: initFiltrador.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
+         }
       });
    }
 
@@ -266,33 +265,46 @@ const Interfaz = (function() {
                // con alguna de las sugerencias.
                if(Object.keys(this.todas).indexOf(codigo) !== -1) {
                   e.target.setCustomValidity("");
-                  const especialidad = this.todas[codigo];
-                  // TODO:: ¿Ponemos el nombre de la especialidad en algún sitio?
-                  console.log("DEBUG: Nombre:", especialidad);
 
-                  // Hay que habilitar todos los botones de la barra lateral.
-                  if(!this.especialidad) {
-                     document.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
-                        .forEach(e => e.classList.remove("disabled"));
-                  }
-
-                  // Para qué vamos a borrar los datos si es la misma especialidad.
+                  // ¿Para qué vamos a borrar los datos si es la misma especialidad?
                   if(codigo !== this.especialidad) {
                      this.interfaz.g.cluster.clearLayers();
                      this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
                   }
 
+                  this.cambiarSidebar(codigo);
+
                   this.interfaz.g.Centro.reset();
                   this.interfaz.g.seleccionado = null;
                   this.interfaz.g.setRuta(null);
-                  this.especialidad = codigo;
                   e.target.value = "";
-                  document.querySelector("#sidebar .leaflet-sidebar-tabs li a")
-                          .dispatchEvent(new Event("click"));
+
                }
                else { 
                   e.target.setCustomValidity("Puesto inválido. Escriba parte de su nombre para recibir sugerencias");
                }
+            },
+            cambiarSidebar(codigo) {
+               if(codigo) {
+                  const especialidad = this.todas[codigo];
+                  // TODO:: ¿Ponemos el nombre de la especialidad en algún sitio?
+                  console.log("DEBUG: Nombre:", especialidad);
+               }
+
+               // Hay que habilitar todos los botones de la barra lateral.
+               if(!this.especialidad) {
+                  document.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
+                     .forEach(e => e.classList.remove("disabled"));
+               }
+
+               // Cambiamos al panel de filtros.
+               interfaz.sidebar.open("correcciones");
+               // Cerramos paneles para mostrar el mapa.
+               // TODO: Descomentar estas líneas.
+               //document.querySelector("#sidebar .leaflet-sidebar-tabs li a")
+               //        .dispatchEvent(new Event("click"));
+
+               this.especialidad = codigo;
             }
          }
       });
@@ -591,13 +603,13 @@ const Interfaz = (function() {
     * Define el estado inicial del mapa.
     */
    Interfaz.prototype.init = function() {
-      const status = this.g.status;
+      const status = this.g.options.status;
 
       function reflejarOpciones(opts) {
          for(const ajuste of this.ajustes.$children) {
             const input = ajuste.$el.querySelector("input");
             if(opts[input.name]) {
-               ajuste.checked = true;
+               input.checked = true;
                input.dispatchEvent(new Event("change"));
             }
          }
@@ -616,6 +628,7 @@ const Interfaz = (function() {
          if(status.visual) {
             opciones = {ocultarBorrado: status.visual.ocu}
          }
+         this.selector.cambiarSidebar(status.esp);
       }
       else opciones = this.options;
 
@@ -625,7 +638,7 @@ const Interfaz = (function() {
 
    function reflejarFiltro(e) {
       const on = e.type.startsWith("filter:"),
-            input = document.getElementById(`filter:${name}`);
+            input = document.getElementById(`filter:${e.name}`);
       if(input && input.tagName === "INPUT") input.checked = on;
    }
       

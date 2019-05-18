@@ -121,7 +121,7 @@
                   <label class="etiqueta col-form-label" :for="a.tipo">{{a.desc}}</label>
                   <div class="custom-switch custom-switch-xs pl-0">
                      <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
-                            @change="ajustar" :id="a.tipo" v-model.lazy="checked"
+                            @change="ajustar" :id="a.tipo" v-model="checked"
                             class="custom-switch-input filtro">
                      <label class="custom-switch-btn" :for="a.tipo"></label>
                   </div>
