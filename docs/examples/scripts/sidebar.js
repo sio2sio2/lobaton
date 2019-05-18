@@ -692,24 +692,40 @@ const Interfaz = (function() {
 
          case "vt":
             for(f of this.filtrador.$children) {
-               if(f.c.tipo === "correct" && f.c.nombre === e.name) break
+               if(f.c.tipo === "correct" && f.c.nombre === e.name) {
+                  f.$children[0].checked = on;
+                  break
+               }
             }
-            f.$children[0].checked = on;
             break;
 
          case "vt+":
             for(f of this.ajustes.$children) {
-               if(f.a.tipo === `correct:${e.name}`) break;
+               if(f.a.tipo === `correct:${e.name}`) {
+                  f.checked = on;
+                  break;
+               }
             }
-            f.checked = on;
 
             // Si no se incluyen vacantes telefónicas,
             // se deshabilita eliminar adj. no telefónicas.
             for(f of this.filtrador.$children) {
-               if(f.c.tipo === "correct" && f.c.nombre === "vt") break
+               if(f.c.tipo === "correct" && f.c.nombre === "vt") {
+                  f.$children[0].disabled = !on;
+                  break
+               }
             }
-            f.$children[0].disabled = !on;
+            break;
 
+         case "turno":
+            for(f of this.filtrador.$children) {
+               if(f.c.tipo === "correct" && f.c.nombre === e.name) {
+                  for(i of f.$children) {
+                     i.checked = !!(on && (i.o.value & e.opts.turno));
+                  }
+                  break;
+               }
+            }
             break;
       }
    }
