@@ -633,6 +633,17 @@ const Interfaz = (function() {
       else opciones = this.options;
 
       reflejarOpciones.call(this, opciones);
+
+      // Si no se incluyen vacantes telefónicas, entonces
+      // debe desabilitarse la corrección por adjudicaciones no telefónicas.
+      if(!this.options.incluirTlfo) {
+         for(const f of this.filtrador.$children) {
+            if(f.c.tipo === "correct" && f.c.nombre === "vt") {
+               f.$children[0].disabled = true;
+               break;
+            }
+         }
+      }
    }
 
 
