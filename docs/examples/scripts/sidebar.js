@@ -14,8 +14,6 @@ const Interfaz = (function() {
 
       // Objeto de manipulación del mapa.
       this.g = mapAdjOfer("../../dist", {
-         zoom: 8,
-         center: [37.45, -4.5],
          unclusterZoom: 13,
          autostatus: false,
          search: false,

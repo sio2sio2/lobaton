@@ -116,7 +116,6 @@ const mapAdjOfer = (function(path, opts) {
       if(status) opts = Object.assign(opts, getOpts(status));
 
       // Fin issue #57
-
       return new MapAdjOfer(opts);
    }
 
@@ -139,8 +138,9 @@ const mapAdjOfer = (function(path, opts) {
 
       options: {
          id: "map",
-         center: [37.07, -6.27],
-         zoom: 9,
+         center: [37.45, -4.5],
+         zoom: 8,
+         centeredZoom: 12,
          unclusterZoom: 14,
          autostatus: true, // Aplica el status inicial directamente.
          light: true,      // Issue #41
@@ -154,19 +154,54 @@ const mapAdjOfer = (function(path, opts) {
 
       initialize: function(options) {
          L.Util.setOptions(this, options);
+
+         let center = this.options.center,
+             zoom   = this.options.zoom;
+
+         delete this.options.center;
+         delete this.options.zoom;
+
          loadMap.call(this);
          createMarker.call(this);
 
-         // Issue #57
-         Object.defineProperty(this, "status", {
-            value: !!options.status,
-            writable:false,
-            enumerable: true,
-            configurable: false,
-         });
+         new Promise(resolve => {
+            // Si se proporcionó centro, no se calcula la posición.
+            if(!options.center && navigator.geolocation.getCurrentPosition) {
+               navigator.geolocation.getCurrentPosition(pos => {
+                  const coords = pos.coords;
+                  resolve({
+                     zoom: this.options.centeredZoom,
+                     center: [coords.latitude, coords.longitude]
+                  });
+               }, function (err) {
+                  console.warn("No es posible establecer la ubicación del dispositivo");
+                  resolve({
+                     zoom: zoom,
+                     center: center
+                  });
+               }, {
+                  timeout: 5000,
+                  maximumAge: 1800000
+               });
+            }
+            else resolve({zoom: zoom, center: center});
 
-         if(options.autostatus) this.setStatus();
-         // Fin #issue 57
+         }).then(opts => {
+            this.map.setView(opts.center, opts.zoom, {animate: false});
+            this.tileLayer.addTo(this.map);
+            this.cluster.addTo(this.map);
+
+            // Issue #57
+            Object.defineProperty(this, "status", {
+               value: !!options.status,
+               writable:false,
+               enumerable: true,
+               configurable: false,
+            });
+
+            if(options.autostatus) this.setStatus();
+            // Fin #issue 57
+         });
       },
 
       /**
@@ -412,10 +447,14 @@ const mapAdjOfer = (function(path, opts) {
       this.map = L.map(this.options.id, options);
       this.map.zoomControl.setPosition('bottomright');
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18
-      }).addTo(this.map);
+      Object.defineProperty(this, "tileLayer", {
+         value: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                   maxZoom: 18
+                }),
+         enumerable: false,
+         configurable: false
+      });
 
       /**
        * Capa donde se agregan las marcas
@@ -428,7 +467,7 @@ const mapAdjOfer = (function(path, opts) {
          disableClusteringAtZoom: this.options.unclusterZoom,
          spiderfyOnMaxZoom: false,
          iconCreateFunction: L.utils.noFilteredIconCluster,
-      }).addTo(this.map);
+      });
 
       if(this.options.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
 
