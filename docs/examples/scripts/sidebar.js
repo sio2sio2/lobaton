@@ -11,6 +11,7 @@ const Interfaz = (function() {
    // Opciones predeterminadas propias exclusivamente de la interfaz.
    const defaults_v = {
       ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
+      recordar: false         // Recuerda entre sesiones el estado del mapa.
    }
 
    function Interfaz(opts) {
@@ -37,37 +38,27 @@ const Interfaz = (function() {
          });
       }
 
-      // Objeto de manipulación del mapa.
-      this.g = mapAdjOfer("../../dist", {
+      opts = {
          unclusterZoom: 13,
          autostatus: false,
          search: false,
          ors: {
             key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
          }
-      });
+      }
 
-      // La opción de guardar el estado no queremos que forme parte del
-      // estado de la interfaz visual, así que no la hacemos enumerable
-      Object.defineProperty(this.options, "guardar", {
-         value: true,
-         writable: true,
-         enumerable: false,
-         configurable: false
-      });
+      // Issue #62
+      const url = new URL(window.location.href);
+      let status = url.searchParams.get("status");  // Issue #57
+      if(!status) status = localStorage && localStorage.getItem("status");
+      if(status) opts.status = status;
+      // Fin issue #62
+
+      // Objeto de manipulación del mapa.
+      this.g = mapAdjOfer("../../dist", opts);
 
       initialize.call(this);
       createSidebar.call(this);
-   }
-
-
-   /**
-    * Elimina el estado del almacenamiento interno y para de guardarlo
-    * para que no se recupere en el próximo inicio
-    */
-   Interfaz.prototype.olvidar = function() {
-      this.options.guardar = false;
-      if(localStorage) localStorage.clear();
    }
 
 
@@ -88,7 +79,7 @@ const Interfaz = (function() {
          if(this.g.Centro.uncorrect("vt")) this.g.Centro.invoke("refresh");
       });
 
-      // DEBUG: Elimínese esto en producción.
+      // TODO: DEBUG: Elimínese esto en producción.
       this.g.on("markerselect", function(e) {
          if(!e.newval) return;
          const layer = e.newval;
@@ -215,6 +206,8 @@ const Interfaz = (function() {
             enumerable: true
          }
       });
+
+      initInterfaz.call(this);
    }
 
    function initSelector() {
@@ -612,7 +605,7 @@ const Interfaz = (function() {
                this.$parent.options[this.a.opt] = this.checked;
 
                if(this.a.accion) {
-                  this.a.accion.call(this);
+                  this.a.accion(this.a.opt, this.checked);
                   return;
                }
 
@@ -639,7 +632,6 @@ const Interfaz = (function() {
                   opt: "filtrarOferta",
                   tipo: "filter:oferta",
                   value: {min: 1}
-                  //accion: function(name, value) {},
                },
                {
                   desc: "Ocultar centros sin adjudicaciones",
@@ -648,7 +640,18 @@ const Interfaz = (function() {
                   value: {min: 1}
                },
                {
-                  desc: "Ocultar datos de centro filtrados",
+                  desc: "Recordar el estado del mapa",
+                  opt: "recordar",
+                  tipo: "visual",
+                  accion: (name, value) => {
+                     if(!value) {
+                        if(localStorage) localStorage.clear();
+                     }
+                     else if(!localStorage) console.warn("El navegador no tiene soporte para almacenar datos localmente");
+                  }
+               },
+               {
+                  desc: "Ocultar datos filtrados",
                   opt: "ocultarBorrado",
                   tipo: "visual"
                },
@@ -665,18 +668,12 @@ const Interfaz = (function() {
             ]
          }
       });
+
    }
 
-
-   /**
-    * Define el estado inicial del mapa.
-    */
-   Interfaz.prototype.init = function() {
+   // Vuelva sobre el aspecto de la interfaz el estado inicial del mapa
+   function initInterfaz() {
       let status = this.g.options.status;
-      if(!status && localStorage) {
-         status = localStorage.getItem("status");
-         if(status) status = JSON.parse(atob(status));
-      }
 
       function reflejarOpciones(opts) {
          for(const ajuste of this.ajustes.$children) {
@@ -695,7 +692,7 @@ const Interfaz = (function() {
 
       let opciones = {};
       if(status) {
-         this.g.setStatus(status);  // Aplicamos el estado del mapa.
+         this.g.setStatus();  // Aplicamos el estado del mapa.
          // Lo único que queda por reflejar son las opciones
          // exclusivas de la interfaz virtual.
          for(const o in defaults_v) {
@@ -724,7 +721,7 @@ const Interfaz = (function() {
       // Una vez aplicados todos los cambios iniciales, definimos
       // el disparador para que vaya apuntando en local los cambios de estado.
       this.g.on("statuschange", e => {
-         if(localStorage && this.options.guardar) localStorage.setItem("status", this.status);
+         if(localStorage && this.options.recordar) localStorage.setItem("status", this.status);
       });
 
       // Guardamos el estado final de la inicialización.
@@ -824,5 +821,4 @@ const Interfaz = (function() {
 window.onload = function() {
    interfaz = new Interfaz();
    interfaz.initVueJS();
-   interfaz.init();
 }

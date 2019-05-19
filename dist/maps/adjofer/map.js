@@ -109,16 +109,11 @@ const mapAdjOfer = (function(path, opts) {
 
 
    function mapAdjOfer(opts) {
-      // Issue #57
-      const url = new URL(window.location.href),
-            status = url.searchParams.get("status");
-
-      if(status) opts = Object.assign(opts, getOpts(status));
-
-      // Fin issue #57
+      if(opts.status) opts = Object.assign(opts, getOpts(opts.status));  // Issue #62
       return new MapAdjOfer(opts);
    }
 
+   // Issue #57, #62
    function getOpts(status) {
       status = JSON.parse(atob(status));
 
@@ -132,6 +127,7 @@ const mapAdjOfer = (function(path, opts) {
 
       return ret;
    }
+   // Fin issue #57, 62
 
    const MapAdjOfer = L.Evented.extend({
       /** @lends MapAdjOfer.prototype */
@@ -792,8 +788,8 @@ const mapAdjOfer = (function(path, opts) {
     * que se haya pasado a través del parámetro URL status.
     *
     */
-   MapAdjOfer.prototype.setStatus = function(status) {
-      status = status || this.options.status;
+   MapAdjOfer.prototype.setStatus = function() {
+      const status = this.options.status;
 
       let lejos;
 
