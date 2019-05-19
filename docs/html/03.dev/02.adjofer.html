@@ -717,9 +717,8 @@ datos.</p>
 <dl class="attribute">
 <dt id="status">
 <code class="descname">status</code><a class="headerlink" href="#status" title="Enlazar permanentemente con esta definición">¶</a></dt>
-<dd><p>Valor booleano que es <code class="docutils literal notranslate"><span class="pre">true</span></code> si se pasó un parámetro <em>status</em> en la <abbr title="Uniform Resource Locator">URL</abbr>
-que hizo al mapa recrear un estado concreto. Véase el métod
-<a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
+<dd><p>Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
+Véase el método <a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -895,11 +894,11 @@ proporciona <code class="docutils literal notranslate"><span class="pre">null</s
 
 <dl class="method">
 <dt id="getStatus">
-<code class="descname">getStatus</code><span class="sig-paren">(</span><em>encode</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
-<dd><p>Devuelve un objeto que describe el estado actual del mapa (centro, zoom,
-origen, isochronas, correcciones, filtros. etc.). Si se pasa <code class="docutils literal notranslate"><span class="pre">true</span></code> como
-argumento, el objeto se codifica en base64 para que sea apto para construir
-el enlace:</p>
+<code class="descname">getStatus</code><span class="sig-paren">(</span><em>extra</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
+origen, isochronas, correcciones, filtros. etc.). La cadena es la
+codificación en base64 del objeto que devuelve el atributo <a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>,
+y es útil para construir el enlace:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>http://ruta/a/la/aplicacion?status=XXXX
 </pre></div>
 </div>
@@ -908,6 +907,9 @@ página de la aplicación con este parámetro <em>status</em>, la aplicación se
 de recrear sobre el mapa el antiguo estado. la labor del programador de la
 interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
 centro, si existen isocronas, cuáles son los filtros aplicados, etc.</p>
+<p>El argumento <code class="docutils literal notranslate"><span class="pre">extra</span></code> permite proporciona al objeto opciones extra que son
+características de la interfaz visual para que se añadan a la
+codificación del objeto colgando del atributo <code class="docutils literal notranslate"><span class="pre">visual</span></code>.</p>
 </dd></dl>
 
 <dl class="method">

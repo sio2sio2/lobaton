@@ -548,9 +548,8 @@ Atributos
 
 .. js:attribute:: status
 
-   Valor booleano que es ``true`` si se pasó un parámetro *status* en la |URL|
-   que hizo al mapa recrear un estado concreto. Véase el métod
-   :js:meth:`getStatus`.
+   Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
+   Véase el método :js:meth:`getStatus`.
 
 .. js:attribute:: seleccionado
 
@@ -699,12 +698,12 @@ Métodos
    La generación de la ruta tiene asociado el evento :ref:`routeset
    <adjofer-event-routeset>`.
 
-.. js:method:: getStatus(encode)
+.. js:method:: getStatus(extra)
 
-   Devuelve un objeto que describe el estado actual del mapa (centro, zoom,
-   origen, isochronas, correcciones, filtros. etc.). Si se pasa ``true`` como
-   argumento, el objeto se codifica en base64 para que sea apto para construir
-   el enlace:
+   Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
+   origen, isochronas, correcciones, filtros. etc.). La cadena es la
+   codificación en base64 del objeto que devuelve el atributo :js:attr:`status`,
+   y es útil para construir el enlace:
 
    .. code-block:: none
 
@@ -716,6 +715,10 @@ Métodos
    de recrear sobre el mapa el antiguo estado. la labor del programador de la
    interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
    centro, si existen isocronas, cuáles son los filtros aplicados, etc.
+
+   El argumento ``extra`` permite proporciona al objeto opciones extra que son
+   características de la interfaz visual para que se añadan a la
+   codificación del objeto colgando del atributo ``visual``.
 
 .. js:method:: setStatus()
 

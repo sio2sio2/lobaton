@@ -166,6 +166,7 @@ const mapAdjOfer = (function(path, opts) {
 
          loadMap.call(this);
          createMarker.call(this);
+         buildStatus.call(this);  // Issue #62
 
          new Promise(resolve => {
             // Si se proporcionó centro, no se calcula la posición.
@@ -194,16 +195,7 @@ const mapAdjOfer = (function(path, opts) {
             this.tileLayer.addTo(this.map);
             this.cluster.addTo(this.map);
 
-            // Issue #57
-            Object.defineProperty(this, "status", {
-               value: !!options.status,
-               writable:false,
-               enumerable: true,
-               configurable: false,
-            });
-
-            if(options.autostatus) this.setStatus();
-            // Fin #issue 57
+            if(options.autostatus && options.status) this.setStatus();  // Issue #57
          });
       },
 
@@ -365,72 +357,121 @@ const mapAdjOfer = (function(path, opts) {
          this.direccion = query
       },
 
+
       // Issue #57
       /**
-       * Obtiene un objeto que describe el estado del mapa.
-       * @param {Boolean} encode  Si ``true``, se codifica el objeto en base64.
+       * Obtiene un objeto codificado en base64 que describe el estado del mapa.
        * @param {Object} extra   Opciones extra que proporciona la interfaz visual
        * y que se añadiran al estado a través del atributo ``extra``.
        */
-      getStatus(encode, extra) {
-         const origen = this.origen && this.origen.getLatLng(),
-               filter = this.Centro.prototype.options.filter,
-               corr   = this.Centro.prototype.options.corr;
-
-         function getCoords(point) {
-            return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
-         }
-
-         let status = {
-            cen: getCoords(this.map.getCenter()),
-            zoo: this.map.getZoom(),
-         }
-
-         if(this.general) status.esp = this.general.entidad[0];  // Especialidad.
-
-         if(this.seleccionado) status.sel = this.seleccionado.getData().id.cod;
-         if(origen) status.ori = getCoords(origen);
-
-         const filters = {};
-         for(const name of filter.getFilters()) {
-            filters[name] = filter.getParams(name);
-         }
-         // Hay que sustituir el área por un índice que la represente.
-         if(filters.hasOwnProperty("lejos")) {
-            const macizas = this.getIsocronas(true);
-            for(const idx in macizas) {
-               if(macizas[idx] === filters.lejos.area) {
-                  delete filters.lejos.area;
-                  filters.lejos.idx = Number(idx);
-                  break;
-               }
-            }
-         }
-         if(filter.lejos.area) {
-            console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
-            delete filters.lejos;
-         }
-         if(Object.keys(filters).length > 0) status.fil = filters;
-         
-
-         const corrs = {},
-               ac = corr.getAppliedCorrections();
-         for(const name in ac) {
-            const opts = ac[name];
-            corrs[name] = {par: opts.params, aut: opts.auto}
-         }
-         if(Object.keys(corrs).length > 0) status.cor = corrs;
-
-         if(this.isocronas) status.iso = 1;
-         if(this.ruta) status.des = this.ruta.destino.getData().id.cod;
-
-         if(extra) Object.assign(status, {visual: extra}); // Issue #66
-
-         return encode?btoa(JSON.stringify(status)):status;
+      getStatus(extra) {
+                        // Issue #66
+         const status = extra?Object.assign({visual: extra}, this.status)
+                             :this.status;
+         return btoa(JSON.stringify(status));
       }
       // Fin issue #57
    });
 
+
+   // Issue #62
+   /**
+    * Construye el status según se producen eventos sobre el mapa.
+    * @this MapAdjOfer.prototype
+    */
+   function buildStatus() {
+      Object.defineProperty(this, "status", {
+         value: {},
+         writable:false,
+         enumerable: true,
+         configurable: false,
+      });
+
+      Object.defineProperties(this.status, {
+         zoo: {
+            get: () => this.map.getZoom(),
+            enumerable: true
+         },
+         cen: {
+            get: () => getCoords(this.map.getCenter()),
+            enumerable: true
+         }
+      })
+
+      // Reduce los decimales de las coordenadas a 4.
+      function getCoords(point) {
+         return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
+      }
+
+      this.on("originset", e => {
+         if(e.newval) this.status.ori = getCoords(e.newval.getLatLng());
+         else delete this.status.ori;
+      });
+
+      // Especialidad
+      this.on("dataloaded", e => {
+         if(this.general) status.esp = this.general.entidad[0];
+      });
+
+      this.on("markerselect", e => {
+         if(e.newval) this.status.sel = this.seleccionado.getData().id.cod;
+         else delete this.status.sel;
+      });
+
+      this.on("isochroneset", e => {
+         if(e.newval) this.status.iso = 1;
+         else delete this.status.iso;
+      })
+
+      this.on("routeset", e => {
+         if(e.newval) this.status.des = this.ruta.destino.getData().id.cod;
+         else delete this.status.des;
+      })
+
+      this.Centro.on("filter:*", e => {
+         const filter = this.Centro.prototype.options.filter;
+         this.status.fil = this.status.fil || {};
+
+         this.status.fil[e.name] = filter.getParams(e.name);
+         if(e.name === "lejos") {
+            const macizas = this.getIsocronas(true);
+            for(const idx in macizas) {
+               if(macizas[idx] === this.status.fil.lejos.area) {
+                  delete this.status.fil.lejos.area;
+                  this.status.fil.lejos.idx = Number(idx);
+                  break;
+               }
+            }
+            if(this.status.fil.lejos.area) {
+               console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
+               delete this.status.fil.lejos;
+            }
+         }
+      });
+
+      this.Centro.on("unfilter:*", e => {
+         delete this.status.fil[e.name];
+         if(Object.keys(this.status.fil).length === 0) delete this.status.fil;
+      });
+
+      this.Centro.on("correct:*", e => {
+         if(e.auto) return;  // Sólo se apuntan las manuales.
+         const corr = this.Centro.prototype.options.corr,
+               opts = corr.getOptions(e.name);
+
+         this.status.cor = this.status.cor || {};
+         this.status.cor[e.name] = {par: opts.params, aut: opta.auto};
+      });
+               
+      this.Centro.on("uncorrect:*", e => {
+         if(e.auto) return;
+
+         delete this.status.cor[e.name];
+         if(Object.keys(this.status.cor).length === 0) delete this.status.cor;
+      });
+
+   }
+   // Fin issue #62
 
    /**
     * Carga el mapa y crea la capa de cluster donde se agregan los centros.
@@ -735,8 +776,6 @@ const mapAdjOfer = (function(path, opts) {
     */
    MapAdjOfer.prototype.setStatus = function() {
       const status = this.options.status;
-
-      if(!status) return;
 
       let lejos;
 

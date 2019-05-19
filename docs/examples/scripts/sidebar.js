@@ -128,7 +128,7 @@ const Interfaz = (function() {
     */
    Object.defineProperty(Interfaz.prototype, "status", {
       get: function() {
-         return this.g.getStatus(true, {
+         return this.g.getStatus({
             ocu: this.options.ocultarBorrado
          });
       },
