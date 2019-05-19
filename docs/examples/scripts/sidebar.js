@@ -6,11 +6,36 @@ const Interfaz = (function() {
       filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
       incluirTlfo: false,     // Incluir vacantes telefónicas.
       incluirCGT: false,      // Incluir correcciones por CGT.
+   }
+
+   // Opciones predeterminadas propias exclusivamente de la interfaz.
+   const defaults_v = {
       ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
    }
 
    function Interfaz(opts) {
-      this.options = Object.assign({}, defaults, opts);
+      this.options = Object.assign({}, defaults, defaults_v, opts);
+
+      for(const o in defaults_v) {
+         const value = this.options[o];
+         Object.defineProperties(this.options, {
+            [o]: {
+               get: () => this.options[`_${o}`],
+               set: value => {
+                  this.options[`_${o}`] = value;
+                  this.g.fire("statuschange", {attr: `visual.${o}`});
+               },
+               configurable: false,
+               enumerable: true
+            },
+            [`_${o}`]: {
+               value: value,
+               writable: true,
+               configurable: false,
+               enumerable: false,
+            }
+         });
+      }
 
       // Objeto de manipulación del mapa.
       this.g = mapAdjOfer("../../dist", {
@@ -22,8 +47,27 @@ const Interfaz = (function() {
          }
       });
 
+      // La opción de guardar el estado no queremos que forme parte del
+      // estado de la interfaz visual, así que no la hacemos enumerable
+      Object.defineProperty(this.options, "guardar", {
+         value: true,
+         writable: true,
+         enumerable: false,
+         configurable: false
+      });
+
       initialize.call(this);
       createSidebar.call(this);
+   }
+
+
+   /**
+    * Elimina el estado del almacenamiento interno y para de guardarlo
+    * para que no se recupere en el próximo inicio
+    */
+   Interfaz.prototype.olvidar = function() {
+      this.options.guardar = false;
+      if(localStorage) localStorage.clear();
    }
 
 
@@ -128,9 +172,9 @@ const Interfaz = (function() {
     */
    Object.defineProperty(Interfaz.prototype, "status", {
       get: function() {
-         return this.g.getStatus({
-            ocu: this.options.ocultarBorrado
-         });
+         const extra = {}
+         for(const o in defaults_v) extra[o.substring(0, 3)] = this.options[o];
+         return this.g.getStatus(extra);
       },
       configurable: false,
       enumerable: true
@@ -298,9 +342,8 @@ const Interfaz = (function() {
                // Cambiamos al panel de filtros.
                interfaz.sidebar.open("correcciones");
                // Cerramos paneles para mostrar el mapa.
-               // TODO: Descomentar estas líneas.
-               //document.querySelector("#sidebar .leaflet-sidebar-tabs li a")
-               //        .dispatchEvent(new Event("click"));
+               document.querySelector("#sidebar .leaflet-sidebar-tabs li a")
+                       .dispatchEvent(new Event("click"));
 
                this.especialidad = codigo;
             }
@@ -629,7 +672,11 @@ const Interfaz = (function() {
     * Define el estado inicial del mapa.
     */
    Interfaz.prototype.init = function() {
-      const status = this.g.options.status;
+      let status = this.g.options.status;
+      if(!status && localStorage) {
+         status = localStorage.getItem("status");
+         if(status) status = JSON.parse(atob(status));
+      }
 
       function reflejarOpciones(opts) {
          for(const ajuste of this.ajustes.$children) {
@@ -648,13 +695,16 @@ const Interfaz = (function() {
 
       let opciones = {};
       if(status) {
-         this.g.setStatus();  // Aplicamos el estado del mapa.
+         this.g.setStatus(status);  // Aplicamos el estado del mapa.
          // Lo único que queda por reflejar son las opciones
          // exclusivas de la interfaz virtual.
-         if(status.visual) {
-            opciones = {ocultarBorrado: status.visual.ocu}
+         for(const o in defaults_v) {
+            const name = o.substring(0, 3);
+            if(status.visual.hasOwnProperty(name)) {
+               opciones[o] = status.visual[name];
+            }
          }
-         this.selector.cambiarSidebar(status.esp);
+         if(status.esp) this.selector.cambiarSidebar(status.esp);
       }
       else opciones = this.options;
 
@@ -670,6 +720,15 @@ const Interfaz = (function() {
             }
          }
       }
+
+      // Una vez aplicados todos los cambios iniciales, definimos
+      // el disparador para que vaya apuntando en local los cambios de estado.
+      this.g.on("statuschange", e => {
+         if(localStorage && this.options.guardar) localStorage.setItem("status", this.status);
+      });
+
+      // Guardamos el estado final de la inicialización.
+      this.g.fire("statuschange");
    }
 
 

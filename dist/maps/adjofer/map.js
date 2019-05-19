@@ -403,29 +403,43 @@ const mapAdjOfer = (function(path, opts) {
          return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
       }
 
+      this.map.on("zoomend", e => { 
+         this.fire("statuschange", {attr: "zoo"});
+      });
+
+      this.map.on("moveend", e => { 
+         this.fire("statuschange", {attr: "cen"});
+      });
+
       this.on("originset", e => {
          if(e.newval) this.status.ori = getCoords(e.newval.getLatLng());
          else delete this.status.ori;
+         if(e.newval !== e.oldval) this.fire("statuschange", {attr: "ori"});
       });
 
       // Especialidad
       this.on("dataloaded", e => {
-         if(this.general) status.esp = this.general.entidad[0];
+         if(this.general) this.status.esp = this.general.entidad[0];
+         this.fire("statuschange", {attr: "esp"});
       });
 
       this.on("markerselect", e => {
          if(e.newval) this.status.sel = this.seleccionado.getData().id.cod;
          else delete this.status.sel;
+         if(e.newval !== e.oldval) this.fire("statuschange", {attr: "sel"});
       });
 
       this.on("isochroneset", e => {
+         const oldiso = this.status.iso;
          if(e.newval) this.status.iso = 1;
          else delete this.status.iso;
+         if(oldiso !== this.status.iso) this.fire("statuschange", {attr: "iso"});
       })
 
       this.on("routeset", e => {
          if(e.newval) this.status.des = this.ruta.destino.getData().id.cod;
          else delete this.status.des;
+         if(e.oldval !== e.newval) this.fire("statuschange", {attr: "des"});
       })
 
       this.Centro.on("filter:*", e => {
@@ -447,27 +461,31 @@ const mapAdjOfer = (function(path, opts) {
                delete this.status.fil.lejos;
             }
          }
+         this.fire("statuschange", {attr: `fil.${e.name}`});
       });
 
       this.Centro.on("unfilter:*", e => {
          delete this.status.fil[e.name];
          if(Object.keys(this.status.fil).length === 0) delete this.status.fil;
+         this.fire("statuschange", {attr: `fil.${e.name}`});
       });
 
       this.Centro.on("correct:*", e => {
-         if(e.auto) return;  // Sólo se apuntan las manuales.
+         if(e.auto || e.name === "extinta") return;  // Sólo se apuntan las manuales.
          const corr = this.Centro.prototype.options.corr,
                opts = corr.getOptions(e.name);
 
          this.status.cor = this.status.cor || {};
-         this.status.cor[e.name] = {par: opts.params, aut: opta.auto};
+         this.status.cor[e.name] = {par: opts.params, aut: opts.auto};
+         this.fire("statuschange", {attr: `cor.${e.name}`});
       });
                
       this.Centro.on("uncorrect:*", e => {
-         if(e.auto) return;
+         if(e.auto || e.name === "extinta") return;
 
          delete this.status.cor[e.name];
          if(Object.keys(this.status.cor).length === 0) delete this.status.cor;
+         this.fire("statuschange", {attr: `cor.${e.name}`});
       });
 
    }
@@ -774,8 +792,8 @@ const mapAdjOfer = (function(path, opts) {
     * que se haya pasado a través del parámetro URL status.
     *
     */
-   MapAdjOfer.prototype.setStatus = function() {
-      const status = this.options.status;
+   MapAdjOfer.prototype.setStatus = function(status) {
+      status = status || this.options.status;
 
       let lejos;
 
