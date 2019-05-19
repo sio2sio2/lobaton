@@ -170,8 +170,9 @@
                <fieldset :id="id" class="form-group">
                   <legend>{{c.titulo}}</legend>
                   <small class="help form-text text-muted">{{c.desc}}</small>
-                  <opcion-corr v-for="(o, index) in c.opciones" @aplicar="prepararOperacion" 
+                  <opcion-corr v-if="c.nombre !== 'turno'" v-for="(o, index) in c.opciones" @aplicar="prepararOperacion" 
                                :o="o" :idx="index" :key="index" />
+                  <opcion-turno v-else :o="o" :idx="index" :key="index" />
                </fieldset>
             </script>
 
@@ -181,6 +182,17 @@
                    <div class="custom-switch custom-switch-xs pl-0 ">
                      <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
                             :value="o.value" @change="$emit('aplicar', $event.target)" v-model="checked" :disabled="disabled">
+                     <label class="custom-switch-btn" :for="id"></label>
+                   </div>
+               </div>
+            </script>
+
+            <script type="text/x-template" id="opcion-turno">
+               <div class="form-group row">
+                   <label class="etiqueta col-form-label" :for="id">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 ">
+                     <input type="checkbox" :id="id" :name="o.campo" class="custom-switch-input correccion"
+                            :value="o.value" @change="prepararOperacion($event.target)" v-model="checked" :disabled="disabled">
                      <label class="custom-switch-btn" :for="id"></label>
                    </div>
                </div>

@@ -393,22 +393,19 @@ const Interfaz = (function() {
             id: function() { return `${this.c.tipo}:${this.c.nombre}`; },
          },
          methods: {
+            excluirResto: function(input) {
+               if(input.checked) {
+                  this.$children.forEach(i => {
+                     const e = i.$el.querySelector("input");
+                     if(e !== input && i.checked) i.checked = false;
+                  });
+               }
+            },
             prepararOperacion: function(input) {
                // Si las opciones son excluyentes, al marcar una
                // se desmarcan las restantes. No puede usarse "radio",
                // porque no marcar ninguna opción también es posible.
-               if(this.c.excluyentes) {
-                  if(input.checked) {
-                     this.$children.forEach(i => {
-                        if(i.$el !== input && i.checked) i.checked = false;
-                     });
-                     /*
-                     this.$el.querySelectorAll("input").forEach(i => {
-                        if(i !== input && i.checked) i.checked = false;
-                     });
-                     */
-                  }
-               }
+               if(this.c.excluyentes) this.excluirResto(input);
 
                const tipo = this.c.tipo,
                      nombre = this.c.nombre,
@@ -430,6 +427,7 @@ const Interfaz = (function() {
 
       Vue.component("opcion-corr", {
          props: ["o", "idx"],
+         template: "#opcion-corr",
          data: function() {
             return {
                checked: false,
@@ -441,7 +439,40 @@ const Interfaz = (function() {
                return `${this.$parent.id}_${this.idx}`;
             },
          },
-         template: "#opcion-corr",
+      });
+
+      // Turno tiene una línea que es una corrección y otra que un filtro
+      Vue.component("opcion-turno", {
+         props: ["o", "idx"],
+         template: "#opcion-turno",
+         data: function() {
+            return {
+               checked: false,
+               disabled: false
+            }
+         },
+         computed: {
+            id: function() {
+               return `${this.o.tipo}:${this.$parent.c.nombre}`;
+            },
+         },
+         methods: {
+            prepararOperacion: function(input) {
+               let operaciones = [this];
+               if(this.$parent.c.excluyentes) {
+                  this.$parent.excluirResto(input);
+                  operaciones = this.$parent.$children;
+               }
+
+               for(const a of operaciones) {
+                  const opts = a.checked?{[a.o.campo]: a.o.value}: false,
+                        nombre = a.$parent.c.nombre,
+                        tipo = a.o.tipo;
+
+                  this.$parent.$parent.aplicarOperacion(tipo, nombre, opts, a.o.auto);
+               }
+            }
+         }
       });
 
       // Al cargar datos, los puestos y las enseñanzas varían
@@ -503,23 +534,20 @@ const Interfaz = (function() {
                },
                {
                   titulo: "Turno",
-                  desc: "Elimina enseñanzas de",
+                  desc: "Filtros basados en el turno de la enseñanza",
                   nombre: "turno",
-                  tipo: "correct",
-                  campo: "turno",
                   excluyentes: true,
-                  getOpts: function(input) {
-                     const key = this.c.campo;
-
-                     return input.checked?{[key]: input.value}:false;
-                  },
                   opciones: [
                      {
-                        label: "Mañana",
+                        label: "Elimina enseñanzas de mañana",
+                        tipo: "correct",
+                        campo: "turno",
                         value: 1
                      },
                      {  
-                        label: "Tarde",
+                        label: "Elimina centros con enseñanza de tarde",
+                        tipo: "filter",
+                        campo: "turno",
                         value: 2
                      }
                   ]
@@ -803,9 +831,12 @@ const Interfaz = (function() {
 
          case "turno":
             for(f of this.filtrador.$children) {
-               if(f.c.tipo === "correct" && f.c.nombre === e.name) {
+               if(f.c.nombre === e.name) {
                   for(i of f.$children) {
-                     i.checked = !!(on && (i.o.value & e.opts.turno));
+                     if(i.o.tipo === "correct") {
+                        if(e.opts.turno == 1) i.checked = on;
+                        break;
+                     }
                   }
                   break;
                }
