@@ -627,6 +627,12 @@ const Interfaz = (function() {
                self.options[this.a.opt] = this.checked;
             }
          },
+         computed: {
+            id: function() {
+               return this.a.tipo !== "visual"?this.a.tipo
+                                             :`${this.a.tipo}:${this.a.opt}`
+            }
+         },
          methods: {
             // Qué acción se desencadena al cambiar el ajuste.
             ajustar: function(e) {

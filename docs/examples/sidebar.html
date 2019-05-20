@@ -44,6 +44,8 @@
 
    <!-- Bootstrap 4 CSS -->
    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap4c-custom-switch@1.1.2/dist/css/component-custom-switch.min.css">
+
 
 
    <!-- Particularidades de esta página -->
@@ -118,12 +120,12 @@
 
             <script type="text/x-template" id="ajuste">
                <div class="form-group row">
-                  <label class="etiqueta col-form-label" :for="a.tipo">{{a.desc}}</label>
+                  <label class="etiqueta col-form-label" :for="id">{{a.desc}}</label>
                   <div class="custom-switch custom-switch-xs pl-0">
                      <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
-                            @change="ajustar" :id="a.tipo" v-model="checked"
+                            @change="ajustar" :id="id" v-model="checked"
                             class="custom-switch-input filtro">
-                     <label class="custom-switch-btn" :for="a.tipo"></label>
+                     <label class="custom-switch-btn" :for="id"></label>
                   </div>
                </div>
             </script>

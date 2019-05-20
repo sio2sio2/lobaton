@@ -41,3 +41,9 @@
 #esp input::-webkit-list-button {
    display: none;
 }
+
+
+/* Filtros y ajustes */
+.custom-switch .custom-switch-input:checked + .custom-switch-btn {
+   background: #0074d9;
+}
