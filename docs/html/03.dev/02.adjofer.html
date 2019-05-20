@@ -578,7 +578,7 @@ en principio, no volverá a ocupar esa plaza.</li>
 </ul>
 </div>
 <div class="section" id="creacion-del-objeto">
-<h2>3.2.4. Creación del objeto<a class="headerlink" href="#creacion-del-objeto" title="Enlazar permanentemente con este título">¶</a></h2>
+<span id="crea-mapadjofer"></span><h2>3.2.4. Creación del objeto<a class="headerlink" href="#creacion-del-objeto" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>La primera acción para disponer del mapa es contruir el objeto y almacenarlo en
 una variable que sea accesible desde el resto del código.</p>
 <dl class="function">
@@ -629,12 +629,21 @@ Si es <code class="docutils literal notranslate"><span class="pre">true</span></
 de indicador alguno. Valor predeterminado: <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">unclusterZoom</span></code></dt>
-<dd><p class="first last">Zoom a partir del cual las marcas de centro se mostrarán siembre
+<dd><blockquote class="first">
+<div><p>Zoom a partir del cual las marcas de centro se mostrarán siembre
 desagregadas. Por defecto, <strong>14</strong>.</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">status</span></code></dt>
+<dd><p class="first last">Pasa un objeto de configuración del estado inicial codificado en base64.
+Su decodificación pasará a ser el valor inicial del atributo
+<a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>.</p>
+</dd>
+</dl>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">autostatus</span></code></dt>
-<dd><p class="first last">Aplica automáticamente la configuración proporcionada a través del
-parámetro URL <em>status</em>. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>. Véase el método
+<dd><p class="first last">Aplica automáticamente la configuración proporcionada a través de la
+opción <code class="docutils literal notranslate"><span class="pre">status</span></code>. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>. Véase el método
 <a class="reference internal" href="#setStatus" title="setStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setStatus()</span></code></a>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">ors</span></code></dt>
@@ -718,7 +727,15 @@ datos.</p>
 <dt id="status">
 <code class="descname">status</code><a class="headerlink" href="#status" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
-Véase el método <a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
+El estado adicional que aporte la interfaz visual se encontrará dentro de su
+atributo <code class="docutils literal notranslate"><span class="pre">visual</span></code>. Este estado es dinámico y varía cada vez que se realiza
+una acción sobre el mapa que modifica el estado. excepto <code class="docutils literal notranslate"><span class="pre">visual</span></code>, que como
+recoge caractarísticas del estado de la interfaz ajenas al mapa, mantendrá
+sus valores iniciales.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Consulte el método <a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="attribute">
@@ -897,27 +914,20 @@ proporciona <code class="docutils literal notranslate"><span class="pre">null</s
 <code class="descname">getStatus</code><span class="sig-paren">(</span><em>extra</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
 <dd><p>Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
 origen, isochronas, correcciones, filtros. etc.). La cadena es la
-codificación en base64 del objeto que devuelve el atributo <a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>,
-y es útil para construir el enlace:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>http://ruta/a/la/aplicacion?status=XXXX
-</pre></div>
-</div>
-<p>donde XXXX es el resultado codificado que devuelve el método. Al requirir la
-página de la aplicación con este parámetro <em>status</em>, la aplicación será capaz
-de recrear sobre el mapa el antiguo estado. la labor del programador de la
-interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
-centro, si existen isocronas, cuáles son los filtros aplicados, etc.</p>
-<p>El argumento <code class="docutils literal notranslate"><span class="pre">extra</span></code> permite proporciona al objeto opciones extra que son
-características de la interfaz visual para que se añadan a la
-codificación del objeto colgando del atributo <code class="docutils literal notranslate"><span class="pre">visual</span></code>.</p>
+codificación en base64 del objeto que devuelve el atributo <a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>.
+El argumento <code class="docutils literal notranslate"><span class="pre">extra</span></code> deberá aportar las caracterísicas que depende de la
+interfaz y sobreescribirá las opciones incluidas dentro del atrbuto <code class="docutils literal notranslate"><span class="pre">visual</span></code>
+de dicho atributo.</p>
+<p>El retorno proporcionado por este método es apto como valor de la opción
+<em>status</em> que se puede pasar al <a class="reference internal" href="#crea-mapadjofer"><span class="std std-ref">crear el objeto</span></a>,</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="setStatus">
 <code class="descname">setStatus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
-<dd><p>Aplica la conifguración proporcionada a través del parámetro <abbr title="Uniform Resource Locator">URL</abbr> <em>status</em>.
-Sólo es necesario en caso de que se haya establecido la opción
-<em>autostatus</em> a <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<dd><p>Aplica la configuración proporcionada a través de la opción <em>status</em> al
+crear el objeto.  Sólo es necesario en caso de que se haya establecido la
+opción <em>autostatus</em> a <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </dd></dl>
 
 <dl class="method">

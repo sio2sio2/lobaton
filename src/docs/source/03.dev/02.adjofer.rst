@@ -425,6 +425,8 @@ Algunas apuntes clave para entender los datos son:
   * *ubi*, ``true`` si el funcionario obtuvo plaza en el concurso de traslados y,
     en principio, no volverá a ocupar esa plaza.
 
+.. _crea-mapadjofer:
+
 Creación del objeto
 *******************
 La primera acción para disponer del mapa es contruir el objeto y almacenarlo en
@@ -479,9 +481,14 @@ una variable que sea accesible desde el resto del código.
          Zoom a partir del cual las marcas de centro se mostrarán siembre
          desagregadas. Por defecto, **14**.
 
+      ``status``
+         Pasa un objeto de configuración del estado inicial codificado en base64.
+         Su decodificación pasará a ser el valor inicial del atributo
+         :js:attr:`status`.
+
      ``autostatus``
-         Aplica automáticamente la configuración proporcionada a través del
-         parámetro URL *status*. Por defecto, ``true``. Véase el método
+         Aplica automáticamente la configuración proporcionada a través de la
+         opción ``status``. Por defecto, ``true``. Véase el método
          :js:meth:`setStatus`.
 
      ``ors``
@@ -549,7 +556,13 @@ Atributos
 .. js:attribute:: status
 
    Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
-   Véase el método :js:meth:`getStatus`.
+   El estado adicional que aporte la interfaz visual se encontrará dentro de su
+   atributo ``visual``. Este estado es dinámico y varía cada vez que se realiza
+   una acción sobre el mapa que modifica el estado. excepto ``visual``, que como
+   recoge caractarísticas del estado de la interfaz ajenas al mapa, mantendrá
+   sus valores iniciales.
+   
+   .. seealso:: Consulte el método :js:meth:`getStatus`.
 
 .. js:attribute:: seleccionado
 
@@ -702,29 +715,19 @@ Métodos
 
    Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
    origen, isochronas, correcciones, filtros. etc.). La cadena es la
-   codificación en base64 del objeto que devuelve el atributo :js:attr:`status`,
-   y es útil para construir el enlace:
+   codificación en base64 del objeto que devuelve el atributo :js:attr:`status`.
+   El argumento ``extra`` deberá aportar las caracterísicas que depende de la
+   interfaz y sobreescribirá las opciones incluidas dentro del atrbuto ``visual``
+   de dicho atributo.
 
-   .. code-block:: none
-
-      http://ruta/a/la/aplicacion?status=XXXX
-
-
-   donde XXXX es el resultado codificado que devuelve el método. Al requirir la
-   página de la aplicación con este parámetro *status*, la aplicación será capaz
-   de recrear sobre el mapa el antiguo estado. la labor del programador de la
-   interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
-   centro, si existen isocronas, cuáles son los filtros aplicados, etc.
-
-   El argumento ``extra`` permite proporciona al objeto opciones extra que son
-   características de la interfaz visual para que se añadan a la
-   codificación del objeto colgando del atributo ``visual``.
+   El retorno proporcionado por este método es apto como valor de la opción
+   *status* que se puede pasar al :ref:`crear el objeto <crea-mapadjofer>`,
 
 .. js:method:: setStatus()
 
-   Aplica la conifguración proporcionada a través del parámetro |URL| *status*.
-   Sólo es necesario en caso de que se haya establecido la opción
-   *autostatus* a ``false``.
+   Aplica la configuración proporcionada a través de la opción *status* al
+   crear el objeto.  Sólo es necesario en caso de que se haya establecido la
+   opción *autostatus* a ``false``.
 
 .. js:method:: getIcon(estilo)
 
