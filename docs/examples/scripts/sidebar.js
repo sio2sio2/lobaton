@@ -553,15 +553,31 @@ const Interfaz = (function() {
                   ]
                },
                {
-                  titulo: "Vacantes iniciales",
-                  desc: "Elimine adj. que no responden a vacante incial",
-                  nombre: "vi",
-                  tipo: "correct",
-                  campo: "da.igual",
-                  opciones: [{
-                     label: "Eliminar adjudicaciones",
-                     value: "cualquiera",
-                  }]
+                  titulo: "Plan de compensación",
+                  desc: "Elimina centros según plan",
+                  nombre: "tipo",
+                  tipo: "filter",
+                  campo: "tipo",
+                  getOpts: function(id) {
+                     const key = this.c.campo,
+                           value = this.$children.filter(i => i.checked && !i.disabled)
+                                                 .reduce((x,a) => x + a.o.value, 0);
+                     return value>0?{[key]: value}:false;
+                  },
+                  opciones: [
+                     {
+                        label: "Sin plan alguno",
+                        value: 1
+                     },
+                     {
+                        label: "Compensatoria",
+                        value: 2
+                     },
+                     {
+                        label: "Difícil desempeño",
+                        value: 4
+                     }
+                  ]
                },
                {
                   titulo: "Vacantes telefónicas",
@@ -573,7 +589,18 @@ const Interfaz = (function() {
                      label: "Eliminar adjudicaciones",
                      value: "cualquiera"
                   }]
-               }
+               },
+               {
+                  titulo: "Vacantes iniciales",
+                  desc: "Elimine adj. que no responden a vacante incial",
+                  nombre: "vi",
+                  tipo: "correct",
+                  campo: "da.igual",
+                  opciones: [{
+                     label: "Eliminar adjudicaciones",
+                     value: "cualquiera",
+                  }]
+               },
             ]
          },
          computed: {
@@ -764,9 +791,23 @@ const Interfaz = (function() {
 
 
    function reflejarFiltro(e) {
-      const on = e.type.startsWith("filter:"),
-            input = document.getElementById(`filter:${e.name}`);
-      if(input && input.tagName === "INPUT") input.checked = on;
+      const on = e.type.startsWith("filter:");
+      switch(e.name) {
+         case  "tipo":
+            for(const f of this.filtrador.$children) {
+               if(f.c.nombre === e.name && f.c.tipo === "filter") {
+                  for(const i of f.$children) {
+                     i.checked = !!(i.o.value & e.opts.tipo);
+                  }
+                  break;
+               }
+            }
+            break;
+
+         default:
+            const input = document.getElementById(`filter:${e.name}`);
+            if(input) input.checked = on;
+      }
    }
       
 

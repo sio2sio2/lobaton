@@ -1372,10 +1372,10 @@ const mapAdjOfer = (function(path, opts) {
       // Elimina los tipos facilitados
       this.Centro.registerF("tipo", {
          attrs: "mod.dif",
-         // opts= {tipo: 1, inv: false}  //tipo: 1=compensatoria, 2=difícil desempeño, 3=ambos.
+         // opts= {tipo: 1, inv: false}  //tipo: 1=normal 2=compensatoria, 4=difícil desempeño
          func: function(opts) {
-            const map  = { "compensatoria": 1, "dificil": 2 },
-                  tipo = map[this.getData().mod.dif] || 0;
+            const map  = { "compensatoria": 2, "dificil": 4 },
+                  tipo = map[this.getData().mod.dif] || 1;
 
             return !!(opts.inv ^ !!(tipo & opts.tipo));
          }
