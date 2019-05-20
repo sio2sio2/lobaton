@@ -43,7 +43,20 @@
 }
 
 
+.leaflet-sidebar-content {
+   font-family: Roboto, sans-serif;
+}
+
 /* Filtros y ajustes */
 .custom-switch .custom-switch-input:checked + .custom-switch-btn {
    background: #0074d9;
+}
+
+#ajustes .col-form-label, #correcciones .col-form-label {
+   width: 85%;
+}
+
+#ajustes .row, #correcciones .row {
+   margin-left: .5em;
+   margin-right: .5em;
 }
