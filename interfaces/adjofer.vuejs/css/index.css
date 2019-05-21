@@ -18,113 +18,6 @@ body, html, #map {
     border-color: #fff;
 }
 
-/* ---------------------------------------------------
-    COMMON SIDEBAR STYLE
------------------------------------------------------ */
-
-.wrapper {
-    display: fixed;
-    width: 100%;
-}
-
-#sidebar {
-    cursor: default;
-    position: relative;
-    height: 100vh;
-    overflow: auto;
-    z-index: 1001;
-    background: #F5F5F5;
-    color: #000;
-    float: left;
-}
-
-.close {
-    margin: 5px 10px 5px 0;
-    clear: both;
-}
-
-.invisible {
-    display: none;
-}
-
-#sidebarCollapse {
-    z-index: 1001;
-    position: relative;
-    float: left;
-    margin: 2em;
-}
-
-.section-cardbox {
-    background-color: #fff;
-    box-sizing: border-box;
-    border-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin-top: 0.7em;
-    margin-left: 0.5em;
-    position: relative;
-    overflow: hidden;
-}
-
-.section-cardbox-header {
-    background-color: #4285f4;
-    color: #fff;
-    height: 3em;
-    padding: .8em;
-}
-
-.section-cardbox-content {
-    padding: 1em 2em;
-}
-
-.etiqueta {
-    float: left;
-    width: 80%;
-}
-
-.section-cardbox-header:after {
-    font-family: 'Font Awesome 5 Free';
-    content: "\f068";
-    float: right; 
-    font-weight: 500;
-}
-.section-cardbox-header.collapsed:after {
-    /* symbol for "collapsed" panels */
-    content: "\f067";
-}
-
-.bottom {
-    height: 100px;
-}
-
-
-/* ---------------------------------------------------
-    Estilos específicos del sidebar para el mapa
------------------------------------------------------ */
-
-.info-oferta, .puesto-pce, .textoFiltrado {
-    padding-left: 2em;
-}
-
-.filtrado h5, .filtrado p.puesto-pce, .tachado {
-    text-decoration: line-through;
-}
-
-.nombrePuesto {
-    font-size: 1.05rem;
-}
-
-.listaSinPadding {
-    padding-left: 0.5rem;
-}
-
-.textoFiltrado {
-    margin-bottom: 0;
-}
-
-.div-puesto {
-    margin-bottom: 2em;
-}
-
 
 /* 
     ##Device = Laptops, Desktops
@@ -136,12 +29,13 @@ body, html, #map {
   */
 
 @media (min-width: 768px) {
-    #sidebar {
-        width: 350px;
+
+    .leaflet-sidebar-pane {
+        min-width: 312px;
     }
 
-    #sidebar.active {
-        margin-left: -350px;
+    #sidebar {
+        width: 396px;
     }
 
     .section-cardbox {
@@ -172,9 +66,6 @@ body, html, #map {
         margin-left: -350px;
     }
 
-    .section-cardbox {
-        width: 334px;
-    }
 }
 
 /* 
@@ -192,7 +83,7 @@ body, html, #map {
     }
 
     .section-cardbox {
-        width: 95vw;
+        width: 96%;
     }
 }
 

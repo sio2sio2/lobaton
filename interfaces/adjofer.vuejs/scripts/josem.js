@@ -27,10 +27,10 @@ window.onload = function() {
    g.on("markerselect", function(e) {
       if(e.newval){
          //Mostramos la barra si estaba oculta
-         displaySidebar();
+         displaySidebar("centro");
          displayInfoCentro(e.newval);
          // Para una mejor visibilidad, al cargar la información del centro, colapsamos los filtros
-         collapseFiltros();
+         // issue64: Ya no es necesario colapsar los filtros, pues la nueva sidebar no puede representar dos "cajas" a la vez
       }
       else {
          ocultarInfoCentro();
@@ -55,9 +55,41 @@ window.onload = function() {
       document.getElementById("filtro:oferta").dispatchEvent(new Event("change"));
    }
 
-   // Esta funcionalidad hace que la barra lateral (sidebar) se abra y cierre pulsando los botones oportunos
-   document.getElementById("sidebarCollapse").addEventListener('click', toogleSidebar);
-   document.getElementById("close").addEventListener('click', toogleSidebar);
+
+   sidebar = L.control.sidebar({ container: 'sidebar', closeButton: true })
+               .addTo(g.map)
+               .open("selector");
+
+   const Despliegue = L.Control.extend({
+      onAdd: function(map) {
+         const button = L.DomUtil.create("button"),
+               icon = L.DomUtil.create("i", "fa fa-arrow-down");
+
+         button.id = "view-sidebar";
+         button.setAttribute("type", "button");
+         button.appendChild(icon);
+         button.addEventListener("click", e => {
+            this.remove(map);
+         });
+
+         return button;
+      },
+      onRemove: map => {
+         sidebar.addTo(map);
+         // Por alguna extraña razón (que parece un bug del plugin)
+         // hay que volver a eliminar y añadir la barra para que funcione
+         // el despliegue de los paneles.
+         sidebar.remove();
+         sidebar.addTo(map);
+      }
+   });
+
+   document.querySelector("#sidebar i.fa-arrow-up").closest("a")
+           .addEventListener("click", e => {
+               sidebar.remove();
+               new Despliegue({position: "topleft"}).addTo(g.map);
+            });
+
 }
 
 /**
@@ -127,17 +159,17 @@ function cambiaCorreccion(e) {
 * Función que se encarga de mostrar u ocultar la barra lateral
 */
 function toogleSidebar() {
-   document.getElementById('sidebar').classList.toggle('active');
-   document.getElementById('sidebarCollapse').classList.toggle('invisible');
+   
 }
 
 /**
  * Esta función muestra la barra lateral si estaba oculta, y no hace nada si estaba visible
  */
-function displaySidebar() {
-   if ( ! document.getElementById('sidebarCollapse').classList.contains('invisible')) {
-      toogleSidebar();
+function displaySidebar(tab) {
+   if(!sidebar._map) { // La barra no está desplegada.
+      document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
    }
+   sidebar.open(tab);
 }
 
 function aplicaCorreccion(cor, params) {
@@ -307,6 +339,7 @@ function collapseFiltros() {
 function displayInfoCentro(centro) {
    // Test to see if the browser supports the HTML template element by checking
    // for the presence of the template element's content attribute.
+   console.debug(centro.getData());
    if ('content' in document.createElement('template')) {
          var app = new Vue({
             el: '#template-centro',
@@ -315,6 +348,11 @@ function displayInfoCentro(centro) {
                info: g.general
             },
             template: "#template-centro",
+            computed: {
+               tienePlazas: function () {
+                  return Object.keys(centro.getData().pla).length > 0
+               }
+            },
             filters: {
                capitalize: function (value) {
                   if (!value) return ''
