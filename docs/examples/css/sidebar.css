@@ -52,11 +52,41 @@
    background: #0074d9;
 }
 
-#ajustes .col-form-label, #correcciones .col-form-label {
-   width: 85%;
+.custom-switch .custom-switch-input:checked:disabled + .custom-switch-btn {
+   background: rgba(0, 116, 217,.4);
 }
 
-#ajustes .row, #correcciones .row {
-   margin-left: .5em;
-   margin-right: .5em;
+#correcciones input::-webkit-outer-spin-button, #correcciones input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+#correccciones input {
+   -moz-appearance: textfield;
+}
+
+/* 
+    ##Device = Low Resolution Tablets, Mobiles (Landscape)
+    ##Screen = B/w 481px to 767px
+  */
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .leaflet-sidebar {
+        width: 350px;
+    }
+}
+
+/* 
+    ##Device = Most of the Smartphones Mobiles (Portrait)
+    ##Screen = B/w 320px to 479px
+  */
+
+@media (min-width: 320px) and (max-width: 480px) {
+    .leaflet-sidebar {
+        width: 100vw;
+    }
+
+    .leaflet-sidebar.leaflet-touch {
+       border-right: none;
+    }
 }

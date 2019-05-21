@@ -120,8 +120,8 @@
 
             <script type="text/x-template" id="ajuste">
                <div class="form-group row">
-                  <label class="col-form-label" :for="id">{{a.desc}}</label>
-                  <div class="custom-switch custom-switch-xs pl-0">
+                  <label class="col-form-label col-10" :for="id">{{a.desc}}</label>
+                  <div class="custom-switch custom-switch-xs pl-0 col-2">
                      <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
                             @change="ajustar" :id="id" v-model="checked"
                             class="custom-switch-input filtro">
@@ -137,7 +137,7 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <div id="esp" class="section-cardbox-content collapse show">
+            <div id="esp">
                <label>Escriba o seleccione una especialidad
                   <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
                          value="" @input="selEspec" autocomplete=off autofocus>
@@ -172,32 +172,61 @@
                <fieldset :id="id" class="form-group">
                   <legend>{{c.titulo}}</legend>
                   <small class="help form-text text-muted">{{c.desc}}</small>
-                  <opcion-corr v-if="c.nombre !== 'turno'" v-for="(o, index) in c.opciones" @aplicar="prepararOperacion" 
-                               :o="o" :idx="index" :key="index" />
-                  <opcion-turno v-else :o="o" :idx="index" :key="index" />
+                  <opcion-corr v-for="(o, index) in c.opciones" :o="o" :idx="index" :key="index" />
                </fieldset>
             </script>
 
             <script type="text/x-template" id="opcion-corr">
-               <div class="form-group row">
-                   <label class="col-form-label" :for="id">{{o.label}}</label>
-                   <div class="custom-switch custom-switch-xs pl-0 ">
-                     <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
-                            :value="o.value" @change="$emit('aplicar', $event.target)" v-model="checked" :disabled="disabled">
+               <div v-if="$parent.c.nombre === 'turno'" class="form-group row">
+                   <label class="col-form-label col-10" :for="id">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 col-2">
+                     <input type="checkbox" class="custom-switch-input correccion"
+                            :id="id" :name="$parent.c.campo" :value="o.value" @change="prepararOperacion($event.target)"
+                            v-model="checked" :disabled="disabled">
+                     <label class="custom-switch-btn" :for="id"></label>
+                   </div>
+               </div>
+               <opcion-adjref v-else-if="$parent.c.nombre === 'adjref'" />
+               <div v-else class="form-group row">
+                   <label class="col-form-label col-10" :for="id">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 col-2">
+                     <input type="checkbox" class="custom-switch-input correccion"
+                            :id="id" :name="o.campo" :value="o.value" @change="prepararOperacion($event.target)"
+                            v-model="checked" :disabled="disabled">
                      <label class="custom-switch-btn" :for="id"></label>
                    </div>
                </div>
             </script>
 
-            <script type="text/x-template" id="opcion-turno">
-               <div class="form-group row">
-                   <label class="col-form-label" :for="id">{{o.label}}</label>
-                   <div class="custom-switch custom-switch-xs pl-0 ">
-                     <input type="checkbox" :id="id" :name="o.campo" class="custom-switch-input correccion"
-                            :value="o.value" @change="prepararOperacion($event.target)" v-model="checked" :disabled="disabled">
-                     <label class="custom-switch-btn" :for="id"></label>
+            <script type="text/x-template" id="opcion-adjref">
+               <form class="form-group row" autocomplete=off>
+                  <div class="col-form-label col-10">
+                     <select name="colectivo" class="custom-select custom-select-sm mb-2" required>
+                        <option disabled selected label="-- Colectivo --"></option>
+                        <option v-for="(co, index) of $parent.o.colectivos" :key="index"
+                                :value="co.letra">{{co.nombre}}</option>
+                     </select>
+                     <div class="row">
+                        <input class="col-4 form-control-sm is-valid" placeholder="Escalafón"
+                               type="number" id="escalafon" name="escalafon" required disabled>
+                        <fieldset div class="col-8 text-right" disabled>
+                           <input type="number" name="anno" placeholder="años"
+                                  class="col-3 form-control-sm is-valid" min=0 max=40>
+                           <span class="col-0 col-form-label">/</span>
+                           <input type="number" name="mes" placeholder="meses"
+                                  class="col-3 form-control-sm is-vslid" min=0 max=12>
+                           <span class="col-0 col-form-label">/</span>
+                           <input type="number" name="dia" placeholder="dias"
+                                  class="col-3 form-control-sm is-valid" min=0 max=30>
+                        </fieldset>
+                     </div>
+                  </div>
+                   <div class="custom-switch custom-switch-xs pl-0 col-2">
+                     <input type="checkbox" class="custom-switch-input correccion" id="correct:adjref_0"
+                            v-model="checked" :disabled="disabled" @change="$parent.prepararOperacion($event.target)">
+                     <label class="custom-switch-btn" for="correct:adjref_0"></label>
                    </div>
-               </div>
+               </form>
             </script>
 
          </div>
