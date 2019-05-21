@@ -52,11 +52,15 @@
    background: #0074d9;
 }
 
-#ajustes .col-form-label, #correcciones .col-form-label {
-   width: 85%;
+.custom-switch .custom-switch-input:checked:disabled + .custom-switch-btn {
+   background: rgba(0, 116, 217,.4);
 }
 
-#ajustes .row, #correcciones .row {
-   margin-left: .5em;
-   margin-right: .5em;
+#correcciones input::-webkit-outer-spin-button, #correcciones input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+}
+
+#correccciones input {
+   -moz-appearance: textfield;
 }

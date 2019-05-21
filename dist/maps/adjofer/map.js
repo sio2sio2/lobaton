@@ -1323,7 +1323,7 @@ const mapAdjOfer = (function(path, opts) {
          }
 
          if(!opts.hasOwnProperty("_ref")) opts._ref = escEquiv(opts);
-         return escEquiv(adj[idx]) > opts._ref;
+         return escEquiv(adj[idx]) < opts._ref;
       }
 
       // Elimina las adjudicaciones que sean más prioritarias

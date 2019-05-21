@@ -393,35 +393,6 @@ const Interfaz = (function() {
             id: function() { return `${this.c.tipo}:${this.c.nombre}`; },
          },
          methods: {
-            excluirResto: function(input) {
-               if(input.checked) {
-                  this.$children.forEach(i => {
-                     const e = i.$el.querySelector("input");
-                     if(e !== input && i.checked) i.checked = false;
-                  });
-               }
-            },
-            prepararOperacion: function(input) {
-               // Si las opciones son excluyentes, al marcar una
-               // se desmarcan las restantes. No puede usarse "radio",
-               // porque no marcar ninguna opción también es posible.
-               if(this.c.excluyentes) this.excluirResto(input);
-
-               const tipo = this.c.tipo,
-                     nombre = this.c.nombre,
-                     opts = this.c.getOpts?this.c.getOpts.call(this, input):this.recogerValores();
-
-               if(opts) Object.assign(opts, this.c.extra);
-               this.$parent.aplicarOperacion(tipo, nombre, opts, this.c.auto);
-            },
-            recogerValores: function() {
-               const key = this.c.campo,
-                     // Se recogen todos los valores marcados, pero no los deshabilitados
-                     // puesto que estos se entiende que lso ha marcado una corr. automática
-                     value = this.$children.filter(i => i.checked && !i.disabled)
-                                           .map(e => e.o.value);
-               return value.length>0?{[key]: value}:false;
-            }
          }
       });
 
@@ -436,42 +407,110 @@ const Interfaz = (function() {
          },
          computed: {
             id: function() {
-               return `${this.$parent.id}_${this.idx}`;
-            },
-         },
-      });
-
-      // Turno tiene una línea que es una corrección y otra que un filtro
-      Vue.component("opcion-turno", {
-         props: ["o", "idx"],
-         template: "#opcion-turno",
-         data: function() {
-            return {
-               checked: false,
-               disabled: false
-            }
-         },
-         computed: {
-            id: function() {
-               return `${this.o.tipo}:${this.$parent.c.nombre}`;
+               return this.$parent.c.nombre === "turno"?`${this.o.tipo}:${this.$parent.c.nombre}`:
+                                                        `${this.$parent.id}_${this.idx}`
             },
          },
          methods: {
             prepararOperacion: function(input) {
-               let operaciones = [this];
-               if(this.$parent.c.excluyentes) {
-                  this.$parent.excluirResto(input);
-                  operaciones = this.$parent.$children;
-               }
+               const c = this.$parent.c;
+               // Si las opciones son excluyentes, al marcar una
+               // se desmarcan las restantes. No puede usarse "radio",
+               // porque no marcar ninguna opción también es posible.
+               if(c.excluyentes) this.excluirResto(input);
 
-               for(const a of operaciones) {
-                  const opts = a.checked?{[a.o.campo]: a.o.value}: false,
-                        nombre = a.$parent.c.nombre,
-                        tipo = a.o.tipo;
+               switch(c.nombre) {
+                  case "turno":
+                     const operaciones = c.excluyentes?this.$parent.$children:[this];
+                     for(const a of operaciones) {
+                        const opts = a.checked?{[a.o.campo]: a.o.value}: false,
+                              nombre = c.nombre,
+                              tipo = a.o.tipo;
 
-                  this.$parent.$parent.aplicarOperacion(tipo, nombre, opts, a.o.auto);
+                        this.$parent.$parent.aplicarOperacion(tipo, nombre, opts, a.o.auto);
+                     }
+                     break;
+
+                  case "adjref":
+                     const form = this.$el,
+                           colectivo = form.querySelector("select").value,
+                           esc_f = form.querySelector("#escalafon"),
+                           ts_f = form.querySelectorAll("fieldset>input"),
+                           options = input.checked?{col: colectivo}:false;
+
+                     if(options) {
+                        if(!esc_f.disabled) options.esc = Number(esc_f.value);
+                        if(!ts_f.disabled) {
+                           const ts = Array.from(ts_f).map(i => Number(i.value || "-1"))
+                                                      .filter(v => v>=0);
+                           if(ts.length === 3) options.ts = ts;
+                        }
+                     }
+                     
+                     this.$parent.$parent.aplicarOperacion(c.tipo, "adjref", options, false);
+                     break;
+
+                  default:
+                     const opts = c.getOpts?c.getOpts.call(this.$parent, input):this.recogerValores();
+
+                     if(opts) Object.assign(opts, c.extra);
+                     this.$parent.$parent.aplicarOperacion(c.tipo, c.nombre, opts, c.auto);
                }
+            },
+            excluirResto: function(input) {
+               if(input.checked) {
+                  this.$parent.$children.forEach(i => {
+                     const e = i.$el.querySelector("input");
+                     if(e !== input && i.checked) i.checked = false;
+                  });
+               }
+            },
+            recogerValores: function() {
+               const key = this.$parent.c.campo,
+                     // Se recogen todos los valores marcados, pero no los deshabilitados
+                     // puesto que estos se entiende que lso ha marcado una corr. automática
+                     value = this.$parent.$children.filter(i => i.checked && !i.disabled)
+                                                   .map(e => e.o.value);
+               return value.length>0?{[key]: value}:false;
             }
+         }
+      });
+
+      Vue.component("opcion-adjref", {
+         template: "#opcion-adjref",
+         data: function() {
+            return {
+               checked: false,
+               disabled: true,
+            }
+         },
+         mounted: function() {
+            // Por incapacidad para hacer funcionarlo correctamente con Vue.
+            const form = this.$parent.$parent.$el.querySelector("form"),
+                  select = form.querySelector("select"),
+                  escalafon = form.querySelector("#escalafon"),
+                  fieldset = form.querySelector("fieldset");
+
+            form.addEventListener("input", e => {
+               if(this.checked) this.checked = false;
+               this.disabled = !form.checkValidity();
+            });
+            select.addEventListener("input", e => {
+               const esInterino = e.target.value === "J";
+               fieldset.disabled = false;
+               escalafon.disabled = esInterino;
+               for(const i of form.querySelectorAll("fieldset>input")) {
+                  i.required = esInterino;
+                  i.value = "";
+               }
+            });
+            escalafon.addEventListener("input", e => {
+               const pattern = /^([89][0-9]|20[0-9]{2})[0-9]{4}$/,
+                     msg = pattern.test(e.target.value)?"":"Escalafón inválido";
+               e.target.setCustomValidity(msg);
+            });
+         },
+         methods: {
          }
       });
 
@@ -487,12 +526,20 @@ const Interfaz = (function() {
          this.filtrador.ens = res;
       });
 
+      this.g.once("dataloaded", e=> {
+         const col = this.g.general.colectivos;
+         this.filtrador.colectivos = Object.keys(col)
+               .sort((a,b) => col[a].o - col[b].o)
+               .map(c => new Object({letra: c, nombre: col[c].v}));
+      });
+
       return new Vue({
          el: "#correcciones :nth-child(2)",
          data: {
             g: this.g,
             ajustes: this.ajustes,
             puestos: {},
+            colectivos: [],
             ens: {},
             corrFijas: [
                {
@@ -521,7 +568,7 @@ const Interfaz = (function() {
                   ]
                },
                {
-                  titulo: "Enseñanzas deseables",
+                  titulo: "Enseñanzas preferibles",
                   desc: "Elimina la oferta menos apetecible",
                   nombre: "deseable",
                   tipo: "correct",
@@ -605,6 +652,16 @@ const Interfaz = (function() {
          },
          computed: {
             correcciones: function() {
+               const adjref = [{
+                  titulo: "Adjudicatario de referencia",
+                  desc: "Elimina adjudicaciones con más prelación",
+                  nombre: "adjref",
+                  tipo: "correct",
+                  opciones: []
+               }];
+
+               adjref[0].opciones.push({colectivos: this.colectivos});
+
                const oferta = {
                   titulo: "Enseñanzas",
                   desc: "Elimina la oferta del centro",
@@ -624,7 +681,7 @@ const Interfaz = (function() {
                }
                puestos.opciones = Object.keys(this.puestos)
                                          .map(c => new Object({label: this.puestos[c], value: c}));
-               return this.corrFijas.concat([oferta, puestos]);
+               return adjref.concat(this.corrFijas, [oferta, puestos]);
             }
          },
          methods: {
@@ -656,8 +713,8 @@ const Interfaz = (function() {
          },
          computed: {
             id: function() {
-               return this.a.tipo !== "visual"?this.a.tipo
-                                             :`${this.a.tipo}:${this.a.opt}`
+               return this.a.tipo !== "visual"?this.a.tipo:
+                                               `${this.a.tipo}:${this.a.opt}`
             }
          },
          methods: {
@@ -889,6 +946,46 @@ const Interfaz = (function() {
                }
             }
             break;
+
+         case "adjref":
+            for(f of this.filtrador.$children) {
+               if(f.c.nombre !== e.name) continue;
+
+               const form = f.$el,
+                     select = form.querySelector("select"),
+                     escalafon = form.querySelector("#escalafon"),
+                     fieldset = form.querySelector("fieldset"),
+                     ts = fieldset.querySelectorAll("input"),
+                     checkbox = form.querySelector("input[type='checkbox']");
+
+               if(!on) {
+                  checkbox.checked = false;
+                  break;
+               }
+
+               if(e.opts.col) {
+                  select.value = e.opts.col;
+                  fieldset.disabled = false;
+                  escalafon.disabled = e.opts.col === "J";
+               }
+
+               if(e.opts.ts) {
+                  ts.forEach((el, idx) => el.value = e.opts.ts[idx]);
+               }
+
+               if(e.opts.esc) escalafon.value = e.opts.esc;
+               
+               checkbox.checked = true;
+               checkbox.disabled = false;
+               break;
+            }
+            break;
+
+         case "extinta":
+            break;
+
+         default:
+            console.error(`Aún no se ha definido como reflejar ${e.name}`);
       }
    }
 
