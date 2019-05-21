@@ -425,6 +425,8 @@ Algunas apuntes clave para entender los datos son:
   * *ubi*, ``true`` si el funcionario obtuvo plaza en el concurso de traslados y,
     en principio, no volverá a ocupar esa plaza.
 
+.. _crea-mapadjofer:
+
 Creación del objeto
 *******************
 La primera acción para disponer del mapa es contruir el objeto y almacenarlo en
@@ -470,9 +472,24 @@ una variable que sea accesible desde el resto del código.
          Estilo del icono. Puede ser "*boliche*" o "*chupachups*". Por defecto,
          *boliche*.
 
-      ``unclusterZoom``
+     ``loading``
+        Función que construye un indicador para notar la carga de datos remotos.
+        Si es ``true``, usa el indicador interno; y si ``false``, se prescindirá
+        de indicador alguno. Valor predeterminado: ``true``.
+
+     ``unclusterZoom``
          Zoom a partir del cual las marcas de centro se mostrarán siembre
          desagregadas. Por defecto, **14**.
+
+      ``status``
+         Pasa un objeto de configuración del estado inicial codificado en base64.
+         Su decodificación pasará a ser el valor inicial del atributo
+         :js:attr:`status`.
+
+     ``autostatus``
+         Aplica automáticamente la configuración proporcionada a través de la
+         opción ``status``. Por defecto, ``true``. Véase el método
+         :js:meth:`setStatus`.
 
      ``ors``
          Objeto que facilita las opciones para generar isocronas, crear rutas y
@@ -487,10 +504,8 @@ una variable que sea accesible desde el resto del código.
            los valores ``true`` si se desea usar la función predefinida,
            o ``false`` si no desea mostrar *popup*. Valor predeterminado:
            ``true``.
-         * ``loading``: Función que construye un indicador para notar la carga
-           de datos remotos. Si es ``true``, usa el indicador interna; y si
-           ``false``, se prescindirá de indicador alguno. Valor predeterminado:
-           ``true``.
+         * ``loading``: Tiene exactamente el mismo significado que la opción
+           general. Su valor predeterminado es el que tenga la opción general.
 
          * ``chunkProgress``: Función para mostrar el progreso en operaciones
            lentas (cálculo de isocronas). Si ``true``, se usa el indicador interna,
@@ -499,6 +514,10 @@ una variable que sea accesible desde el resto del código.
 
      Pueden, además, añadirse opciones propias del objeto `L.Map`_ como
      en el ejemplo ``zoom`` o ``center``.
+
+     .. note:: Si no se facilita centro (opción ``center``), la aplicación
+        intentará averiguar las coordenadas del dispositivo para situar en ellas
+        el centro.
 
 Atributos
 *********
@@ -536,9 +555,14 @@ Atributos
 
 .. js:attribute:: status
 
-   Valor booleano que es ``true`` si se pasó un parámetro *status* en la |URL|
-   que hizo al mapa recrear un estado concreto. Véase el métod
-   :js:meth:`getStatus`.
+   Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
+   El estado adicional que aporte la interfaz visual se encontrará dentro de su
+   atributo ``visual``. Este estado es dinámico y varía cada vez que se realiza
+   una acción sobre el mapa que modifica el estado. excepto ``visual``, que como
+   recoge caractarísticas del estado de la interfaz ajenas al mapa, mantendrá
+   sus valores iniciales.
+   
+   .. seealso:: Consulte el método :js:meth:`getStatus`.
 
 .. js:attribute:: seleccionado
 
@@ -687,23 +711,23 @@ Métodos
    La generación de la ruta tiene asociado el evento :ref:`routeset
    <adjofer-event-routeset>`.
 
-.. js:method:: getStatus(encode)
+.. js:method:: getStatus(extra)
 
-   Devuelve un objeto que describe el estado actual del mapa (centro, zoom,
-   origen, isochronas, correcciones, filtros. etc.). Si se pasa ``true`` como
-   argumento, el objeto se codifica en base64 para que sea apto para construir
-   el enlace:
+   Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
+   origen, isochronas, correcciones, filtros. etc.). La cadena es la
+   codificación en base64 del objeto que devuelve el atributo :js:attr:`status`.
+   El argumento ``extra`` deberá aportar las caracterísicas que depende de la
+   interfaz y sobreescribirá las opciones incluidas dentro del atrbuto ``visual``
+   de dicho atributo.
 
-   .. code-block:: none
+   El retorno proporcionado por este método es apto como valor de la opción
+   *status* que se puede pasar al :ref:`crear el objeto <crea-mapadjofer>`,
 
-      http://ruta/a/la/aplicacion?status=XXXX
+.. js:method:: setStatus()
 
-
-   donde XXXX es el resultado codificado que devuelve el método. Al requirir la
-   página de la aplicación con este parámetro *status*, la aplicación será capaz
-   de recrear sobre el mapa el antiguo estado. la labor del programador de la
-   interfaz debería ser acomodar el aspecto a ese estado comprobando si existe
-   centro, si existen isocronas, cuáles son los filtros aplicados, etc.
+   Aplica la configuración proporcionada a través de la opción *status* al
+   crear el objeto.  Sólo es necesario en caso de que se haya establecido la
+   opción *autostatus* a ``false``.
 
 .. js:method:: getIcon(estilo)
 

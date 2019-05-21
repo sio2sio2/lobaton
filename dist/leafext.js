@@ -955,8 +955,24 @@
           */
          Marker.reset = function(deep) { 
             this.store.length = 0;
+            const corrs = getCorrs.call(this);    // Issue #67
             this.prototype.options.corr.reset();  // Issue #33
-            if(deep) this.prototype.options.filter.reset();  // Issue #40
+            // Issue #67
+            for(const c of corrs) {
+               this.fire("uncorrect:*", c);
+               this.fire(`uncorrect:${c.name}`, c);
+            }
+            // Fin issue #67
+            if(deep) {
+               const filters = this.getFilterStatus();  // Issue #67
+               this.prototype.options.filter.reset();  // Issue #40
+               // Issue #67
+               for(const name in filters) {
+                  this.fire("unfilter:*", {name: name, opts: filters[name]});
+                  this.fire(`unfilter:${name}`, {name: name, opts: filters[name]});
+               }
+               // Fin issue #67
+            }
          }
          Marker.remove = removeMarker;
          Marker.invoke = invokeMarker;
@@ -1094,12 +1110,10 @@
       for(const marker of this.store) marker.apply(name);
 
       // Issue #54
-      const opts = corr.getAutoCorrs(name),
-            auto2 = corr.getOptions(name).auto;
-      for(const n in opts) {
-         const auto = n === name?false:auto2;
-         this.fire(`correct:*`, {name: n, opts: opts[n], auto: auto});
-         this.fire(`correct:${n}`, {name: n, opts: opts[n], auto: auto});
+      const corrs = getCorrs.call(this, name);
+      for(const c of corrs) {
+         this.fire(`correct:*`, c);
+         this.fire(`correct:${c.name}`, c);
       }
       // Fin issue #54
       return this;
@@ -1129,20 +1143,52 @@
 
       for(const marker of this.store) marker.unapply(name);
       // Issue #54
-      const opts = corr.getAutoCorrs(name),
-            auto2 = corr.getOptions(name).auto;
-      for(const n in opts) {
-         const auto = n === name?false:auto2;
-         this.fire(`uncorrect:*`, {name: n, opts: opts[n], auto: auto});
-         this.fire(`uncorrect:${n}`, {name: n, opts: opts[n], auto: auto});
+      const corrs = getCorrs.call(this, name);
+      corr.setParams(name, null);
+      for(const c of corrs) {
+         this.fire(`uncorrect:*`, c);
+         this.fire(`uncorrect:${c.name}`, c);
       }
       // Fin issue #54
-      corr.setParams(name, null);
 
       return this;
    }
    // Fin issue #23
 
+
+   // Issue #67
+   /**
+    * Devuelve un array con todas las correcciones aplicadas de modo que
+    * cada elemento es un objeto que contiene el nombre de la corrección,
+    * las opciones con las que se aplicó y si se hizo manual o automáticamente.
+    *
+    * @param {String} name  Nombre de una corrección aplicada manualmente. Si
+    * se proporciona se devuelve esta misma corrección y todas las que desencadenó
+    * automáticamente. Si no se proprociona, se devielven todas las correcciones
+    * manuales y automáticas.
+    */
+   function getCorrs(name) {
+      const corr = this.prototype.options.corr;
+
+      if(name) name = [name];
+      else name = Object.keys(corr.getAppliedCorrections());
+
+      const ret = [];
+      for(const n of name) {
+         const opts = corr.getAutoCorrs(n),
+               auto2 = corr.getOptions(n).auto;
+         for(const x in opts) {
+            ret.push({
+               name: x,
+               opts: opts[x],
+               auto: x === n?false:auto2
+            })
+         }
+      }
+      // Ordenamos por nombre de corrección y para una misma
+      // corrección, colocamos primero la manual.
+      return ret.sort((a,b) => -1*(b.name + Number(b.auto) > a.name + Number(a.auto)));
+   }
 
    /**
     * Devuelve el estado actual de las correcciones aplicadas sobre las marcas

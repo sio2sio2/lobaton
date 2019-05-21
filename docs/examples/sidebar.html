@@ -42,6 +42,12 @@
    <script src="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.1.1/js/leaflet-sidebar.min.js"></script>
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.1.1/css/leaflet-sidebar.min.css">
 
+   <!-- Bootstrap 4 CSS -->
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap4c-custom-switch@1.1.2/dist/css/component-custom-switch.min.css">
+
+
+
    <!-- Particularidades de esta página -->
    <script src="scripts/sidebar.js"></script>
    <link rel="stylesheet" href="../../dist/maps/adjofer/css/adjofer.css">
@@ -84,15 +90,15 @@
             <li><a href="#ajustes" role="tab"><i class="fa fa-bars"></i></a></li>
             <li><a href="#selector" role="tab"><i class="fa fa-users active"></i></a></li>
             <li><a><i class="fa fa-square-o"></i></a></li>
-            <li><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
-            <li><a href="#centro" role="tab"><i class="fa fa-graduation-cap"></i></a></li>
-            <li><a href="#correccion" role="tab"><i class="fa fa-filter"></i></a></li>
-            <li><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
+            <li class="disabled"><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
+            <li class="disabled"><a href="#centro" role="tab"><i class="fa fa-graduation-cap"></i></a></li>
+            <li class="disabled"><a href="#correcciones" role="tab"><i class="fa fa-filter"></i></a></li>
+            <li class="disabled"><a href="#solicitud" role="tab"><i class="fa fa-sort-amount-asc"></i></a></li>
          </ul>
 
          <!-- Abajo -->
          <ul role="tablist">
-            <li><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
+            <li class="disabled"><a href="#info" role="tab"><i class="fa fa-info-circle"></i></a></li>
             <li><a href="https://github.com/sio2sio2/lobaton" target="_blank"><i class="fa fa-github"></i></a></li>
          </ul>
       </div>
@@ -105,7 +111,24 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se deben ofrecer los ajustes</p>
+            <div class="section-cardbox-content">
+               <fieldset class="form-group">
+                  <legend>Ajustes generales</legend>
+                  <ajuste v-for="a in ajustes" :key="a.opt" :a="a"></ajuste>
+               </fieldset>
+            </div>
+
+            <script type="text/x-template" id="ajuste">
+               <div class="form-group row">
+                  <label class="col-form-label" :for="id">{{a.desc}}</label>
+                  <div class="custom-switch custom-switch-xs pl-0">
+                     <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
+                            @change="ajustar" :id="id" v-model="checked"
+                            class="custom-switch-input filtro">
+                     <label class="custom-switch-btn" :for="id"></label>
+                  </div>
+               </div>
+            </script>
          </div>
 
          <div class="leaflet-sidebar-pane" id="selector">
@@ -114,7 +137,15 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se selecciona la especialidad</p>
+            <div id="esp" class="section-cardbox-content collapse show">
+               <label>Escriba o seleccione una especialidad
+                  <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
+                         value="" @input="selEspec" autocomplete=off autofocus>
+                  <datalist id="especialidades">
+                     <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
+                  </datalist>
+               </label>
+            </div>
          </div>
 
          <div class="leaflet-sidebar-pane" id="centro">
@@ -127,13 +158,48 @@
          </div>
 
 
-         <div class="leaflet-sidebar-pane" id="correccion">
+         <div class="leaflet-sidebar-pane" id="correcciones">
             <h1 class="leaflet-sidebar-header">
                Filtrado
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se incluyen las correcciones de datos</p>
+            <div class="section-cardbox-content">
+               <correccion v-for="c in correcciones" :c="c" :key="c.correccion" />
+            </div>
+
+            <script type="text/x-template" id="correccion">
+               <fieldset :id="id" class="form-group">
+                  <legend>{{c.titulo}}</legend>
+                  <small class="help form-text text-muted">{{c.desc}}</small>
+                  <opcion-corr v-if="c.nombre !== 'turno'" v-for="(o, index) in c.opciones" @aplicar="prepararOperacion" 
+                               :o="o" :idx="index" :key="index" />
+                  <opcion-turno v-else :o="o" :idx="index" :key="index" />
+               </fieldset>
+            </script>
+
+            <script type="text/x-template" id="opcion-corr">
+               <div class="form-group row">
+                   <label class="col-form-label" :for="id">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 ">
+                     <input type="checkbox" :id="id" :name="$parent.c.campo" class="custom-switch-input correccion"
+                            :value="o.value" @change="$emit('aplicar', $event.target)" v-model="checked" :disabled="disabled">
+                     <label class="custom-switch-btn" :for="id"></label>
+                   </div>
+               </div>
+            </script>
+
+            <script type="text/x-template" id="opcion-turno">
+               <div class="form-group row">
+                   <label class="col-form-label" :for="id">{{o.label}}</label>
+                   <div class="custom-switch custom-switch-xs pl-0 ">
+                     <input type="checkbox" :id="id" :name="o.campo" class="custom-switch-input correccion"
+                            :value="o.value" @change="prepararOperacion($event.target)" v-model="checked" :disabled="disabled">
+                     <label class="custom-switch-btn" :for="id"></label>
+                   </div>
+               </div>
+            </script>
+
          </div>
 
          <div class="leaflet-sidebar-pane" id="info">
@@ -159,7 +225,22 @@
                Búsqueda de centros
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
+            <article>
+               <input name="centro" @input="sugerir" placeholder="Escriba el nombre...">
+               <ul>
+                  <li v-for="c in candidatos"><data :value="c.getData().id.cod" @click="seleccionar">
+                     <span>{{String(c.getData().id.cp).padStart(5, "0").substring(0, 2)}}</span>
+                     <span>{{c.getData().id.nom}}</span>
+                  </data> </li>
+               </ul>
+            </article>
          </div>
       </div>
    </div>
+
+   <!-- Bootstrap 4 Native (sin JQuery) -->
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap.native@2.0.26/dist/bootstrap-native-v4.min.js"></script>
+
+   <!-- development version, includes helpful console warnings -->
+   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </html>

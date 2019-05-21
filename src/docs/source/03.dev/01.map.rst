@@ -826,7 +826,7 @@ Comprobación de su estado
 -------------------------
 Para conocer cuál el estado de aplicación de las correcciones sobre las marcas,
 la clase provee dos métodos de clase. El primero es
-js:meth:`Marker.getCorrectStatus`::
+:js:meth:`Marker.getCorrectStatus`::
 
    const aplicadas = Centro.getCorrectStatus()
 

@@ -109,17 +109,11 @@ const mapAdjOfer = (function(path, opts) {
 
 
    function mapAdjOfer(opts) {
-      // Issue #57
-      const url = new URL(window.location.href),
-            status = url.searchParams.get("status");
-
-      if(status) opts = Object.assign(opts, getOpts(status));
-
-      // Fin issue #57
-
+      if(opts.status) opts = Object.assign(opts, getOpts(opts.status));  // Issue #62
       return new MapAdjOfer(opts);
    }
 
+   // Issue #57, #62
    function getOpts(status) {
       status = JSON.parse(atob(status));
 
@@ -133,15 +127,19 @@ const mapAdjOfer = (function(path, opts) {
 
       return ret;
    }
+   // Fin issue #57, 62
 
    const MapAdjOfer = L.Evented.extend({
       /** @lends MapAdjOfer.prototype */
 
       options: {
          id: "map",
-         center: [37.07, -6.27],
-         zoom: 9,
+         center: [37.45, -4.5],
+         loading: true,    // Presenta un gif que ameniza la carga.
+         zoom: 8,
+         centeredZoom: 12,
          unclusterZoom: 14,
+         autostatus: true, // Aplica el status inicial directamente.
          light: true,      // Issue #41
          search: true,     // Issue #51
          ors: false,       // Issue #42
@@ -153,19 +151,48 @@ const mapAdjOfer = (function(path, opts) {
 
       initialize: function(options) {
          L.Util.setOptions(this, options);
+
+         let center = this.options.center,
+             zoom   = this.options.zoom;
+
+         delete this.options.center;
+         delete this.options.zoom;
+
+         if(this.options.loading === true) this.options.loading = ajaxGif;
+
          loadMap.call(this);
          createMarker.call(this);
+         buildStatus.call(this);  // Issue #62
 
-         // Issue #57
-         Object.defineProperty(this, "status", {
-            value: !!options.status,
-            writable:false,
-            enumerable: true,
-            configurable: false,
+         new Promise(resolve => {
+            // Si se proporcionó centro, no se calcula la posición.
+            if(!options.center && navigator.geolocation.getCurrentPosition) {
+               navigator.geolocation.getCurrentPosition(pos => {
+                  const coords = pos.coords;
+                  resolve({
+                     zoom: this.options.centeredZoom,
+                     center: [coords.latitude, coords.longitude]
+                  });
+               }, function (err) {
+                  console.warn("No es posible establecer la ubicación del dispositivo");
+                  resolve({
+                     zoom: zoom,
+                     center: center
+                  });
+               }, {
+                  timeout: 5000,
+                  maximumAge: 1800000
+               });
+            }
+            else resolve({zoom: zoom, center: center});
+
+         }).then(opts => {
+            this.map.setView(opts.center, opts.zoom, {animate: false});
+            this.tileLayer.addTo(this.map);
+            this.cluster.addTo(this.map);
+
+            if(options.autostatus && options.status) this.setStatus();  // Issue #57
          });
-
-         setStatus.call(this, options.status);
-         // Fin #issue 57
       },
 
       /**
@@ -207,10 +234,12 @@ const mapAdjOfer = (function(path, opts) {
          const Icono = catalogo[this.options.icon];
          Icono.onready(() => {
             if(typeof datos === "string") {  // Es una URL.
+               if(this.options.loading) this.options.loading();
                L.utils.load({
                   url: datos,
                   callback: xhr => {
                      const datos = JSON.parse(xhr.responseText);
+                     if(this.options.loading) this.options.loading();
                      this.agregarCentros(datos);
                   }
                });
@@ -324,67 +353,139 @@ const mapAdjOfer = (function(path, opts) {
          this.direccion = query
       },
 
+
       // Issue #57
       /**
-       * Obtiene un objeto que describe el estado del mapa.
-       * @param {Boolean} encode  Si ``true``, se codifica el objeto en base64.
+       * Obtiene un objeto codificado en base64 que describe el estado del mapa.
+       * @param {Object} extra   Opciones extra que proporciona la interfaz visual
+       * y que se añadiran al estado a través del atributo ``extra``.
        */
-      getStatus(encode) {
-         const origen = this.origen && this.origen.getLatLng(),
-               filter = this.Centro.prototype.options.filter,
-               corr   = this.Centro.prototype.options.corr;
-
-         function getCoords(point) {
-            return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
-         }
-
-         let status = {
-            esp: this.general.entidad[0],  // Especialidad.
-            cen: getCoords(this.map.getCenter()),
-            zoo: this.map.getZoom(),
-         }
-
-         if(this.seleccionado) status.sel = this.seleccionado.getData().id.cod;
-         if(origen) status.ori = getCoords(origen);
-
-         const filters = {};
-         for(const name of filter.getFilters()) {
-            filters[name] = filter.getParams(name);
-         }
-         // Hay que sustituir el área por un índice que la represente.
-         if(filters.hasOwnProperty("lejos")) {
-            const macizas = this.getIsocronas(true);
-            for(const idx in macizas) {
-               if(macizas[idx] === filters.lejos.area) {
-                  delete filters.lejos.area;
-                  filters.lejos.idx = Number(idx);
-                  break;
-               }
-            }
-         }
-         if(filter.lejos.area) {
-            console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
-            delete filters.lejos;
-         }
-         if(Object.keys(filters).length > 0) status.fil = filters;
-         
-
-         const corrs = {},
-               ac = corr.getAppliedCorrections();
-         for(const name in ac) {
-            const opts = ac[name];
-            corrs[name] = {par: opts.params, aut: opts.auto}
-         }
-         if(Object.keys(corrs).length > 0) status.cor = corrs;
-
-         if(this.isocronas) status.iso = 1;
-         if(this.ruta) status.des = this.ruta.destino.getData().id.cod;
-
-         return encode?btoa(JSON.stringify(status)):status;
+      getStatus(extra) {
+                        // Issue #66
+         const status = extra?Object.assign({visual: extra}, this.status)
+                             :this.status;
+         return btoa(JSON.stringify(status));
       }
       // Fin issue #57
    });
 
+
+   // Issue #62
+   /**
+    * Construye el status según se producen eventos sobre el mapa.
+    * @this MapAdjOfer.prototype
+    */
+   function buildStatus() {
+      Object.defineProperty(this, "status", {
+         value: {},
+         writable:false,
+         enumerable: true,
+         configurable: false,
+      });
+
+      Object.defineProperties(this.status, {
+         zoo: {
+            get: () => this.map.getZoom(),
+            enumerable: true
+         },
+         cen: {
+            get: () => getCoords(this.map.getCenter()),
+            enumerable: true
+         }
+      })
+
+      // Reduce los decimales de las coordenadas a 4.
+      function getCoords(point) {
+         return [Number(point.lat.toFixed(4)), Number(point.lng.toFixed(4))];
+      }
+
+      this.map.on("zoomend", e => { 
+         this.fire("statuschange", {attr: "zoo"});
+      });
+
+      this.map.on("moveend", e => { 
+         this.fire("statuschange", {attr: "cen"});
+      });
+
+      this.on("originset", e => {
+         if(e.newval) this.status.ori = getCoords(e.newval.getLatLng());
+         else delete this.status.ori;
+         if(e.newval !== e.oldval) this.fire("statuschange", {attr: "ori"});
+      });
+
+      // Especialidad
+      this.on("dataloaded", e => {
+         if(this.general) this.status.esp = this.general.entidad[0];
+         this.fire("statuschange", {attr: "esp"});
+      });
+
+      this.on("markerselect", e => {
+         if(e.newval) this.status.sel = this.seleccionado.getData().id.cod;
+         else delete this.status.sel;
+         if(e.newval !== e.oldval) this.fire("statuschange", {attr: "sel"});
+      });
+
+      this.on("isochroneset", e => {
+         const oldiso = this.status.iso;
+         if(e.newval) this.status.iso = 1;
+         else delete this.status.iso;
+         if(oldiso !== this.status.iso) this.fire("statuschange", {attr: "iso"});
+      })
+
+      this.on("routeset", e => {
+         if(e.newval) this.status.des = this.ruta.destino.getData().id.cod;
+         else delete this.status.des;
+         if(e.oldval !== e.newval) this.fire("statuschange", {attr: "des"});
+      })
+
+      this.Centro.on("filter:*", e => {
+         const filter = this.Centro.prototype.options.filter;
+         this.status.fil = this.status.fil || {};
+
+         this.status.fil[e.name] = filter.getParams(e.name);
+         if(e.name === "lejos") {
+            const macizas = this.getIsocronas(true);
+            for(const idx in macizas) {
+               if(macizas[idx] === this.status.fil.lejos.area) {
+                  delete this.status.fil.lejos.area;
+                  this.status.fil.lejos.idx = Number(idx);
+                  break;
+               }
+            }
+            if(this.status.fil.lejos.area) {
+               console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
+               delete this.status.fil.lejos;
+            }
+         }
+         this.fire("statuschange", {attr: `fil.${e.name}`});
+      });
+
+      this.Centro.on("unfilter:*", e => {
+         delete this.status.fil[e.name];
+         if(Object.keys(this.status.fil).length === 0) delete this.status.fil;
+         this.fire("statuschange", {attr: `fil.${e.name}`});
+      });
+
+      this.Centro.on("correct:*", e => {
+         if(e.auto || e.name === "extinta") return;  // Sólo se apuntan las manuales.
+         const corr = this.Centro.prototype.options.corr,
+               opts = corr.getOptions(e.name);
+
+         this.status.cor = this.status.cor || {};
+         this.status.cor[e.name] = {par: opts.params, aut: opts.auto};
+         this.fire("statuschange", {attr: `cor.${e.name}`});
+      });
+               
+      this.Centro.on("uncorrect:*", e => {
+         if(e.auto || e.name === "extinta") return;
+
+         delete this.status.cor[e.name];
+         if(Object.keys(this.status.cor).length === 0) delete this.status.cor;
+         this.fire("statuschange", {attr: `cor.${e.name}`});
+      });
+
+   }
+   // Fin issue #62
 
    /**
     * Carga el mapa y crea la capa de cluster donde se agregan los centros.
@@ -394,7 +495,8 @@ const mapAdjOfer = (function(path, opts) {
    function loadMap() {
 
       const options = {},
-            nooptions = ["light", "ors", "id", "search", "icon", "unclusterZoom"];
+            nooptions = ["light", "ors", "id", "search", "icon",
+                         "unclusterZoom", "centeredZoom", "loading"];
 
       for(const name in this.options) {
          if(nooptions.indexOf(name) !== -1) continue
@@ -406,10 +508,14 @@ const mapAdjOfer = (function(path, opts) {
       this.map = L.map(this.options.id, options);
       this.map.zoomControl.setPosition('bottomright');
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18
-      }).addTo(this.map);
+      Object.defineProperty(this, "tileLayer", {
+         value: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                   maxZoom: 18
+                }),
+         enumerable: false,
+         configurable: false
+      });
 
       /**
        * Capa donde se agregan las marcas
@@ -422,7 +528,7 @@ const mapAdjOfer = (function(path, opts) {
          disableClusteringAtZoom: this.options.unclusterZoom,
          spiderfyOnMaxZoom: false,
          iconCreateFunction: L.utils.noFilteredIconCluster,
-      }).addTo(this.map);
+      });
 
       if(this.options.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
 
@@ -681,12 +787,10 @@ const mapAdjOfer = (function(path, opts) {
     * Fija la vista inicial del mapa en función del estado
     * que se haya pasado a través del parámetro URL status.
     *
-    * @param {Object} status  El estado del mapa.
     */
-   function setStatus(status) {
-      if(!status) return;
+   MapAdjOfer.prototype.setStatus = function() {
+      const status = this.options.status;
 
-      console.log("DEBUG", status, status.fil.lejos);
       let lejos;
 
       // Los filtros pueden aplicarse antes de obtener datos.
@@ -703,12 +807,18 @@ const mapAdjOfer = (function(path, opts) {
       if(status.esp) {  // Debe cargarse una especialidad.
          this.once("dataloaded", e => {
             if(status.sel) this.seleccionado = this.Centro.get(status.sel);
-            if(!status.cor) return;
-            for(const name in status.cor) {
-               const opts = status.cor[name];
-               this.Centro.correct(name, opts.par, !!opts.aut);
+
+            if(status.cor) {
+               // Diferimos un cuarto de segundo la ejecución de las correcciones
+               // para darle tiempo a la interfaz visual a prepararse.
+               setTimeout(() => {
+                  for(const name in status.cor) {
+                     const opts = status.cor[name];
+                     this.Centro.correct(name, opts.par, !!opts.aut);
+                  }
+                  this.Centro.invoke("refresh");
+               }, 250);
             }
-            this.Centro.invoke("refresh");
 
             if(this.ors && status.des) {
                const destino = this.Centro.get(status.des);
@@ -724,7 +834,7 @@ const mapAdjOfer = (function(path, opts) {
 
       // Isocronas: se está suponiendo que tardan bastante más
       // que en cargar los datos de los centros. En puridad, habría
-      // meterlo dentro del dataloaded anterior
+      // que meterlo dentro del dataloaded anterior
       if(this.ors && status.iso) {
          if(lejos) {
             this.once("isochroneset", e => {
@@ -969,6 +1079,20 @@ const mapAdjOfer = (function(path, opts) {
             }
          }
       }
+
+      // El GeoJSON con carácter informativo incluye el primer año
+      // de su extinción una enseñanza ya desaparecida. Debemos
+      // eliminarla aplicándole esta corrección atuomáticamente.
+      this.Centro.register("extinta", {
+         attr: "oferta",
+         // opts= {}
+         func: function(idx, oferta, opts) {
+            return oferta[idx].ext;
+         }
+      });
+      this.on("dataloaded", e => {
+         this.Centro.correct("extinta", {});
+      });
 
       // Elimina enseñanzas bilingües
       this.Centro.register("bilingue", {
@@ -1248,10 +1372,10 @@ const mapAdjOfer = (function(path, opts) {
       // Elimina los tipos facilitados
       this.Centro.registerF("tipo", {
          attrs: "mod.dif",
-         // opts= {tipo: 1, inv: false}  //tipo: 1=compensatoria, 2=difícil desempeño, 3=ambos.
+         // opts= {tipo: 1, inv: false}  //tipo: 1=normal 2=compensatoria, 4=difícil desempeño
          func: function(opts) {
-            const map  = { "compensatoria": 1, "dificil": 2 },
-                  tipo = map[this.getData().mod.dif] || 0;
+            const map  = { "compensatoria": 2, "dificil": 4 },
+                  tipo = map[this.getData().mod.dif] || 1;
 
             return !!(opts.inv ^ !!(tipo & opts.tipo));
          }
@@ -1500,12 +1624,12 @@ const mapAdjOfer = (function(path, opts) {
             espera = [],
             defaults = {
                chunkProgress: true,
-               loading: true,
                rutaPopup: true
             },
             ors = Object.assign({}, defaults, adjofer.options.ors);
 
       if(ors.chunkProgress === true) ors.chunkProgress = progressBar;
+      if(ors.loading === undefined) ors.loading = adjofer.options.loading;
       if(ors.loading === true) ors.loading = ajaxGif;
       if(ors.rutaPopup === true) ors.rutaPopup = crearPopup;
 

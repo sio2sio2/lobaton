@@ -1,14 +1,62 @@
+#view-sidebar {
+   line-height: 40px;
+   width: 40px;
+   box-sizing: border-box;
+}
+
+#sidebar .leaflet-sidebar-pane article {
+   padding: 10px;
+}
+
+/* Cajetín de búsqueda */
 #busqueda input {
    box-sizing: 100%;
    width: 100%;
 }
 
-#busqueda article {
-   padding: 10px 0;
+#busqueda ul {
+   list-style: none;
+   padding-left: 0;
 }
 
-#view-sidebar {
-   line-height: 40px;
-   width: 40px;
-   box-sizing: border-box;
+#busqueda li {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#busqueda li:hover {
+   cursor: pointer;
+   background-color: #eee;
+}
+
+#busqueda data {
+   display: flex;
+   justify-content: space-between;
+}
+/* Fin cajetín */
+
+/* Elimina la flecha del input con sugerencias */
+#esp input::-webkit-calendar-picker-indicator,
+#esp input::-webkit-list-button {
+   display: none;
+}
+
+
+.leaflet-sidebar-content {
+   font-family: Roboto, sans-serif;
+}
+
+/* Filtros y ajustes */
+.custom-switch .custom-switch-input:checked + .custom-switch-btn {
+   background: #0074d9;
+}
+
+#ajustes .col-form-label, #correcciones .col-form-label {
+   width: 85%;
+}
+
+#ajustes .row, #correcciones .row {
+   margin-left: .5em;
+   margin-right: .5em;
 }
