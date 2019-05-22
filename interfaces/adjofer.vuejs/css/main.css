@@ -12,6 +12,14 @@
    margin-left: -10px;
 }
 
+#centro {
+   margin-left: -10px;
+}
+
+#centro h1 {
+   margin-left: 0;
+}
+
 /* Cajetín de búsqueda */
 #busqueda input {
    box-sizing: 100%;

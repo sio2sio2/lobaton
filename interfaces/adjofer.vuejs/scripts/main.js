@@ -211,6 +211,13 @@ const Interfaz = (function() {
             writable: false,
             configurable: false,
             enumerable: true
+         },
+         // Información sobre el centro
+         centro: {
+            value: initCentro.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
          }
       });
 
@@ -937,6 +944,79 @@ const Interfaz = (function() {
             }
          }
       });
+   }
+
+   function initCentro() {
+
+      this.g.on("markerselect", e => {
+         this.centro.datosCentro = e.newval?e.newval.getData():null;
+         this.centro.info = this.g.general;
+         this.centro.g = this.g;
+      });
+
+      return new Vue({
+         el: "#centro :nth-child(2)",
+         data: {
+            datosCentro: null,
+            info: null,
+            g: null
+         },
+         template: "#template-centro",
+         computed: {
+            tienePlazas: function () {
+               return Object.keys(this.datosCentro.pla).length > 0
+            }
+         },
+         filters: {
+            capitalize: function (value) {
+               if (!value) return ''
+               value = value.toString()
+               return value.charAt(0).toUpperCase() + value.slice(1)
+            },
+            /*
+            * Devuelve el nombre de un filtro dado su atributo name en html del menú
+            */
+            detallaFiltros: function (filtro) {
+               let nombre;
+               for (cor of menuCorrecciones) {
+                  if (sanitizeNombreCorreccion(cor.correccion_name) === filtro) {
+                     nombre = cor.nombre;
+                     break;
+                  }
+               }
+               return nombre;
+            },
+            /*
+            * La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
+            */
+            traduceModalidad: function (nombreAbreviado) {
+               let nombre = "A distancia";
+               switch (nombreAbreviado) {
+                  case "pres":
+                     nombre = "Presencial";
+                     break;
+                  case "semi":
+                     nombre = "Semipresencial";
+                     break;
+               }
+               return nombre;
+            }
+         },
+         methods: {
+            /*
+             * Devuelve el nombre de un puesto dado su código
+             */
+            nombrePuesto: function (codPuesto) {
+               return this.g.general.puestos[codPuesto];
+            },
+            /* 
+            * DecodificaCentro devuelve el nombre de un centro dado un código. 
+            * Utilizado principalmente para obtener el nombre del centro en enseñanzas trasladadas
+            */
+           decodificaCentro: codigo => this.g.Centro.get(codigo).getData().id.nom,
+         }
+      });
+
    }
 
    // Vuelva sobre el aspecto de la interfaz el estado inicial del mapa

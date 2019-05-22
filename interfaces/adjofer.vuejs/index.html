@@ -154,7 +154,112 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Aquí se muestra la información del centro</p>
+            <div class="section-cardbox-content">
+               
+            </div>
+
+            <script type="text/x-template" id="template-centro">
+               <div v-if="datosCentro === null">No hay centro seleccionado</div>
+               <div v-else class="section-cardbox">
+                  <div class="card" id="info-centro">
+                     <div class="card-body">
+                        <h5 class="card-title">{{datosCentro.id.nom}} (Cod. {{datosCentro.id.cod}})</h5>
+                        
+                        <p class="card-text">Dirección: {{datosCentro.id.dom}}. {{datosCentro.id.mun}}. {{datosCentro.id.cp}}.
+                           {{datosCentro.id.pro}}.</p>
+                     </div>
+                     <div class="card-header">
+                        Plazas relevantes
+                     </div>
+                     <div class="card-body">
+                        <div class="table-responsive-sm">
+                           <table v-if="tienePlazas" class="table table-striped">
+                              <thead>
+                                 <tr class="table-primary">
+                                    <th scope="col">Puesto</th>
+                                    <th scope="col"><abbr title="Plantilla Orgánica">P.O.</abbr></th>
+                                    <th scope="col"><abbr title="Plantilla de Funcionamiento">P.F.</abbr></th>
+                                    <th scope="col"><abbr title="Vacantes Iniciales">V.I.</abbr></th>
+                                    <th scope="col"><abbr title="Vacantes Telefónicas">V.T.</abbr></th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <tr v-for="(plantilla, cod) in datosCentro.pla">
+                                    <th scope="row"><abbr v-bind:title="info.puestos[cod]">{{cod}}</abbr></th>
+                                    <td>{{plantilla.org}}</td>
+                                    <td>{{plantilla.fun}}</td>
+                                    <td>{{plantilla.vi}}</td>
+                                    <td>{{plantilla.vt}}</td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                           <span v-else>El centro no ofrece plazas relevantes</span>
+                        </div>
+                     </div>
+                     <div class="card-header">
+                        Oferta educativa
+                     </div>
+                     <div class="card-body">
+                        <template v-for="of in datosCentro.oferta">
+                           <h5 class="card-title" v-bind:class="{'tachado': of.ext}">{{info.ens[of.ens].nombre}} <span
+                                 v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h5>
+                           <p class="card-text info-oferta">
+                              <span v-if="of.ext">(Extinto) </span>
+                              <span v-if="of.esp">{{of.esp | capitalize }}. </span>
+                              <!-- Modalidad: presencial, semi o a distancia -->
+                              <span>{{of.mod | traduceModalidad }}. </span>
+                              <!-- Turno -->
+                              <span v-if="of.tur">{{of.tur | capitalize }}. </span>
+                              <!-- Número de plazas (FP) -->
+                              <span v-if="of.pla">{{of.pla }} plazas. </span>
+                              <span v-if="of.aum">({{of.aum }}). </span>
+                              <!-- Si ha sido trasladado -->
+                              <span v-if="of.ori">Trasladado desde {{decodificaCentro(of.ori) }}. </span>
+                              <!-- ¿Está en extinción? -->
+                              <span v-if="of.ene">(En extinción) </span>
+                              <!-- ¿Es nueva? -->
+                              <span v-if="of.nue === 1">Nueva implantación (1er año). </span>
+                              <span v-else-if="of.nue === 2">Nueva implantación (2º año). </span>
+                              <!-- ¿Es un programa específico de FP? -->
+                              <span v-if="of.pro">(Programa específico de FP) </span>
+                           </p>
+                           <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
+                        </template>
+                     </div>
+                     <div class="card-header">
+                        Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
+                     </div>
+                     <div class="card-body" v-if="datosCentro.adj.length">
+                        <ul class="listaSinPadding">
+                           <template v-for="plaza in datosCentro.adj">
+                              <li class="div-puesto" v-bind:class="{'filtrado': plaza.filters.length}">
+                                 <h5 class="card-title">{{plaza.pue}} <span
+                                       class="nombrePuesto">({{nombrePuesto(plaza.pue)}})</span></h5>
+                                 <p class="card-text puesto-pce" v-if="plaza.pet === null">Vacante telefónica</p>
+                                 <p class="card-text puesto-pce" v-else-if="plaza.col==='J'">({{plaza.col}})
+                                    {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet.
+                                    {{plaza.pet}}).</p>
+                                 <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc:
+                                    {{plaza.esc}} (pet. {{plaza.pet}}).</p>
+                                 <div class="textoFiltrado" v-if="plaza.filters.length">
+                                    Filtrado por
+                                    <ul>
+                                       <template v-for="filtro in plaza.filters">
+                                          <li>{{filtro | detallaFiltros}}</li>
+                                       </template>
+                                    </ul>
+                                 </div>
+                              </li>
+            
+                           </template>
+                        </ul>
+                     </div>
+                     <div class="card-body" v-else>
+                        <p class="card-text puesto-pce">Sin adjudicaciones</p>
+                     </div>
+                  </div>
+               </div>
+            </script>
          </div>
 
 
