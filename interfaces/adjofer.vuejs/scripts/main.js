@@ -948,23 +948,18 @@ const Interfaz = (function() {
 
    function initCentro() {
 
-      this.g.on("markerselect", e => {
-         this.centro.datosCentro = e.newval?e.newval.getData():null;
-         this.centro.info = this.g.general;
-         this.centro.g = this.g;
-      });
-
-      return new Vue({
-         el: "#centro :nth-child(2)",
-         data: {
-            datosCentro: null,
-            info: null,
-            g: null
-         },
-         template: "#template-centro",
+      Vue.component("oferta", {
+         props: ["of", "info"],
+         template: "#oferta",
          computed: {
-            tienePlazas: function () {
-               return Object.keys(this.datosCentro.pla).length > 0
+            visible: function() {
+               /*
+               * Una oferta es visible:
+               *  - Siempre que la opción ocultarBorrado es falsa
+               *  - O cuando ocultarBorrado es verdadera pero:
+               *     - La oferta no está extinta Y la oferta no está filtrada
+               */
+               return !this.$parent.ocultarBorrado || (!this.of.ext && this.of.filters.length === 0)
             }
          },
          filters: {
@@ -972,19 +967,6 @@ const Interfaz = (function() {
                if (!value) return ''
                value = value.toString()
                return value.charAt(0).toUpperCase() + value.slice(1)
-            },
-            /*
-            * Devuelve el nombre de un filtro dado su atributo name en html del menú
-            */
-            detallaFiltros: function (filtro) {
-               let nombre;
-               for (cor of menuCorrecciones) {
-                  if (sanitizeNombreCorreccion(cor.correccion_name) === filtro) {
-                     nombre = cor.nombre;
-                     break;
-                  }
-               }
-               return nombre;
             },
             /*
             * La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
@@ -998,6 +980,43 @@ const Interfaz = (function() {
                   case "semi":
                      nombre = "Semipresencial";
                      break;
+               }
+               return nombre;
+            }
+         },
+      });
+
+      this.g.on("markerselect", e => {
+         this.centro.datosCentro = e.newval?e.newval.getData():null;
+         this.centro.info = this.g.general;
+         this.centro.g = this.g;
+      });
+
+      return new Vue({
+         el: "#centro :nth-child(2)",
+         data: {
+            datosCentro: null,
+            info: null,
+            g: null,
+            ocultarBorrado: this.options.ocultarBorrado
+         },
+         template: "#template-centro",
+         computed: {
+            tienePlazas: function () {
+               return Object.keys(this.datosCentro.pla).length > 0
+            }
+         },
+         filters: {
+            /*
+            * Devuelve el nombre de un filtro dado su atributo name en html del menú
+            */
+            detallaFiltros: function (filtro) {
+               let nombre;
+               for (cor of menuCorrecciones) {
+                  if (sanitizeNombreCorreccion(cor.correccion_name) === filtro) {
+                     nombre = cor.nombre;
+                     break;
+                  }
                }
                return nombre;
             }

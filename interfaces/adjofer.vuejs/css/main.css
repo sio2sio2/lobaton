@@ -77,6 +77,11 @@
    -moz-appearance: textfield;
 }
 
+/* Estilos normales */
+.tachado {
+   text-decoration: line-through;
+}
+
 /* 
     ##Device = Low Resolution Tablets, Mobiles (Landscape)
     ##Screen = B/w 481px to 767px

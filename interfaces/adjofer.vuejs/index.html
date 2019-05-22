@@ -159,7 +159,13 @@
             </div>
 
             <script type="text/x-template" id="template-centro">
-               <div v-if="datosCentro === null">No hay centro seleccionado</div>
+               <div v-if="datosCentro === null" class="section-cardbox">
+                  <div class="card">
+                     <div class="card-body">
+                        <h5 class="card-title">Selecciona un centro</h5>
+                     </div>
+                  </div>
+               </div>
                <div v-else class="section-cardbox">
                   <div class="card" id="info-centro">
                      <div class="card-body">
@@ -200,31 +206,7 @@
                         Oferta educativa
                      </div>
                      <div class="card-body">
-                        <template v-for="of in datosCentro.oferta">
-                           <h5 class="card-title" v-bind:class="{'tachado': of.ext}">{{info.ens[of.ens].nombre}} <span
-                                 v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h5>
-                           <p class="card-text info-oferta">
-                              <span v-if="of.ext">(Extinto) </span>
-                              <span v-if="of.esp">{{of.esp | capitalize }}. </span>
-                              <!-- Modalidad: presencial, semi o a distancia -->
-                              <span>{{of.mod | traduceModalidad }}. </span>
-                              <!-- Turno -->
-                              <span v-if="of.tur">{{of.tur | capitalize }}. </span>
-                              <!-- Número de plazas (FP) -->
-                              <span v-if="of.pla">{{of.pla }} plazas. </span>
-                              <span v-if="of.aum">({{of.aum }}). </span>
-                              <!-- Si ha sido trasladado -->
-                              <span v-if="of.ori">Trasladado desde {{decodificaCentro(of.ori) }}. </span>
-                              <!-- ¿Está en extinción? -->
-                              <span v-if="of.ene">(En extinción) </span>
-                              <!-- ¿Es nueva? -->
-                              <span v-if="of.nue === 1">Nueva implantación (1er año). </span>
-                              <span v-else-if="of.nue === 2">Nueva implantación (2º año). </span>
-                              <!-- ¿Es un programa específico de FP? -->
-                              <span v-if="of.pro">(Programa específico de FP) </span>
-                           </p>
-                           <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
-                        </template>
+                        <oferta v-for="(of, index) in datosCentro.oferta" :of="of" :info="info" :key="index" />
                      </div>
                      <div class="card-header">
                         Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
@@ -259,6 +241,41 @@
                      </div>
                   </div>
                </div>
+            </script>
+            <script type="text/x-template" id="oferta">
+               <div class="oferta" v-if="visible">
+                  <h5 class="card-title" v-bind:class="{'tachado': of.ext || of.filters.length > 0}">{{info.ens[of.ens].nombre}} <span
+                        v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h5>
+                  <p class="card-text info-oferta">
+                     <span v-if="of.ext">(Extinto) </span>
+                     <!-- ¿Está en extinción? -->
+                     <span v-if="of.ene">(En extinción) </span>
+                     <span v-if="of.esp">{{of.esp | capitalize }}. </span>
+                     <!-- Modalidad: presencial, semi o a distancia -->
+                     <span>{{of.mod | traduceModalidad }}. </span>
+                     <!-- Turno -->
+                     <span v-if="of.tur">{{of.tur | capitalize }}. </span>
+                     <!-- Número de plazas (FP) -->
+                     <span v-if="of.pla">{{of.pla }} plazas. </span>
+                     <span v-if="of.aum">({{of.aum }}). </span>
+                     <!-- Si ha sido trasladado -->
+                     <span v-if="of.ori">Trasladado desde {{decodificaCentro(of.ori) }}. </span>
+                     <!-- ¿Es nueva? -->
+                     <span v-if="of.nue === 1">Nueva implantación (1er año). </span>
+                     <span v-else-if="of.nue === 2">Nueva implantación (2º año). </span>
+                     <!-- ¿Es un programa específico de FP? -->
+                     <span v-if="of.pro">(Programa específico de FP) </span>
+                  </p>
+                  <div class="textoFiltrado" v-if="of.filters.length">
+                     Filtrada por
+                     <ul>
+                        <template v-for="filtro in of.filters">
+                           <li>{{filtro}}</li>
+                        </template>
+                     </ul>
+                  </div>
+               </div>
+               <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
             </script>
          </div>
 
