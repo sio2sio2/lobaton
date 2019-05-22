@@ -41,11 +41,10 @@
 /* Fin cajetín */
 
 /* Elimina la flecha del input con sugerencias */
-#esp input::-webkit-calendar-picker-indicator,
-#esp input::-webkit-list-button {
+#esp input[type=number]::-webkit-calendar-picker-indicator,
+#esp input[type=number]::-webkit-list-button {
    display: none;
 }
-
 
 .leaflet-sidebar-content {
    font-family: Roboto, sans-serif;
@@ -60,12 +59,13 @@
    background: rgba(0, 116, 217,.4);
 }
 
-#correcciones input::-webkit-outer-spin-button, #correcciones input::-webkit-inner-spin-button {
+#correcciones input[type=number]::-webkit-outer-spin-button,
+#correcciones input[type=number]::-webkit-inner-spin-button {
    -webkit-appearance: none;
    margin: 0;
 }
 
-#correccciones input {
+#correccciones input[type=number] {
    -moz-appearance: textfield;
 }
 

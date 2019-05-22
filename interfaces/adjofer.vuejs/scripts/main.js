@@ -834,7 +834,6 @@ const Interfaz = (function() {
       });
 
       this.g.Centro.on("unfilter:lejos", e => {
-         console.log("PASO POR AQUÍ", e);
          this.info.isocronas = !!this.g.isocronas;
       });
 
@@ -842,17 +841,18 @@ const Interfaz = (function() {
          this.info.isocronas = this.g.isocronas[e.opts.idx].feature.properties.value / 60;
       });
 
-      this.g.on("routeset", e => {
-         this.info.ruta = e.newval;
-      });
+      this.g.on("routeset", e => this.info.ruta = e.newval);
 
-      this.g.on("markerselect", e => {
-         this.info.seleccionado = e.newval;
+      this.g.on("markerselect", e => this.info.seleccionado = e.newval);
+
+      this.g.on("statuschange", e => {
+         this.info.link = `${window.location.href}?status=${this.status}`;
       });
 
       return new Vue({
          el: "#info :nth-child(2)",
          data: {
+            link: window.location.href,
             especialidad: "-",
             colocacion: "-",
             ofertasec: "-",
@@ -934,6 +934,17 @@ const Interfaz = (function() {
                }
                else this.g.map.panTo(sitio.getLatLng());
                return false;
+            },
+            copyToClipboard: function(e) {
+               const input = e.target.previousElementSibling;
+               /*
+               navigator.clipboard.writeText(input.value).then(() => {
+                  alert("Copiado el enlace en el portapapeles");
+               });
+               */
+               input.select();
+               document.execCommand("copy");
+               alert("Copiado el enlace en el portapapeles");
             }
          }
       });
