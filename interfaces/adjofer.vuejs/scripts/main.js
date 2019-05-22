@@ -817,6 +817,9 @@ const Interfaz = (function() {
 
       this.g.on("isochroneset routeset", e => {
          if(e.newval) this.info.contador = this.g.contador
+      });
+
+      this.g.on("isochroneset", e => {
          this.info.isocronas = !!e.newval;
       });
 
@@ -824,22 +827,23 @@ const Interfaz = (function() {
          if(e.newval) {
             e.newval.on("geocode", e => {
                this.info.contador = this.g.contador;
-               this.info.origen = e.target.postal;
+               this.info.postal = e.target.postal;
             });
-            const coords = e.newval.getLatLng();
-            this.info.origen = `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
          }
-         else {
-            this.info.origen = false;
-         }
+         this.info.origen = e.newval;
       });
 
-      this.g.Centro.on("unfilter:lejos", e=> {
-         this.info.isocronas = !!this.info.origen;
+      this.g.Centro.on("unfilter:lejos", e => {
+         console.log("PASO POR AQUÍ", e);
+         this.info.isocronas = !!this.g.isocronas;
       });
 
       this.g.Centro.on("filter:lejos", e=> {
          this.info.isocronas = this.g.isocronas[e.opts.idx].feature.properties.value / 60;
+      });
+
+      this.g.on("routeset", e => {
+         this.info.ruta = e.newval;
       });
 
       return new Vue({
@@ -857,15 +861,26 @@ const Interfaz = (function() {
             filtrados: 0,
             contador: 0,
             //
-            origen: false,
+            origen: null,
+            postal: null,
             isocronas: false,
+            ruta: null,
          },
          computed: {
             visibles: function() {
                return this.centros - this.filtrados;
             },
             estado_origen: function() {
-               return this.origen || "Botón derecho sobre mapa";
+               if(this.origen) {
+                  if(this.postal) {
+                     return this.postal;
+                  }
+                  else {
+                     const coords = this.origen.getLatLng();
+                     return `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
+                  }
+               }
+               else return "Botón derecho sobre mapa";
             },
             estado_isocronas: function() {
                if(!this.origen) return "Fije primero origen";
@@ -878,6 +893,38 @@ const Interfaz = (function() {
                   }
                   else return "Botón derecho sobre origen";
                }
+            },
+            estado_destino: function() {
+               if(this.ruta) return this.ruta.destino.getData().id.nom;
+               else return this.origen?"Botón derecho sobre centro":"Fije primero origen";
+            },
+            tiempo: function() {
+               if(!this.ruta) return "-";
+               else {
+                  const data = this.ruta.layer.feature.properties.summary;
+                  const min = Math.floor(data.duration / 60);
+                  return `${min} min`;
+               }
+            },
+            distancia: function() {
+               if(!this.ruta) return "-";
+               else {
+                  const data = this.ruta.layer.feature.properties.summary;
+                  const km = Math.floor(data.distance / 1000);
+                  return `${km} Km`;
+               }
+            }
+         },
+         methods: {
+            irLugar: (e, sitio) => {
+               e.preventDefault();
+               if(sitio.constructor === this.g.Centro) {
+                  const zoom = Math.max(this.g.map.getZoom(),
+                                        this.g.cluster.options.disableClusteringAtZoom);
+                  this.g.map.setView(sitio.getLatLng(), zoom);
+               }
+               else this.g.map.panTo(sitio.getLatLng());
+               return false;
             }
          }
       });

@@ -282,9 +282,25 @@
                   <div class="card-text">
                      <dl class="row">
                         <dt class="col-4">Origen</dt>
-                        <dd class="col-8 text-right text-truncate">{{estado_origen}}</dd>
+                        <dd class="col-8 text-right text-truncate">
+                           <a href="" v-if="origen" @click="irLugar($event, origen)">{{estado_origen}}</a>
+                           <span v-else>{{estado_origen}}</span>
+                        </dd>
                         <dt class="col-4">Isocronas</dt>
                         <dd class="col-8 text-right text-truncate">{{estado_isocronas}}</dd>
+                        <dt class="col-4">Ruta</dt>
+                        <dd class="col-8 text-right text-truncate">
+                           <a href="" v-if="ruta" @click="irLugar($event, ruta.destino)">{{estado_destino}}</a>
+                           <span v-else>{{estado_destino}}</span>
+                        </dd>
+                        <dd class="col-11 offset-1">
+	                        <dl class="row">
+                              <dt class="col-4">Tiempo</dt>
+                              <dd class="col-8 text-right text-truncate">{{tiempo}}</dd>
+                              <dt class="col-4">Distancia</dt>
+                              <dd class="col-8 text-right text-truncate">{{distancia}}</dd>
+                           </dl>
+                        </dd>
                      </dl>
                   </div>
                </article>
