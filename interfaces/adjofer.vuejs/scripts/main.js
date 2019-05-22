@@ -815,14 +815,31 @@ const Interfaz = (function() {
          this.info.filtrados = this.g.Centro.store.filter(c => c.filtered).length;
       });
 
-      this.g.on("isochroneset routeset", e => this.info.contador = this.g.contador);
+      this.g.on("isochroneset routeset", e => {
+         if(e.newval) this.info.contador = this.g.contador
+         this.info.isocronas = !!e.newval;
+      });
+
       this.g.on("originset", e => {
          if(e.newval) {
-            e.newval.on("geocode", e => this.info.contador = this.g.contador);
+            e.newval.on("geocode", e => {
+               this.info.contador = this.g.contador;
+               this.info.origen = e.target.postal;
+            });
+            const coords = e.newval.getLatLng();
+            this.info.origen = `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
          }
          else {
             this.info.origen = false;
          }
+      });
+
+      this.g.Centro.on("unfilter:lejos", e=> {
+         this.info.isocronas = !!this.info.origen;
+      });
+
+      this.g.Centro.on("filter:lejos", e=> {
+         this.info.isocronas = this.g.isocronas[e.opts.idx].feature.properties.value / 60;
       });
 
       return new Vue({
@@ -840,11 +857,27 @@ const Interfaz = (function() {
             filtrados: 0,
             contador: 0,
             //
-            origen: false
+            origen: false,
+            isocronas: false,
          },
          computed: {
             visibles: function() {
                return this.centros - this.filtrados;
+            },
+            estado_origen: function() {
+               return this.origen || "Botón derecho sobre mapa";
+            },
+            estado_isocronas: function() {
+               if(!this.origen) return "Fije primero origen";
+               else {
+                  if(this.isocronas) {
+                     if(this.isocronas === true) {
+                        return "Botón der. sobre área filtra por lejanía";
+                     }
+                     else return `Filtrando a más de ${this.isocronas} min`;
+                  }
+                  else return "Botón derecho sobre origen";
+               }
             }
          }
       });
