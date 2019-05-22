@@ -237,7 +237,57 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Información sobre el estado del mapa</p>
+            <section class="card">
+               <article class="card-body">
+                  <h5 class="card-title">Datos</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Asociados al archivo de especialidad</h6>
+                  <div class="card-text">
+                     <dl class="row">
+                        <dt class="col-8">Especialidad</dt>
+                        <dd class="col-4 text-right">{{especialidad}}</dd>
+                        <dt class="col-8">Colocación</dt>
+                        <dd class="col-4 text-right">{{colocacion}}</dd>
+                        <dt class="col-8">Plantilla orgánica</dt>
+                        <dd class="col-4 text-right">{{organica}}</dd>
+                        <dt class="col-8">Oferta secundaria</dt>
+                        <dd class="col-4 text-right">{{ofertasec}}</dd>
+                        <dt class="col-8">Oferta FP</dt>
+                        <dd class="col-4 text-right">{{ofertafp}}</dd>
+                        <dt class="col-8">Vacantes telefónicas</dt>
+                        <dd class="col-4 text-right">{{vt}}</dd>
+                        <dt class="col-8">Concurso de traslados</dt>
+                        <dd class="col-4 text-right">{{cgt}}</dd>
+                     </dl>
+                  </div>
+               </article>
+               <article class="card-body">
+                  <h5 class="card-title">Estadísticas</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Del uso y estado del mapa</h6>
+                  <div class="card-text">
+                     <dl class="row">
+                        <dt class="col-8">Total de centros</dt>
+                        <dd class="col-4 text-right">{{centros}}</dd>
+                        <dt class="col-8">Centros visibles</dt>
+                        <dd class="col-4 text-right">{{visibles}}</dd>
+                        <dt class="col-8">Centros filtrados</dt>
+                        <dd class="col-4 text-right">{{filtrados}}</dd>
+                        <dt class="col-8">Consultas a <a href="https://openrouteservice.org/" target="_blank">OpenRouteService</a></dt>
+                        <dd class="col-4 text-right">{{contador}}</dd>
+                     </dl>
+                  </div>
+               </article>
+               <article class="card-body">
+                  <h5 class="card-title">Entidas geográficas</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Detalle de las entidades del mapa</h6>
+                  <div class="card-text">
+                     <dl class="row">
+                        <dt class="col-4">Origen</dt>
+                        <dd class="col-8 text-right text-truncate">{{origen || "Ctrl+Derecho sobre mapa"}}</dd>
+                     </dl>
+                  </div>
+               </article>
+            </section>
+
          </div>
 
          <div class="leaflet-sidebar-pane" id="solicitud">

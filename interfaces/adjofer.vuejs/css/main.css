@@ -8,6 +8,10 @@
    padding: 10px;
 }
 
+#info .card {
+   margin-left: -10px;
+}
+
 /* Cajetín de búsqueda */
 #busqueda input {
    box-sizing: 100%;

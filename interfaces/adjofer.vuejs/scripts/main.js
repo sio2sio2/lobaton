@@ -204,6 +204,13 @@ const Interfaz = (function() {
             writable: false,
             configurable: false,
             enumerable: true
+         },
+         // Información sobre el mapa.
+         info: {
+            value: initInfo.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
          }
       });
 
@@ -787,6 +794,60 @@ const Interfaz = (function() {
          }
       });
 
+   }
+
+   function initInfo() {
+
+      this.g.on("dataloaded", e => {
+         const data = this.g.general;
+         this.info.especialidad = data.entidad[0];
+         this.info.colocacion = data.curso;
+         this.info.ofertasec = data.spider.ofertasec;
+         this.info.ofertafp = data.spider.ofertafp;
+         this.info.organica = data.spider.organica;
+         this.info.cgt = data.spider.cgt?"Disponible":"No disponible";
+         this.info.vt = data.spider.vt?"Disponibles":"No disponibles";
+         this.info.centros = this.g.Centro.store.length;
+         this.info.filtrados = this.g.Centro.store.filter(c => c.filtered).length;
+      });
+
+      this.g.Centro.on("filter:* unfilter:* correct:* uncorrect:*", e => {
+         this.info.filtrados = this.g.Centro.store.filter(c => c.filtered).length;
+      });
+
+      this.g.on("isochroneset routeset", e => this.info.contador = this.g.contador);
+      this.g.on("originset", e => {
+         if(e.newval) {
+            e.newval.on("geocode", e => this.info.contador = this.g.contador);
+         }
+         else {
+            this.info.origen = false;
+         }
+      });
+
+      return new Vue({
+         el: "#info :nth-child(2)",
+         data: {
+            especialidad: "-",
+            colocacion: "-",
+            ofertasec: "-",
+            ofertafp: "-",
+            organica: "-",
+            vt: "No disponibles",
+            cgt: "No disponible",
+            //
+            centros: 0,
+            filtrados: 0,
+            contador: 0,
+            //
+            origen: false
+         },
+         computed: {
+            visibles: function() {
+               return this.centros - this.filtrados;
+            }
+         }
+      });
    }
 
    // Vuelva sobre el aspecto de la interfaz el estado inicial del mapa
