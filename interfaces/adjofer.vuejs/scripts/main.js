@@ -846,6 +846,10 @@ const Interfaz = (function() {
          this.info.ruta = e.newval;
       });
 
+      this.g.on("markerselect", e => {
+         this.info.seleccionado = e.newval;
+      });
+
       return new Vue({
          el: "#info :nth-child(2)",
          data: {
@@ -865,6 +869,7 @@ const Interfaz = (function() {
             postal: null,
             isocronas: false,
             ruta: null,
+            seleccionado: null
          },
          computed: {
             visibles: function() {
@@ -896,7 +901,7 @@ const Interfaz = (function() {
             },
             estado_destino: function() {
                if(this.ruta) return this.ruta.destino.getData().id.nom;
-               else return this.origen?"Botón derecho sobre centro":"Fije primero origen";
+               else return this.origen?"Botón derecho sobre un centro":"Fije primero origen";
             },
             tiempo: function() {
                if(!this.ruta) return "-";
@@ -913,6 +918,10 @@ const Interfaz = (function() {
                   const km = Math.floor(data.distance / 1000);
                   return `${km} Km`;
                }
+            },
+            estado_seleccionado: function() {
+               if(this.seleccionado) return this.seleccionado.getData().id.nom;
+               else return "Click sobre un centro";
             }
          },
          methods: {

@@ -88,7 +88,7 @@
          <ul role="tablist">
             <li><a><i class="fa fa-arrow-up"></i></a></li>
             <li><a><i class="fa fa-square-o"></i></a></li>
-            <li><a href="#ajustes" role="tab"><i class="fa fa-bars"></i></a></li>
+            <li><a href="#ajustes" role="tab"><i class="fa fa-cog"></i></a></li>
             <li class="disabled"><a href="#correcciones" role="tab"><i class="fa fa-filter"></i></a></li>
             <li class="disabled"><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
             <li class="disabled"><a href="#centro" role="tab"><i class="fa fa-folder-open"></i></a></li>
@@ -277,7 +277,7 @@
                   </div>
                </article>
                <article class="card-body">
-                  <h5 class="card-title">Entidas geográficas</h5>
+                  <h5 class="card-title">Entidades geográficas</h5>
                   <h6 class="card-subtitle mb-2 text-muted">Detalle de las entidades del mapa</h6>
                   <div class="card-text">
                      <dl class="row">
@@ -285,6 +285,11 @@
                         <dd class="col-8 text-right text-truncate">
                            <a href="" v-if="origen" @click="irLugar($event, origen)">{{estado_origen}}</a>
                            <span v-else>{{estado_origen}}</span>
+                        </dd>
+                        <dt class="col-4">Seleccionado</dt>
+                        <dd class="col-8 text-right text-truncate">
+                           <a href="" v-if="seleccionado" @click="irLugar($event, seleccionado)">{{estado_seleccionado}}</a>
+                           <span v-else>{{estado_seleccionado}}</span>
                         </dd>
                         <dt class="col-4">Isocronas</dt>
                         <dd class="col-8 text-right text-truncate">{{estado_isocronas}}</dd>
