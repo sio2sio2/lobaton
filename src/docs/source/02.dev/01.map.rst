@@ -9,17 +9,18 @@ De hecho, el *mapa de adjudicaciones y oferta educativa* es una aplicación
 particular de su uso basada en tres niveles:
 
 - :file:`leafext.js` en el nivel más bajo y absolutamente genérico.
-- :file:`adjofer/map.js` para definir en concreto cuáles son los iconos,
-  cómo se dibujan a partir de los datos y cómo varían en función de las
+- :file:`adjofer/maps/adjofer/map.js` para definir en concreto cuáles son los
+  iconos, cómo se dibujan a partir de los datos y cómo varían en función de las
   correcciones y filtros que se apliquen sobre tales datos. Su implementación
-  Debe ser independiente de cuál sea la herramienta que se use para construir la
+  es independiente de cuál sea la herramienta que se use para construir la
   interfaz visual.
-- :file:`adjofer/visual/vue.js` que implementa una interfaz atractiva haciendo
-  uso de los dos niveles anteriores.
+- :file:`interfaz/adofer.vuejs/scripts/main.js` que implementa una interfaz
+  atractiva haciendo uso de los dos niveles anteriores.
 
-Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
-tendremos que introducir algún aspecto básico propio del tercero ya que el mapa
-se tendrá que ver de alguna forma.
+Trataremos aquí cómo crear el segundo nivel usando las herramientas que nos
+brinda el primero, aunque para los ejemplos prácticos tendremos que introducir
+algún aspecto propio del tercero, ya que el mapa se tendrá que ver de alguna
+forma.
 
 Conceptos previos
 *****************

@@ -1018,6 +1018,12 @@ realizan sobre el mapa:
    definido como destino mediante el método :js:meth:`setRuta`. `e.newval`
    proporcionará el nuevo calor del atributo :js:attr:`ruta`.
 
+.. _adjofer-event-statuschange:
+
+*statuschange*
+   Se desencadena siempre que se lleva a cabo una acción que provoca un cambio
+   en el mapa desde crear un origen o cambiar de *zoom*.
+
 .. note:: Se enumeran exclusivamente los nuevos tipos de eventos que introduce
    el objeto ``MapAdjOfer``. Es obvio que para la creación de la interfaz visual
    seguiran siendo necesarios otros eventos como los asociados a las

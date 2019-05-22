@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>1. ¿Por qué Lobatón? &mdash; documentación de Lobatón - 0.1.0</title>
+  <title>1. ¿Qué es Lobatón? &mdash; documentación de Lobatón - 0.1.0</title>
   
 
   
@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Índice" href="../genindex.html" />
     <link rel="search" title="Búsqueda" href="../search.html" />
-    <link rel="next" title="2. Documentación de usuario" href="../02.user/index.html" />
+    <link rel="next" title="3. Documentación de desarrollo" href="../02.dev/index.html" />
     <link rel="prev" title="Lobatón: mapa de centros educativos andaluces" href="../index.html" /> 
 </head>
 
@@ -82,9 +82,18 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">1. ¿Por qué Lobatón?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../02.user/index.html">2. Documentación de usuario</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../03.dev/index.html">3. Documentación de desarrollo</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. ¿Qué es Lobatón?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#uso">2. Uso</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arranque">2.1. Arranque</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#seleccion-de-centro">2.2. Selección de centro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#estado-el-mapa">2.3. Estado el mapa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entidades-geograficas">2.4. Entidades geográficas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ajustes">2.5. Ajustes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filtros">2.6. Filtros</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#faq">2.7. <abbr title="Frequently Asked Questions">FAQ</abbr></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../02.dev/index.html">3. Documentación de desarrollo</a></li>
 </ul>
 
             
@@ -130,7 +139,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>1. ¿Por qué Lobatón?</li>
+      <li>1. ¿Qué es Lobatón?</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -149,8 +158,144 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="por-que-lobaton">
-<h1>1. ¿Por qué Lobatón?<a class="headerlink" href="#por-que-lobaton" title="Enlazar permanentemente con este título">¶</a></h1>
+  <div class="section" id="que-es-lobaton">
+<h1>1. ¿Qué es Lobatón?<a class="headerlink" href="#que-es-lobaton" title="Enlazar permanentemente con este título">¶</a></h1>
+<p><em>Lobatón</em> es un mapa interactivo que presenta la oferta educativa y las
+adjudicaciones de destino de todos los centros públicos de Andalucía. En
+principio, está restringido a los institutos de enseñanza secundaria y a los
+cuerpos <strong>590</strong> y <strong>591</strong>, aunque tal restricción no es técnica, sino debida a
+la limitación que impone no tener disponibles en la aplicación los datos del
+resto de centros y cuerpos.</p>
+<p>Se caracteriza por:</p>
+<ul class="simple">
+<li>Representar cada centro mediante un icono, cuyos detalles visuales dependen
+de cuáles sean los datos de oferta y adjudicaciones.</li>
+<li>Permitir la aplicación de filtros y correcciones a los datos para eliminar
+aquellas adjudicaciones, enseñanzas y centros que resulten irrelevantes.</li>
+<li>Reflejar sobre el aspecto de los iconos la aplicación de tales filtros y
+correcciones.</li>
+</ul>
+<p>La aplicación corre enteramente en el navegador cliente, de suerte que no
+no se procesa información alguna en el servidor web.</p>
+</div>
+<div class="section" id="uso">
+<h1>2. Uso<a class="headerlink" href="#uso" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="section" id="arranque">
+<h2>2.1. Arranque<a class="headerlink" href="#arranque" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Nada más acceder a la aplicación, esta presenta un mapa vacío y nos insta a
+escoger la especialidad objeto de la consulta:</p>
+<img alt="../_images/inicio.png" src="../_images/inicio.png" />
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Si el mapa <a class="reference internal" href="#datos-previos"><span class="std std-ref">no carga datos previos</span></a>, el navegador
+nos pedirá permiso para conocer nuestra posición. El dato no es enviado a
+ningún lugar externo, sino que se toma simplemente para centrar el mapa en la
+ubicación del usuario. Si rechazamos la petición o no somos rápidos en
+responder, el mapa se centrará en un lugar más o menos céntrico de Andalucía
+y con un <em>zoom</em> que permite ver toda la Comunidad en el monitor de un
+ordenador de sobremesa.</p>
+</div>
+<p>Podemos escoger una especialidad tecleando algunas letras que compongan su
+nombre:</p>
+<img alt="../_images/especialidad.png" src="../_images/especialidad.png" />
+<p>La selección de una de ellas cargará los datos, los presentará en el mapa y
+recogerá la barra lateral:</p>
+<img alt="../_images/cargados.png" src="../_images/cargados.png" />
+<p>En el mapa aparecerá dos tipos de iconos:</p>
+<ul class="simple">
+<li>Los iconos que representa centros individuales como el icono que se deja
+entrever en la esquina superior derecha de la captura.</li>
+<li>Los iconos que representan agrupaciones de centros y que dejan adivinar
+cuántos a través del número superpuesto que presentan.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">En el caso de dispositivos con un ancho de pantalla muy pequeño, como
+los teléfonos móviles en posición vertical, el panel lateral ocupa todo el
+espacio y no podrá verse el mapa hasta que no se repliegue la barra lateral.</p>
+</div>
+</div>
+<div class="section" id="seleccion-de-centro">
+<h2>2.2. Selección de centro<a class="headerlink" href="#seleccion-de-centro" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La navegación por el mapa es trivial y semejante a la que se puede practicar en
+otras herramientas de este estilo<a class="footnote-reference" href="#id3" id="id1">[1]</a>. Por su parte, las agrupaciones de
+centros irán deshaciéndose al acercar el <em>zoom</em> o pulsar sobre los propios
+iconos.</p>
+<p>Si se quiere conocer la información en detalle de un centro basta con pulsar
+sobre él: el icono aparecerá rodeado con un círculo rojo y se desplegará
+automáticamente el panel lateral de información de centro:</p>
+<img alt="../_images/seleccionado.png" src="../_images/seleccionado.png" />
+<p>Si nos fijamos en los iconos de la barra, veremos que aparecerán habilitados ya
+todos. Los deshabilatos al principio eran aquellos con nula utilidad mientras no
+hubiera datos cargados.</p>
+</div>
+<div class="section" id="estado-el-mapa">
+<span id="panel-informacion"></span><h2>2.3. Estado el mapa<a class="headerlink" href="#estado-el-mapa" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>El estado del mapa puede consultarse pinchando sobre el icono de información y
+presenta información sustanciosa sobre el propio mapa:</p>
+<ul class="simple">
+<li>Una primera sección que refiere cuáles son los datos cargados y nos permite
+conocer si éstos están convenientemente actualizados.</li>
+<li>Una segunda sección de estadísticas con mero carácter informativo.</li>
+<li>Una tercera sección que muestra cuáles son las entidades geográficas que hemos
+definido definido sobre el mapa y que no da pistas de cuál es la siguiente
+acción que debemos llevar a cabo para crearlas. A ellas dedicaremos el
+siguiente epígrafe.</li>
+</ul>
+<img alt="../_images/info1.png" src="../_images/info1.png" />
+<img alt="../_images/info2.png" src="../_images/info2.png" />
+<p>El último botón permite copiar en el portapapeles una <abbr title="Uniform Resource Locator">URL</abbr> que reproduce
+automáticamente el estado actual del mapa, lo que nos permite compartir con
+otros usuarios un estado que nos parezca relevante.</p>
+</div>
+<div class="section" id="entidades-geograficas">
+<h2>2.4. Entidades geográficas<a class="headerlink" href="#entidades-geograficas" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Son las siguientes:</p>
+<dl class="docutils">
+<dt>Centro seleccionado</dt>
+<dd>Ya descrito anteriormente.</dd>
+<dt>Origen</dt>
+<dd><p class="first">La aplicación permite definir un punto de origen que es útil cuando se
+quieren hacer valoraciones sobre la idoneidad de un centro basándose en la
+lejanía respecto a un punto de referencia. Para definirlo basta con pulsar
+con el botón derecho sobre el mapa (o pulsación larga en un dispositivo
+táctil) y elegir la opción en el menú contextual:</p>
+<img alt="../_images/origen.png" src="../_images/origen.png" />
+<p class="last">Las dos siguientes entidades sólo tienen sentido si previamente se ha fijado
+un origen de referencia.</p>
+</dd>
+<dt>Ruta</dt>
+<dd><p class="first">Una ruta establece el camino entre el origen y un centro de destino
+arbitrario que puede o no coincidir con el seleccionado. Para crearla basta
+tener definido un origen y, una vez hecho, pinchar con el botón derecho sobre
+el centro de destino:</p>
+<img alt="../_images/ruta.png" src="../_images/ruta.png" />
+<p class="last">La utilidad de la ruta, más allá de mostrar el itinerario, es la de declarar
+la distancia entre origen y destino y la duración del viaje. Creada la ruta,
+esa misma información puede obtenerse del <a class="reference internal" href="#panel-informacion"><span class="std std-ref">panel de información</span></a>.</p>
+</dd>
+<dt>Isocronas</dt>
+<dd>aa</dd>
+</dl>
+</div>
+<div class="section" id="ajustes">
+<h2>2.5. Ajustes<a class="headerlink" href="#ajustes" title="Enlazar permanentemente con este título">¶</a></h2>
+</div>
+<div class="section" id="filtros">
+<span id="datos-previos"></span><h2>2.6. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h2>
+</div>
+<div class="section" id="faq">
+<span id="id2"></span><h2>2.7. <abbr title="Frequently Asked Questions">FAQ</abbr><a class="headerlink" href="#faq" title="Enlazar permanentemente con este título">¶</a></h2>
+<p class="rubric">Notas al pie</p>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>La principal diferencia con otras herramientas como <a class="reference external" href="https://www.google.com">Google Maps</a> es que un doble click derecho sobre el mapa no
+aleja la vista, sino que apra ello hay que hacer doble click mientras se
+pulsa la tecla <kbd class="kbd docutils literal notranslate">Shift</kbd>.</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
@@ -161,7 +306,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../02.user/index.html" class="btn btn-neutral float-right" title="2. Documentación de usuario" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../02.dev/index.html" class="btn btn-neutral float-right" title="3. Documentación de desarrollo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../index.html" class="btn btn-neutral float-left" title="Lobatón: mapa de centros educativos andaluces" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

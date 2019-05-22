@@ -82,8 +82,8 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html">1. ¿Por qué Lobatón?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../02.user/index.html">2. Documentación de usuario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html">1. ¿Qué es Lobatón?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html#uso">2. Uso</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">3.1. Creación de mapas</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#conceptos-previos">3.1.1. Conceptos previos</a></li>
@@ -168,7 +168,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/03.dev/01.map.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/02.dev/01.map.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -189,17 +189,18 @@ De hecho, el <em>mapa de adjudicaciones y oferta educativa</em> es una aplicaci�
 particular de su uso basada en tres niveles:</p>
 <ul class="simple">
 <li><code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> en el nivel más bajo y absolutamente genérico.</li>
-<li><code class="file docutils literal notranslate"><span class="pre">adjofer/map.js</span></code> para definir en concreto cuáles son los iconos,
-cómo se dibujan a partir de los datos y cómo varían en función de las
+<li><code class="file docutils literal notranslate"><span class="pre">adjofer/maps/adjofer/map.js</span></code> para definir en concreto cuáles son los
+iconos, cómo se dibujan a partir de los datos y cómo varían en función de las
 correcciones y filtros que se apliquen sobre tales datos. Su implementación
-Debe ser independiente de cuál sea la herramienta que se use para construir la
+es independiente de cuál sea la herramienta que se use para construir la
 interfaz visual.</li>
-<li><code class="file docutils literal notranslate"><span class="pre">adjofer/visual/vue.js</span></code> que implementa una interfaz atractiva haciendo
-uso de los dos niveles anteriores.</li>
+<li><code class="file docutils literal notranslate"><span class="pre">interfaz/adofer.vuejs/scripts/main.js</span></code> que implementa una interfaz
+atractiva haciendo uso de los dos niveles anteriores.</li>
 </ul>
-<p>Trataremos aquí cómo crear el segundo nivel, aunque para los ejemplos prácticos
-tendremos que introducir algún aspecto básico propio del tercero ya que el mapa
-se tendrá que ver de alguna forma.</p>
+<p>Trataremos aquí cómo crear el segundo nivel usando las herramientas que nos
+brinda el primero, aunque para los ejemplos prácticos tendremos que introducir
+algún aspecto propio del tercero, ya que el mapa se tendrá que ver de alguna
+forma.</p>
 <div class="section" id="conceptos-previos">
 <h2>3.1.1. Conceptos previos<a class="headerlink" href="#conceptos-previos" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>Partimos de la necesidad de representar sobre un mapa una serie de entidades
