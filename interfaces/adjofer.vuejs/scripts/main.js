@@ -11,7 +11,8 @@ const Interfaz = (function() {
    // Opciones predeterminadas propias exclusivamente de la interfaz.
    const defaults_v = {
       ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
-      recordar: false         // Recuerda entre sesiones el estado del mapa.
+      recordar: false,        // Recuerda entre sesiones el estado del mapa.
+      mostrarFiltrados: false // Si true, muestra en gris los centros filtrados.
    }
 
    function Interfaz(opts) {
@@ -753,13 +754,13 @@ const Interfaz = (function() {
             options: this.options,
             ajustes: [
                {
-                  desc: "Ocultar centros sin oferta",
+                  desc: "Filtrar centros sin oferta",
                   opt: "filtrarOferta",
                   tipo: "filter:oferta",
                   value: {min: 1}
                },
                {
-                  desc: "Ocultar centros sin adjudicaciones",
+                  desc: "Filtrar centros sin adjudicaciones",
                   opt: "filtrarAdj",
                   tipo: "filter:adj",
                   value: {min: 1}
@@ -779,6 +780,15 @@ const Interfaz = (function() {
                   desc: "Ocultar datos filtrados",
                   opt: "ocultarBorrado",
                   tipo: "visual"
+               },
+               {
+                  desc: "Mostrar (en gris) centros filtrados",
+                  opt: "mostrarFiltrados",
+                  tipo: "visual",
+                  accion: (name, value) => {
+                     value = true?L.utils.grayFilter:this.g.cluster;
+                     this.g.Centro.setFilterStyle(value);
+                  }
                },
                {
                   desc: "Incluir vacantes telefónicas",
