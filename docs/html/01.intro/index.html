@@ -427,6 +427,11 @@ turno.</li>
 <dt>Plan de compensación</dt>
 <dd>Este filtro permite eliminar centros dependiendo de si es un centro com
 compensatoria, un centro con difícil desempeño o un centro normal.</dd>
+<dt>Vacantes telefónicas</dt>
+<dd>Elimina las adjudicaciones que se produjeron en el procedimiento de verano.</dd>
+<dt>Vacantes iniciales</dt>
+<dd>Elimina las adjudicaciones que no responden a vacantes iniciales del
+procedimiento de colocación de efectivos.</dd>
 </dl>
 <img alt="../_images/filtros3.png" src="../_images/filtros3.png" />
 <dl class="docutils">
@@ -446,14 +451,14 @@ sus alrededores para saber si podría pillar plaza por allí, ¿estoy haciendo
 el tonto?</strong></p>
 <p>Mayúsculamente. Para saberlo de un vistazo basta con lo siguiente:</p>
 <ol class="loweralpha simple">
-<li>En <strong>ajustes</strong> debe:<ul>
+<li>En <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> debe:<ul>
 <li>Marcarse «<em>Filtrar centros sin adjudicaciones</em>»</li>
 <li>Cerciorarse de que no está marcado «<em>Mostrar (en gris) centros filtrados</em>».</li>
 <li>Cerciosarse de que no está marcado «<em>Incluir vacantes telefónicas</em>»
 (porque esas vacantes no se adjudicaron en verano).</li>
 </ul>
 </li>
-<li>En <strong>filtrado</strong>:<ul>
+<li>En <a class="reference internal" href="#panel-filtros"><span class="std std-ref">filtrado</span></a>:<ul>
 <li>Utilice el filtro «<em>Adjudicatario de referencia</em>» poniendo sus propios
 datos: el colectivo por el que participa y su tiempo de servicio
 (interino) o escalafón (resto de funcionarios).</li>
@@ -465,8 +470,8 @@ procedimiento pudieron adjudicarle puesto.</p>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>
 <p class="last">También puede probar a poner su tiempo de servicio con un año más.
-A fin de cuentas, esas son las condiciones con las que particpará este
-años.</p>
+A fin de cuentas, esas son las condiciones con las que partipará este
+año.</p>
 </div>
 </li>
 <li><p class="first"><strong>Mi prioridad es dormir en casa, ¿cómo elimino centros que estén muy lejos?</strong></p>
@@ -475,12 +480,32 @@ años.</p>
 <li><p class="first"><strong>Soy interino bilingüe y no me interesan ni las enseñanzas no bilingües ni
 los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
 inútil?</strong></p>
-<p>Sí hay forma. Habiendo aprendido la <em>latín</em> que, en este caso, consistía en:</p>
+<p>Sí hay forma. Habiendo aprendido <em>latín</em> que, en este caso, habría consistido
+en:</p>
 <ul class="simple">
-<li>Cerciorarse de que en <strong>ajustes</strong> está marcada la opción «<em>Filtrar centros
-sin oferta</em>».</li>
-<li>Elegir en <strong>filtrado</strong> la enseñanza bilingüe correspondiente.</li>
+<li>Cerciorarse de que en <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> está marcada la opción
+«<em>Filtrar centros sin oferta</em>».</li>
+<li>Elegir en <a class="reference internal" href="#panel-filtros"><span class="std std-ref">filtrado</span></a> la enseñanza bilingüe correspondiente.</li>
 </ul>
+</li>
+<li><p class="first"><strong>¿Por qué está deshabilitado el filtro de vacantes telefónicas?</strong></p>
+<p>Muy probablemente porque en <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> no se ha marcado
+«<em>Incluir vacantes telefónicas*</em>.»</p>
+</li>
+<li><p class="first"><strong>¿Cómo hago para saber las vacantes de septiembre que no se ofertaron en el
+procedimiento de verano?</strong></p>
+<ol class="loweralpha simple">
+<li>En <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> cerciórese de que están marcadas las
+opciones «<em>Filtrar centros sin adjudicaciones</em>» y «<em>Incluir vacantes
+telefónicas</em>».</li>
+<li>En <a class="reference internal" href="#panel-filtros"><span class="std std-ref">filtrado</span></a>, aplique la corrección  «<em>Vacantes
+telefónicas</em>».</li>
+</ol>
+</li>
+<li><p class="first"><strong>¿Por qué en :ref:`ajustes &lt;panel-ajustes&gt;` no puedo incluir las vacantes
+telefónicas o las correcciones del concurso?</strong></p>
+<p>Porque los datos no incorporan información sobre las unas, sobre el otro o
+sobre ambos. Échele un vistazo al <a class="reference internal" href="#panel-informacion"><span class="std std-ref">panel de información</span></a>.</p>
 </li>
 <li><p class="first"><strong>¿Qué fiabilidad tiene esto?</strong></p>
 <p>Ninguna: «Rentabilidades pasadas no garantizan rentabilidades futuras». Esto

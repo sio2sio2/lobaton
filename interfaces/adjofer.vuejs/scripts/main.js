@@ -4,7 +4,7 @@ const Interfaz = (function() {
    const defaults = {
       "filter:oferta": true,    // Filtrar centros sin oferta.
       "filter:adj": false,      // Filtrar centros sin adjudicaciones.
-      "correct:vt+": true,     // Incluir vacantes telefónicas.
+      "correct:vt+": false,     // Incluir vacantes telefónicas.
       "correct:cgt": false,     // Incluir correcciones por CGT.
    }
 
@@ -716,12 +716,28 @@ const Interfaz = (function() {
    }
 
    function initAjustes() {
+      // Que los ajustes referentes a las telefónicas y el CGT
+      // estén habilitados, depende de que se disponga de datos.
+      this.g.on("dataloaded", e => {
+         for(const ajuste of this.ajustes.$children) {
+            switch(ajuste.a.tipo) {
+               case "correct:vt+":
+                  ajuste.disabled = !this.g.general.spider.vt;
+                  break;
+               case "correct:cgt":
+                  ajuste.disabled = !this.g.general.spider.cgt;
+                  break;
+            }
+         }
+      });
+
       Vue.component("ajuste", {
          props: ["a"],
          template: "#ajuste",
          data: function() {
             return {
-               checked: this.a.tipo === "visual"?this.$parent.options[this.a.opt]:false
+               checked: this.a.tipo === "visual"?this.$parent.options[this.a.opt]:false,
+               disabled: false
             }
          },
          watch: {

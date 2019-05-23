@@ -296,6 +296,13 @@ Plan de compensación
    Este filtro permite eliminar centros dependiendo de si es un centro com
    compensatoria, un centro con difícil desempeño o un centro normal.
 
+Vacantes telefónicas
+   Elimina las adjudicaciones que se produjeron en el procedimiento de verano.
+
+Vacantes iniciales
+   Elimina las adjudicaciones que no responden a vacantes iniciales del
+   procedimiento de colocación de efectivos.
+
 .. image:: files/filtros3.png
 
 Puestos
@@ -317,14 +324,14 @@ Enseñanzas
 
    Mayúsculamente. Para saberlo de un vistazo basta con lo siguiente:
 
-   a. En **ajustes** debe:
+   a. En :ref:`ajustes <panel-ajustes>` debe:
 
       + Marcarse "*Filtrar centros sin adjudicaciones*"
       + Cerciorarse de que no está marcado "*Mostrar (en gris) centros filtrados*".
       + Cerciosarse de que no está marcado "*Incluir vacantes telefónicas*"
         (porque esas vacantes no se adjudicaron en verano).
 
-   b. En **filtrado**:
+   b. En :ref:`filtrado <panel-filtros>`:
 
       + Utilice el filtro "*Adjudicatario de referencia*" poniendo sus propios
         datos: el colectivo por el que participa y su tiempo de servicio
@@ -334,8 +341,8 @@ Enseñanzas
    procedimiento pudieron adjudicarle puesto.
 
    .. note:: También puede probar a poner su tiempo de servicio con un año más.
-      A fin de cuentas, esas son las condiciones con las que particpará este
-      años.
+      A fin de cuentas, esas son las condiciones con las que partipará este
+      año.
 
 #. **Mi prioridad es dormir en casa, ¿cómo elimino centros que estén muy lejos?**
 
@@ -345,11 +352,34 @@ Enseñanzas
    los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
    inútil?**
 
-   Sí hay forma. Habiendo aprendido la *latín* que, en este caso, consistía en:
+   Sí hay forma. Habiendo aprendido *latín* que, en este caso, habría consistido
+   en:
 
-   + Cerciorarse de que en **ajustes** está marcada la opción "*Filtrar centros
-     sin oferta*".
-   + Elegir en **filtrado** la enseñanza bilingüe correspondiente.
+   + Cerciorarse de que en :ref:`ajustes <panel-ajustes>` está marcada la opción
+     "*Filtrar centros sin oferta*".
+   + Elegir en :ref:`filtrado <panel-filtros>` la enseñanza bilingüe correspondiente.
+
+#. **¿Por qué está deshabilitado el filtro de vacantes telefónicas?**
+
+   Muy probablemente porque en :ref:`ajustes <panel-ajustes>` no se ha marcado
+   "*Incluir vacantes telefónicas**."
+
+#. **¿Cómo hago para saber las vacantes de septiembre que no se ofertaron en el
+   procedimiento de verano?**
+
+   a. En :ref:`ajustes <panel-ajustes>` cerciórese de que están marcadas las
+      opciones "*Filtrar centros sin adjudicaciones*" y "*Incluir vacantes
+      telefónicas*".
+      
+   #. En :ref:`filtrado <panel-filtros>`, aplique la corrección  "*Vacantes
+      telefónicas*".
+
+#. **¿Por qué en :ref:`ajustes <panel-ajustes>` no puedo incluir las vacantes
+   telefónicas o las correcciones del concurso?**
+
+   Porque los datos no incorporan información sobre las unas, sobre el otro o
+   sobre ambos. Échele un vistazo al :ref:`panel de información
+   <panel-informacion>`.
 
 #. **¿Qué fiabilidad tiene esto?**
 

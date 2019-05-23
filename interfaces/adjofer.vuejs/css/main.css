@@ -13,16 +13,6 @@
 }
 
 /* Cajetín de búsqueda */
-#busqueda input {
-   box-sizing: 100%;
-   width: 100%;
-}
-
-#busqueda ul {
-   list-style: none;
-   padding-left: 0;
-}
-
 #busqueda li {
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -31,7 +21,8 @@
 
 #busqueda li:hover {
    cursor: pointer;
-   background-color: #eee;
+   background-color: #0074d9;
+   color: #fff;
 }
 
 #busqueda data {
