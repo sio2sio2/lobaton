@@ -693,7 +693,7 @@ const Interfaz = (function() {
                                         .map(c => new Object({label: this.ens[c], value: c}));
 
                const puestos = {
-                  titulo: "Adjudicaciones",
+                  titulo: "Puestos",
                   desc: "Elimina adjudicaciones de los puestos",
                   nombre: "adjpue",
                   tipo: "correct",

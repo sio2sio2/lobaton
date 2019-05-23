@@ -175,8 +175,7 @@ aquellas adjudicaciones, enseñanzas y centros que resulten irrelevantes.</li>
 <li>Reflejar sobre el aspecto de los iconos la aplicación de tales filtros y
 correcciones.</li>
 </ul>
-<p>La aplicación corre enteramente en el navegador cliente, de suerte que no
-no se procesa información alguna en el servidor web.</p>
+<p>La aplicación corre enteramente en el navegador cliente.</p>
 </div>
 <div class="section" id="uso">
 <h1>2. Uso<a class="headerlink" href="#uso" title="Enlazar permanentemente con este título">¶</a></h1>
@@ -285,6 +284,8 @@ el centro de destino:</p>
 la distancia entre origen y destino y la duración del viaje. Creada la ruta,
 esa misma información puede obtenerse del <a class="reference internal" href="#panel-informacion"><span class="std std-ref">panel de información</span></a>.</p>
 </dd>
+</dl>
+<dl class="docutils" id="isocronas">
 <dt>Isocronas</dt>
 <dd><p class="first">Las <em class="dfn">isocronas</em>, esto es, líneas de igual tiempo, permiten calcular
 respecto al origen, todos los puntos geográficos que se encuentran a una
@@ -366,8 +367,6 @@ todos los centros posibles, todas las enseñanzas y puestos relevantes para la
 especialidad seleccionada. Lo habitual, sin embargo, es pretender afinar la
 búsqueda añadiendo correcciones a los datos que van eliminando aquellos que no interesan:</p>
 <img alt="../_images/filtros1.png" src="../_images/filtros1.png" />
-<img alt="../_images/filtros2.png" src="../_images/filtros2.png" />
-<img alt="../_images/filtros3.png" src="../_images/filtros3.png" />
 <p>Por defecto, todas las correcciones están deshabilitadas, por lo que aparecerán todos los
 datos disponibles sobre el mapa.</p>
 <dl class="docutils">
@@ -375,11 +374,17 @@ datos disponibles sobre el mapa.</p>
 <dd><p class="first">Esta corrección permite establecer un adjudicatario de referencia (colectivo por el que
 participa, escalafón, si procede, y tiempo de servicio) y elimina de los centros todas
 las adjudicaciones que gozaran de mayor prelación en el procedimiento.</p>
-<div class="last admonition warning">
-<p class="first admonition-title">Advertencia</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
 <p class="last">Recuerde que si quiere hacer desaparecer los centros que queden sin
 adjudicaciones, deberá ir a <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> y habilitar la opción
 correspondiente.</p>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Por un defecto en el diseño de la base de datos, de los
+funcionarios no interinos, no se almacena el tiempo de servicio, de modo
+que si no es interino, rellene sólo el escalafón.</p>
 </div>
 </dd>
 <dt>Bilingüismo</dt>
@@ -402,13 +407,87 @@ de ajustes), haremos desaparecer los centros que carecen de estas enseñanzas.</
 más adelante.</p>
 </div>
 </dd>
+</dl>
+<img alt="../_images/filtros2.png" src="../_images/filtros2.png" />
+<dl class="docutils">
 <dt>Turno</dt>
-<dd>Permite escoger centro antendiendo al turno de sus enseñanzas.</dd>
+<dd><p class="first">Permite escoger centro antendiendo al turno de sus enseñanzas:</p>
+<ul class="simple">
+<li>El primer ítem permite eliminar enseñanzas de mañana que si se acompaña con
+el filtro que elimina centros sin oferta (en ajustes), mostrará en pantalla
+exclusivamente los centros con enseñanzas de tarde relevantes para nuestra
+especialidad.</li>
+<li>El segundo ítem filtra los centros que tengan alguna enseñanza de tarde,
+por lo que es útil si no nos interesa correr el riesgo de trabajar en este
+turno.</li>
+</ul>
+<p class="last">Ambos ítem son incompatibles por lo que si se habilita uno se deshabilitara
+él otro</p>
+</dd>
+<dt>Plan de compensación</dt>
+<dd>Este filtro permite eliminar centros dependiendo de si es un centro com
+compensatoria, un centro con difícil desempeño o un centro normal.</dd>
+</dl>
+<img alt="../_images/filtros3.png" src="../_images/filtros3.png" />
+<dl class="docutils">
+<dt>Puestos</dt>
+<dd>La corrección permite eliminar individualmente las adjudicaciones a los
+puestos que se marquen. Si algún puesto específico no interesa, es
+conveniente marcarlo aquí.</dd>
+<dt>Enseñanzas</dt>
+<dd>Permite eliminar individualmente enseñanzas que no interesen.</dd>
 </dl>
 </div>
 <div class="section" id="faq">
 <span id="id4"></span><h2>2.7. <abbr title="Frequently Asked Questions">FAQ</abbr><a class="headerlink" href="#faq" title="Enlazar permanentemente con este título">¶</a></h2>
-<p class="rubric">Notas al pie</p>
+<ol class="arabic">
+<li><p class="first"><strong>Llevo cuarenta minutos pinchando centro a centro en la ciudad de Sevilla y
+sus alrededores para saber si podría pillar plaza por allí, ¿estoy haciendo
+el tonto?</strong></p>
+<p>Mayúsculamente. Para saberlo de un vistazo basta con lo siguiente:</p>
+<ol class="loweralpha simple">
+<li>En <strong>ajustes</strong> debe:<ul>
+<li>Marcarse «<em>Filtrar centros sin adjudicaciones</em>»</li>
+<li>Cerciorarse de que no está marcado «<em>Mostrar (en gris) centros filtrados</em>».</li>
+<li>Cerciosarse de que no está marcado «<em>Incluir vacantes telefónicas</em>»
+(porque esas vacantes no se adjudicaron en verano).</li>
+</ul>
+</li>
+<li>En <strong>filtrado</strong>:<ul>
+<li>Utilice el filtro «<em>Adjudicatario de referencia</em>» poniendo sus propios
+datos: el colectivo por el que participa y su tiempo de servicio
+(interino) o escalafón (resto de funcionarios).</li>
+</ul>
+</li>
+</ol>
+<p>Listo. Deberían pervivir en el mapa sólo los centros en que en el pasado
+procedimiento pudieron adjudicarle puesto.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">También puede probar a poner su tiempo de servicio con un año más.
+A fin de cuentas, esas son las condiciones con las que particpará este
+años.</p>
+</div>
+</li>
+<li><p class="first"><strong>Mi prioridad es dormir en casa, ¿cómo elimino centros que estén muy lejos?</strong></p>
+<p>Usando <a class="reference internal" href="#isocronas"><span class="std std-ref">las isocronas</span></a>.</p>
+</li>
+<li><p class="first"><strong>Soy interino bilingüe y no me interesan ni las enseñanzas no bilingües ni
+los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
+inútil?</strong></p>
+<p>Sí hay forma. Habiendo aprendido la <em>latín</em> que, en este caso, consistía en:</p>
+<ul class="simple">
+<li>Cerciorarse de que en <strong>ajustes</strong> está marcada la opción «<em>Filtrar centros
+sin oferta</em>».</li>
+<li>Elegir en <strong>filtrado</strong> la enseñanza bilingüe correspondiente.</li>
+</ul>
+</li>
+<li><p class="first"><strong>¿Qué fiabilidad tiene esto?</strong></p>
+<p>Ninguna: «Rentabilidades pasadas no garantizan rentabilidades futuras». Esto
+es lo mismo, pero sin apropiarse en el ínterin de dinero alguno.</p>
+</li>
+</ol>
+<blockquote lang="la" style="text-align: right">Pro bono malum.</blockquote><p class="rubric">Notas al pie</p>
 <table class="docutils footnote" frame="void" id="id5" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
