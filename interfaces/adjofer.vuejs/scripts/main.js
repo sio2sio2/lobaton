@@ -2,10 +2,10 @@ const Interfaz = (function() {
 
    // Opciones predeterminadas al arrancar la interfaz.
    const defaults = {
-      filtrarOferta: true,    // Filtrar centros sin oferta.
-      filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
-      incluirTlfo: false,     // Incluir vacantes telefónicas.
-      incluirCGT: false,      // Incluir correcciones por CGT.
+      "filter:oferta": true,    // Filtrar centros sin oferta.
+      "filter:adj": false,      // Filtrar centros sin adjudicaciones.
+      "correct:vt+": true,     // Incluir vacantes telefónicas.
+      "correct:cgt": false,     // Incluir correcciones por CGT.
    }
 
    // Opciones predeterminadas propias exclusivamente de la interfaz.
@@ -78,6 +78,18 @@ const Interfaz = (function() {
       // deja de tener sentido aplicar la eliminación de adj. no telefónicas.
       this.g.Centro.on("uncorrect:vt+", e => {
          if(this.g.Centro.uncorrect("vt")) this.g.Centro.invoke("refresh");
+      });
+
+      // Las correcciones se borran al cargar una especialidad,
+      // pero las que se aplican automáticamente por mor de las opciones
+      // de la interfaz, deberían aplicarse automáticamente.
+      this.g.on("dataloaded", e => {
+         for(const opt in this.options) {
+            if(this.options[opt] && opt.startsWith("correct:")) {
+               const name = opt.split(":")[1];
+               this.g.Centro.correct(name, {});
+            }
+         }
       });
 
       // TODO: DEBUG: Elimínese esto en producción.
@@ -704,19 +716,20 @@ const Interfaz = (function() {
    }
 
    function initAjustes() {
-      const self = this;
-
       Vue.component("ajuste", {
          props: ["a"],
          template: "#ajuste",
          data: function() {
             return {
-               checked: self.options[this.a.opt]
+               checked: this.a.tipo === "visual"?this.$parent.options[this.a.opt]:false
             }
          },
          watch: {
             checked: function() {
-               self.options[this.a.opt] = this.checked;
+               // Sólo actualizamos las opciones de interfaz visuales,
+               // las relativas a filtros y correcciones deben conservar
+               // sus valores iniciales.
+               if(this.a.tipo === "visual") this.$parent.options[this.a.opt] = this.checked;
             }
          },
          computed: {
@@ -728,7 +741,7 @@ const Interfaz = (function() {
          methods: {
             // Qué acción se desencadena al cambiar el ajuste.
             ajustar: function(e) {
-               this.$parent.options[this.a.opt] = this.checked;
+               //this.$parent.options[this.a.opt] = this.checked;
 
                if(this.a.accion) {
                   this.a.accion(this.a.opt, this.checked);
@@ -755,13 +768,13 @@ const Interfaz = (function() {
             ajustes: [
                {
                   desc: "Filtrar centros sin oferta",
-                  opt: "filtrarOferta",
+                  opt: "filter:oferta",
                   tipo: "filter:oferta",
                   value: {min: 1}
                },
                {
                   desc: "Filtrar centros sin adjudicaciones",
-                  opt: "filtrarAdj",
+                  opt: "filter:adj",
                   tipo: "filter:adj",
                   value: {min: 1}
                },
@@ -792,12 +805,12 @@ const Interfaz = (function() {
                },
                {
                   desc: "Incluir vacantes telefónicas",
-                  opt: "incluirTlfo",
+                  opt: "correct:vt+",
                   tipo: "correct:vt+"
                },
                {
                   desc: "Corregir con el CGT",
-                  opt: "incluirCGT",
+                  opt: "correct:cgt",
                   tipo: "correct:cgt"
                }
             ]
@@ -997,8 +1010,8 @@ const Interfaz = (function() {
       reflejarOpciones.call(this, opciones);
 
       // Si no se incluyen vacantes telefónicas, entonces
-      // debe desabilitarse la corrección por adjudicaciones no telefónicas.
-      if(!this.options.incluirTlfo) {
+      // debe deshabilitarse la corrección por adjudicaciones no telefónicas.
+      if(!this.options["correct:vt+"]) {
          for(const f of this.filtrador.$children) {
             if(f.c.tipo === "correct" && f.c.nombre === "vt") {
                f.$children[0].disabled = true;

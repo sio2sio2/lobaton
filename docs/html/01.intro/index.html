@@ -89,7 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#estado-el-mapa">2.3. Estado el mapa</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#entidades-geograficas">2.4. Entidades geográficas</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ajustes">2.5. Ajustes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#filtros">2.6. Filtros</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filtrado">2.6. Filtrado</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#faq">2.7. <abbr title="Frequently Asked Questions">FAQ</abbr></a></li>
 </ul>
 </li>
@@ -208,6 +208,17 @@ entrever en la esquina superior derecha de la captura.</li>
 <li>Los iconos que representan agrupaciones de centros y que dejan adivinar
 cuántos a través del número superpuesto que presentan.</li>
 </ul>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">En el mapa no tienen por qué aparecer todos los centros públicos,
+sino sólo aquellos que tienen enseñanzas relevantes para la especialidad
+seleccionada. Por ese motivo, si se escoge la especialidad de <em>Matemáticas</em>,
+aperecerán todos los centros de enseñanza secundaria. En cambio, si se escoge
+la especilidad de <em>Informática</em> no aparecerán los centros que sólo dispongan de
+<abbr title="Enseñanza Secundaria Obligatoria">ESO</abbr>, ya que en la base de datos de la que se obtiene la información, esta
+especialidad no está relacioanda con la <abbr title="Enseñanza Secundaria Obligatoria">ESO</abbr>, puesto que lo habitual es que
+no exista puesto en centros de estas características<a class="footnote-reference" href="#id5" id="id1">[1]</a>.</p>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>
 <p class="last">En el caso de dispositivos con un ancho de pantalla muy pequeño, como
@@ -218,7 +229,7 @@ espacio y no podrá verse el mapa hasta que no se repliegue la barra lateral.</p
 <div class="section" id="seleccion-de-centro">
 <h2>2.2. Selección de centro<a class="headerlink" href="#seleccion-de-centro" title="Enlazar permanentemente con este título">¶</a></h2>
 <p>La navegación por el mapa es trivial y semejante a la que se puede practicar en
-otras herramientas de este estilo<a class="footnote-reference" href="#id3" id="id1">[1]</a>. Por su parte, las agrupaciones de
+otras herramientas de este estilo<a class="footnote-reference" href="#id6" id="id2">[2]</a>. Por su parte, las agrupaciones de
 centros irán deshaciéndose al acercar el <em>zoom</em> o pulsar sobre los propios
 iconos.</p>
 <p>Si se quiere conocer la información en detalle de un centro basta con pulsar
@@ -265,7 +276,7 @@ táctil) y elegir la opción en el menú contextual:</p>
 un origen de referencia.</p>
 </dd>
 <dt>Ruta</dt>
-<dd><p class="first">Una ruta establece el camino entre el origen y un centro de destino
+<dd><p class="first">Una <em class="dfn">ruta</em> establece el camino entre el origen y un centro de destino
 arbitrario que puede o no coincidir con el seleccionado. Para crearla basta
 tener definido un origen y, una vez hecho, pinchar con el botón derecho sobre
 el centro de destino:</p>
@@ -275,24 +286,149 @@ la distancia entre origen y destino y la duración del viaje. Creada la ruta,
 esa misma información puede obtenerse del <a class="reference internal" href="#panel-informacion"><span class="std std-ref">panel de información</span></a>.</p>
 </dd>
 <dt>Isocronas</dt>
-<dd>aa</dd>
+<dd><p class="first">Las <em class="dfn">isocronas</em>, esto es, líneas de igual tiempo, permiten calcular
+respecto al origen, todos los puntos geográficos que se encuentran a una
+misma distancia en espacio o tiempo. La aplicación generá automáticamente
+las isocronas de 10 a 60 minutos<a class="footnote-reference" href="#id7" id="id3">[3]</a> en intervalos de 10 minutos y colorea
+de distinto color las áreas entre medias. Para crearlas no hay más que pulsar
+con el botón derecho sobre el origen y seleccionadar la opción oportuna en
+el menú contextual:</p>
+<img alt="../_images/isocronas.png" src="../_images/isocronas.png" />
+<p>En la captura, la naranja es el área encerrada por la isocrona de 10
+minutos, por lo que todos sus puntos se encontrarán a menos de ese tiempo del
+origen que seleccionamos. Sobre los centros que quedan dentro o fuera de esas
+áreas no podemos pronunciarnos taxativamente si se encuentran agrupados, ya que
+al desagregarlos alguno puede viajar a un área continua. Por ejemplo, es
+probable que alguno de los cuatro centros que aparentemente se encuentran a
+menos de 20 minutos en la parte inferior caiga en el área siguiente, como
+efectivamente ocurre:</p>
+<img alt="../_images/isocronas2.png" src="../_images/isocronas2.png" />
+<p>Si enmbargo, si aplicamos botón derecho sobre cualquiera de las áreas, la
+aplicación nos brindará la posibilidad de elimianr los centros que queden
+fuera de la isocronas correspondiente. Si hacemos tal acción sobre el área
+violácea que representa limitada por la isocrona de 20 minutos:</p>
+<img alt="../_images/isocronas3.png" src="../_images/isocronas3.png" />
+<p class="last">desaparecerán los centros más allá de esta isocrona y el áreas violácea
+invadirá toda la superficie hasta el punto de origen. Los centros
+supervivientes a la acción son los únicos centros que podemos asegurar que
+se encuentran a menos de 20 minutos. Este filtro es el único que se aplica
+interactuando directamente con el mapa y no a través del <a class="reference internal" href="#panel-filtros"><span class="std std-ref">panel
+correspondiente</span></a> o el <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">panel de ajustes</span></a>.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="ajustes">
-<h2>2.5. Ajustes<a class="headerlink" href="#ajustes" title="Enlazar permanentemente con este título">¶</a></h2>
+<span id="panel-ajustes"></span><h2>2.5. Ajustes<a class="headerlink" href="#ajustes" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>El panel de ajustes permite modificar parte del comportamiento de la aplicación:</p>
+<img alt="../_images/ajustes.png" src="../_images/ajustes.png" />
+<p>El significado de cada opción es el siguiente:</p>
+<dl class="docutils">
+<dt>Filtrar centros sin oferta</dt>
+<dd>Filtra los centros que se han quedado sin oferta como consecuencia de las
+correcciones a los datos que se hayan establecido (véase el próximo epígrafe).</dd>
+<dt>Filtrar centros sin adjudicación</dt>
+<dd>Filtra los centros que se han quedado sin adjudicaciones como consecuencia
+de las correcciones a los datos que se hayan establecido (véase el próximo
+epígrafe).</dd>
+</dl>
+<dl class="docutils" id="datos-previos">
+<dt>Recordar el estado del mapa</dt>
+<dd>Recuerda el estado del mapa entre sesiones. Esto significa que si cerramos
+el navegador y volvernos a abrirlo, la aplicación cargará automáticamente
+los datos, los filtros, las correcciones y presentará el mapa centro en el
+mismo lugar y con el mismo nivel de <em>zoom</em>. Consecuentemente, la aplicación
+quedará inicialmente en el mismo estado con que se cerró.</dd>
+<dt>Ocultar datos filtrados</dt>
+<dd>Deshabilitada esta opción las enseñanzas y los adjudicaciones filtradas
+aparecen en la información detallada del centro tachadas y con indicación
+de cuál es la razón por la que se tacharon. Al habilitarla, tales enseñanzas
+y adjudicaciones, simplemente, desaparecen.</dd>
+<dt>Mostrar (en gris) centros filtrados</dt>
+<dd>Al quedar filtrado un centro, este desaparece del mapa. Si se habilita esta
+opción, en vez de desaparecer aparecerá dibujado en gris. Se comportan
+del mismo modo que los centros sin filtrar, salvo por el hecho de que el
+número de la marca que representa centros agrupados no los tiene en cuenta.</dd>
+<dt>Incluir vacantes telefónicas</dt>
+<dd>La base de la información contenida en el mapa es la resolución del procedimiento
+de colocación de efectivos que se celebra en verano. Al habilitar esta opción,
+se añaden a la información de los centros las vacantes que siempre aparecen en
+septiembre, y que no salieron a concurso en julio.</dd>
+<dt>Corregir con el <abbr title="Concurso General de Traslados">CGT</abbr></dt>
+<dd>Añade correcciones a las adjudicaciones del procedimiento que generan los resultados
+del <abbr title="Concurso General de Traslados">CGT</abbr>. Algunas de estas correcciones (como postular si un funcionario irá
+a su destino definitivo o no) son meras especulaciones.</dd>
+</dl>
 </div>
-<div class="section" id="filtros">
-<span id="datos-previos"></span><h2>2.6. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="filtrado">
+<span id="panel-filtros"></span><h2>2.6. Filtrado<a class="headerlink" href="#filtrado" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La carga de datos (si no se procede de la recuperación de un estado anterior) presenta
+todos los centros posibles, todas las enseñanzas y puestos relevantes para la
+especialidad seleccionada. Lo habitual, sin embargo, es pretender afinar la
+búsqueda añadiendo correcciones a los datos que van eliminando aquellos que no interesan:</p>
+<img alt="../_images/filtros1.png" src="../_images/filtros1.png" />
+<img alt="../_images/filtros2.png" src="../_images/filtros2.png" />
+<img alt="../_images/filtros3.png" src="../_images/filtros3.png" />
+<p>Por defecto, todas las correcciones están deshabilitadas, por lo que aparecerán todos los
+datos disponibles sobre el mapa.</p>
+<dl class="docutils">
+<dt>Adjudicatario de referencia</dt>
+<dd><p class="first">Esta corrección permite establecer un adjudicatario de referencia (colectivo por el que
+participa, escalafón, si procede, y tiempo de servicio) y elimina de los centros todas
+las adjudicaciones que gozaran de mayor prelación en el procedimiento.</p>
+<div class="last admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Recuerde que si quiere hacer desaparecer los centros que queden sin
+adjudicaciones, deberá ir a <a class="reference internal" href="#panel-ajustes"><span class="std std-ref">ajustes</span></a> y habilitar la opción
+correspondiente.</p>
+</div>
+</dd>
+<dt>Bilingüismo</dt>
+<dd>Permite prescindir de las enseñanzas que no son bilingües en los idiomas seleccionados.
+Esta corrección, además, elimina todos las adjudicaciones a puestos que no sean del
+perfil bilingüe señalado. Fundamentalmente es útil para interinos que
+pertenecen a bolsas bilingües.</dd>
+<dt>Enseñanzas preferibles</dt>
+<dd><p class="first">Cada especialidad tiene asociadas unas enseñanzas preferibles que son las de
+Bachillerato para el caso de especialidades predominantemente de secundaria, y las
+de formación profesional para especialidades predominantemente de formación profesional.
+Por tanto, habilitar esta corrección para el caso de un profesor de <em>Inglés</em>, significa
+eliminar las enseñanzas de ESO del mapa y para un profesor de <em>Informática</em> eliminar
+todas las enseñanzas que no sean los cuatro ciclos formativos de esa familia profesional.
+Si se acompaña esta correccion con filtrar los centros sin oferta (a través del panel
+de ajustes), haremos desaparecer los centros que carecen de estas enseñanzas.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Para eliminar enseñanzas individualmente, existe otra corrección que se tratará
+más adelante.</p>
+</div>
+</dd>
+<dt>Turno</dt>
+<dd>Permite escoger centro antendiendo al turno de sus enseñanzas.</dd>
+</dl>
 </div>
 <div class="section" id="faq">
-<span id="id2"></span><h2>2.7. <abbr title="Frequently Asked Questions">FAQ</abbr><a class="headerlink" href="#faq" title="Enlazar permanentemente con este título">¶</a></h2>
+<span id="id4"></span><h2>2.7. <abbr title="Frequently Asked Questions">FAQ</abbr><a class="headerlink" href="#faq" title="Enlazar permanentemente con este título">¶</a></h2>
 <p class="rubric">Notas al pie</p>
-<table class="docutils footnote" frame="void" id="id3" rules="none">
+<table class="docutils footnote" frame="void" id="id5" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>La principal diferencia con otras herramientas como <a class="reference external" href="https://www.google.com">Google Maps</a> es que un doble click derecho sobre el mapa no
 aleja la vista, sino que apra ello hay que hacer doble click mientras se
 pulsa la tecla <kbd class="kbd docutils literal notranslate">Shift</kbd>.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>El limite de <strong>60</strong> minutos está impuesto por la <abbr title="Application Programming Interface">API</abbr> de
+<a class="reference external" href="https://openrouteservice.org">OpenRouteService</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>Excepcionalmente, el centro sin oferta apropiada puede aparecer si
+hubo una adjudicación propia de la especialidad.</td></tr>
 </tbody>
 </table>
 </div>

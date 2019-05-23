@@ -228,7 +228,7 @@ a los datos.</dd>
 <dd>Sistema que permite fijar criterios para hacer desaparecer (o volver a
 mostrar) marcas.</dd>
 </dl>
-<p class="rubric">¿Cuándo puede resultarme útil leafext.js?</p>
+<p class="rubric" id="dev-map-util">¿Cuándo puede resultarme útil leafext.js?</p>
 <p>La librería se torna útil cuando, dado un conjunto de datos a representar sobre
 un mapa:</p>
 <ol class="arabic simple">
@@ -1299,7 +1299,7 @@ directamente:</p>
 </div>
 </div></blockquote>
 <p>Una vez definida la clase, es posible modificar el estilo posteriormente:</p>
-<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">setFilter</span><span class="p">(</span><span class="nx">L</span><span class="p">.</span><span class="nx">utils</span><span class="p">.</span><span class="nx">grayFilter</span><span class="p">);</span>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">setFilterStyle</span><span class="p">(</span><span class="nx">layer</span><span class="p">);</span>  <span class="c1">// Volvemos a ocultar los centros filtrados.</span>
 </pre></div>
 </div>
 <p>En este caso, a diferencia de cuando se aplican filtros y correcciones, el

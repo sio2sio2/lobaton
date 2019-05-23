@@ -1245,8 +1245,13 @@ proporcionará el nuevo calor del atributo <a class="reference internal" href="#
 </dl>
 <dl class="docutils" id="adjofer-event-statuschange">
 <dt><em>statuschange</em></dt>
-<dd>Se desencadena siempre que se lleva a cabo una acción que provoca un cambio
-en el mapa desde crear un origen o cambiar de <em>zoom</em>.</dd>
+<dd><p class="first">Se desencadena siempre que se lleva a cabo una acción que provoca un cambio
+en el mapa desde crear un origen o cambiar de <em>zoom</em>. Para conocer cuál es la
+acción, puede consultarse el atributo <code class="docutils literal notranslate"><span class="pre">attr</span></code> del evento:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;statuschange&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`El culpable soy yo, </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">attr</span><span class="si">}</span><span class="sb">`</span><span class="p">));</span>
+</pre></div>
+</div>
+</dd>
 </dl>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>

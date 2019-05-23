@@ -1022,7 +1022,10 @@ realizan sobre el mapa:
 
 *statuschange*
    Se desencadena siempre que se lleva a cabo una acción que provoca un cambio
-   en el mapa desde crear un origen o cambiar de *zoom*.
+   en el mapa desde crear un origen o cambiar de *zoom*. Para conocer cuál es la
+   acción, puede consultarse el atributo ``attr`` del evento::
+
+      g.on("statuschange", e => console.log(`El culpable soy yo, ${e.attr}`));
 
 .. note:: Se enumeran exclusivamente los nuevos tipos de eventos que introduce
    el objeto ``MapAdjOfer``. Es obvio que para la creación de la interfaz visual

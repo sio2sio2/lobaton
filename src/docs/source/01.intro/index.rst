@@ -228,7 +228,7 @@ Corregir con el |CGT|
    del |CGT|. Algunas de estas correcciones (como postular si un funcionario irá
    a su destino definitivo o no) son meras especulaciones.
 
-.. _panel-filtros::
+.. _panel-filtros:
 
 Filtrado
 ========
