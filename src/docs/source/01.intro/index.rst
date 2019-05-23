@@ -120,7 +120,7 @@ Origen
    un origen de referencia.
 
 Ruta
-   Una ruta establece el camino entre el origen y un centro de destino
+   Una :dfn:`ruta` establece el camino entre el origen y un centro de destino
    arbitrario que puede o no coincidir con el seleccionado. Para crearla basta
    tener definido un origen y, una vez hecho, pinchar con el botón derecho sobre
    el centro de destino:
@@ -133,15 +133,51 @@ Ruta
    <panel-informacion>`.
 
 Isocronas
-   aa
+   Las :dfn:`isocronas`, esto es, líneas de igual tiempo, permiten calcular
+   respecto al origen, todos los puntos geográficos que se encuentran a una
+   misma distancia en espacio o tiempo. La aplicación generá automáticamente
+   las isocronas de 10 a 60 minutos\ [#]_ en intervalos de 10 minutos y colorea
+   de distinto color las áreas entre medias. Para crearlas no hay más que pulsar
+   con el botón derecho sobre el origen y seleccionadar la opción oportuna en
+   el menú contextual:
 
+   .. image:: files/isocronas.png
+
+   En la captura, la naranja es el área encerrada por la isocrona de 10
+   minutos, por lo que todos sus puntos se encontrarán a menos de ese tiempo del
+   origen que seleccionamos. Sobre los centros que quedan dentro o fuera de esas
+   áreas no podemos pronunciarnos taxativamente si se encuentran agrupados, ya que
+   al desagregarlos alguno puede viajar a un área continua. Por ejemplo, es
+   probable que alguno de los cuatro centros que aparentemente se encuentran a
+   menos de 20 minutos en la parte inferior caiga en el área siguiente, como
+   efectivamente ocurre:
+
+   .. image:: files/isocronas2.png
+
+   Si enmbargo, si aplicamos botón derecho sobre cualquiera de las áreas, la
+   aplicación nos brindará la posibilidad de elimianr los centros que queden
+   fuera de la isocronas correspondiente. Si hacemos tal acción sobre el área
+   violácea que representa limitada por la isocrona de 20 minutos:
+
+   .. image:: files/isocronas3.png
+
+   desaparecerán los centros más allá de esta isocrona y el áreas violácea
+   invadirá toda la superficie hasta el punto de origen. Los centros
+   supervivientes a la acción son los únicos centros que podemos asegurar que
+   se encuentran a menos de 20 minutos. Este filtro es el único que se aplica
+   interactuando directamente con el mapa y no a través del :ref:`panel
+   correspondiente <panel-filtros>` o el :ref:`panel de ajustes <panel-ajustes>`.
+   
+.. _panel-ajustes:
 
 Ajustes
 =======
 
 .. _datos-previos:
 
-Filtros
+.. _panel-filtros::
+
+Filtrdo
 =======
 
 .. _faq:
@@ -156,6 +192,10 @@ Filtros
    <https://www.google.com>`_ es que un doble click derecho sobre el mapa no
    aleja la vista, sino que apra ello hay que hacer doble click mientras se
    pulsa la tecla :kbd:`Shift`.
+.. [#] El limite de **60** minutos está impuesto por la |API| de
+   OpenRouteService_.
 
 .. |FAQ| replace:: :abbr:`FAQ (Frequently Asked Questions)`
 .. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
+.. |API| replace:: :abbr:`API (Application Programming Interface)`
+.. _OpenRouteService: https://openrouteservice.org
