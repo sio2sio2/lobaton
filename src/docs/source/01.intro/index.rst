@@ -54,6 +54,15 @@ En el mapa aparecerá dos tipos de iconos:
 - Los iconos que representan agrupaciones de centros y que dejan adivinar
   cuántos a través del número superpuesto que presentan.
 
+.. warning:: En el mapa no tienen por qué aparecer todos los centros públicos,
+   sino sólo aquellos que tienen enseñanzas relevantes para la especialidad
+   seleccionada. Por ese motivo, si se escoge la especialidad de *Matemáticas*,
+   aperecerán todos los centros de enseñanza secundaria. En cambio, si se escoge
+   la especilidad de *Informática* no aparecerán los centros que sólo dispongan de
+   |ESO|, ya que en la base de datos de la que se obtiene la información, esta
+   especialidad no está relacioanda con la |ESO|, puesto que lo habitual es que
+   no exista puesto en centros de estas características\ [#]_.
+
 .. note:: En el caso de dispositivos con un ancho de pantalla muy pequeño, como
    los teléfonos móviles en posición vertical, el panel lateral ocupa todo el
    espacio y no podrá verse el mapa hasta que no se repliegue la barra lateral.
@@ -172,13 +181,101 @@ Isocronas
 
 Ajustes
 =======
+El panel de ajustes permite modificar parte del comportamiento de la aplicación:
+
+.. image:: files/ajustes.png
+
+El significado de cada opción es el siguiente:
+
+Filtrar centros sin oferta
+   Filtra los centros que se han quedado sin oferta como consecuencia de las
+   correcciones a los datos que se hayan establecido (véase el próximo epígrafe).
+
+Filtrar centros sin adjudicación
+   Filtra los centros que se han quedado sin adjudicaciones como consecuencia
+   de las correcciones a los datos que se hayan establecido (véase el próximo
+   epígrafe).
 
 .. _datos-previos:
 
+Recordar el estado del mapa
+   Recuerda el estado del mapa entre sesiones. Esto significa que si cerramos
+   el navegador y volvernos a abrirlo, la aplicación cargará automáticamente
+   los datos, los filtros, las correcciones y presentará el mapa centro en el
+   mismo lugar y con el mismo nivel de *zoom*. Consecuentemente, la aplicación
+   quedará inicialmente en el mismo estado con que se cerró.
+
+Ocultar datos filtrados
+   Deshabilitada esta opción las enseñanzas y los adjudicaciones filtradas
+   aparecen en la información detallada del centro tachadas y con indicación
+   de cuál es la razón por la que se tacharon. Al habilitarla, tales enseñanzas
+   y adjudicaciones, simplemente, desaparecen.
+
+Mostrar (en gris) centros filtrados
+   Al quedar filtrado un centro, este desaparece del mapa. Si se habilita esta
+   opción, en vez de desaparecer aparecerá dibujado en gris. Se comportan
+   del mismo modo que los centros sin filtrar, salvo por el hecho de que el
+   número de la marca que representa centros agrupados no los tiene en cuenta.
+
+Incluir vacantes telefónicas
+   La base de la información contenida en el mapa es la resolución del procedimiento
+   de colocación de efectivos que se celebra en verano. Al habilitar esta opción,
+   se añaden a la información de los centros las vacantes que siempre aparecen en
+   septiembre, y que no salieron a concurso en julio.
+
+Corregir con el |CGT|
+   Añade correcciones a las adjudicaciones del procedimiento que generan los resultados
+   del |CGT|. Algunas de estas correcciones (como postular si un funcionario irá
+   a su destino definitivo o no) son meras especulaciones.
+
 .. _panel-filtros::
 
-Filtrdo
-=======
+Filtrado
+========
+La carga de datos (si no se procede de la recuperación de un estado anterior) presenta
+todos los centros posibles, todas las enseñanzas y puestos relevantes para la
+especialidad seleccionada. Lo habitual, sin embargo, es pretender afinar la
+búsqueda añadiendo correcciones a los datos que van eliminando aquellos que no interesan:
+
+.. image:: files/filtros1.png
+
+.. image:: files/filtros2.png
+
+.. image:: files/filtros3.png
+
+Por defecto, todas las correcciones están deshabilitadas, por lo que aparecerán todos los
+datos disponibles sobre el mapa.
+
+Adjudicatario de referencia
+   Esta corrección permite establecer un adjudicatario de referencia (colectivo por el que
+   participa, escalafón, si procede, y tiempo de servicio) y elimina de los centros todas
+   las adjudicaciones que gozaran de mayor prelación en el procedimiento.
+
+   .. warning:: Recuerde que si quiere hacer desaparecer los centros que queden sin
+      adjudicaciones, deberá ir a :ref:`ajustes <panel-ajustes>` y habilitar la opción
+      correspondiente.
+
+Bilingüismo
+   Permite prescindir de las enseñanzas que no son bilingües en los idiomas seleccionados.
+   Esta corrección, además, elimina todos las adjudicaciones a puestos que no sean del
+   perfil bilingüe señalado. Fundamentalmente es útil para interinos que
+   pertenecen a bolsas bilingües.
+
+Enseñanzas preferibles
+   Cada especialidad tiene asociadas unas enseñanzas preferibles que son las de
+   Bachillerato para el caso de especialidades predominantemente de secundaria, y las
+   de formación profesional para especialidades predominantemente de formación profesional.
+   Por tanto, habilitar esta corrección para el caso de un profesor de *Inglés*, significa
+   eliminar las enseñanzas de ESO del mapa y para un profesor de *Informática* eliminar
+   todas las enseñanzas que no sean los cuatro ciclos formativos de esa familia profesional.
+   Si se acompaña esta correccion con filtrar los centros sin oferta (a través del panel
+   de ajustes), haremos desaparecer los centros que carecen de estas enseñanzas.
+
+   .. note:: Para eliminar enseñanzas individualmente, existe otra corrección que se tratará
+      más adelante.
+
+Turno
+   Permite escoger centro antendiendo al turno de sus enseñanzas. 
 
 .. _faq:
 
@@ -194,8 +291,12 @@ Filtrdo
    pulsa la tecla :kbd:`Shift`.
 .. [#] El limite de **60** minutos está impuesto por la |API| de
    OpenRouteService_.
+.. [#] Excepcionalmente, el centro sin oferta apropiada puede aparecer si
+   hubo una adjudicación propia de la especialidad.
 
 .. |FAQ| replace:: :abbr:`FAQ (Frequently Asked Questions)`
 .. |URL| replace:: :abbr:`URL (Uniform Resource Locator)`
 .. |API| replace:: :abbr:`API (Application Programming Interface)`
+.. |ESO| replace:: :abbr:`ESO (Enseñanza Secundaria Obligatoria)`
+.. |CGT| replace:: :abbr:`CGT (Concurso General de Traslados)`
 .. _OpenRouteService: https://openrouteservice.org

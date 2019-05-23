@@ -1128,7 +1128,7 @@ ello podemos usar dos valores alternativos para la opción:
    
 Una vez definida la clase, es posible modificar el estilo posteriormente::
 
-   Centro.setFilter(L.utils.grayFilter);
+   Centro.setFilterStyle(layer);  // Volvemos a ocultar los centros filtrados.
 
 En este caso, a diferencia de cuando se aplican filtros y correcciones, el
 redibujado de marca se hace automáticamente.
