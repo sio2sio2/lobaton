@@ -16,8 +16,7 @@ Se caracteriza por:
 + Reflejar sobre el aspecto de los iconos la aplicación de tales filtros y
   correcciones.
 
-La aplicación corre enteramente en el navegador cliente, de suerte que no
-no se procesa información alguna en el servidor web.
+La aplicación corre enteramente en el navegador cliente.
 
 Uso
 ***
@@ -141,6 +140,8 @@ Ruta
    esa misma información puede obtenerse del :ref:`panel de información
    <panel-informacion>`.
 
+.. _isocronas:
+
 Isocronas
    Las :dfn:`isocronas`, esto es, líneas de igual tiempo, permiten calcular
    respecto al origen, todos los puntos geográficos que se encuentran a una
@@ -239,10 +240,6 @@ búsqueda añadiendo correcciones a los datos que van eliminando aquellos que no
 
 .. image:: files/filtros1.png
 
-.. image:: files/filtros2.png
-
-.. image:: files/filtros3.png
-
 Por defecto, todas las correcciones están deshabilitadas, por lo que aparecerán todos los
 datos disponibles sobre el mapa.
 
@@ -251,9 +248,13 @@ Adjudicatario de referencia
    participa, escalafón, si procede, y tiempo de servicio) y elimina de los centros todas
    las adjudicaciones que gozaran de mayor prelación en el procedimiento.
 
-   .. warning:: Recuerde que si quiere hacer desaparecer los centros que queden sin
+   .. note:: Recuerde que si quiere hacer desaparecer los centros que queden sin
       adjudicaciones, deberá ir a :ref:`ajustes <panel-ajustes>` y habilitar la opción
       correspondiente.
+
+   .. warning:: Por un defecto en el diseño de la base de datos, de los
+      funcionarios no interinos, no se almacena el tiempo de servicio, de modo
+      que si no es interino, rellene sólo el escalafón.
 
 Bilingüismo
    Permite prescindir de las enseñanzas que no son bilingües en los idiomas seleccionados.
@@ -274,13 +275,91 @@ Enseñanzas preferibles
    .. note:: Para eliminar enseñanzas individualmente, existe otra corrección que se tratará
       más adelante.
 
+.. image:: files/filtros2.png
+
 Turno
-   Permite escoger centro antendiendo al turno de sus enseñanzas. 
+   Permite escoger centro antendiendo al turno de sus enseñanzas:
+
+   * El primer ítem permite eliminar enseñanzas de mañana que si se acompaña con
+     el filtro que elimina centros sin oferta (en ajustes), mostrará en pantalla
+     exclusivamente los centros con enseñanzas de tarde relevantes para nuestra
+     especialidad.
+  
+   * El segundo ítem filtra los centros que tengan alguna enseñanza de tarde,
+     por lo que es útil si no nos interesa correr el riesgo de trabajar en este
+     turno.
+
+   Ambos ítem son incompatibles por lo que si se habilita uno se deshabilitara
+   él otro
+
+Plan de compensación
+   Este filtro permite eliminar centros dependiendo de si es un centro com
+   compensatoria, un centro con difícil desempeño o un centro normal.
+
+.. image:: files/filtros3.png
+
+Puestos
+   La corrección permite eliminar individualmente las adjudicaciones a los
+   puestos que se marquen. Si algún puesto específico no interesa, es
+   conveniente marcarlo aquí.
+
+Enseñanzas
+   Permite eliminar individualmente enseñanzas que no interesen.
 
 .. _faq:
 
 |FAQ|
 =====
+
+#. **Llevo cuarenta minutos pinchando centro a centro en la ciudad de Sevilla y
+   sus alrededores para saber si podría pillar plaza por allí, ¿estoy haciendo
+   el tonto?**
+
+   Mayúsculamente. Para saberlo de un vistazo basta con lo siguiente:
+
+   a. En **ajustes** debe:
+
+      + Marcarse "*Filtrar centros sin adjudicaciones*"
+      + Cerciorarse de que no está marcado "*Mostrar (en gris) centros filtrados*".
+      + Cerciosarse de que no está marcado "*Incluir vacantes telefónicas*"
+        (porque esas vacantes no se adjudicaron en verano).
+
+   b. En **filtrado**:
+
+      + Utilice el filtro "*Adjudicatario de referencia*" poniendo sus propios
+        datos: el colectivo por el que participa y su tiempo de servicio
+        (interino) o escalafón (resto de funcionarios).
+
+   Listo. Deberían pervivir en el mapa sólo los centros en que en el pasado
+   procedimiento pudieron adjudicarle puesto.
+
+   .. note:: También puede probar a poner su tiempo de servicio con un año más.
+      A fin de cuentas, esas son las condiciones con las que particpará este
+      años.
+
+#. **Mi prioridad es dormir en casa, ¿cómo elimino centros que estén muy lejos?**
+
+   Usando :ref:`las isocronas <isocronas>`.
+
+#. **Soy interino bilingüe y no me interesan ni las enseñanzas no bilingües ni
+   los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
+   inútil?**
+
+   Sí hay forma. Habiendo aprendido la *latín* que, en este caso, consistía en:
+
+   + Cerciorarse de que en **ajustes** está marcada la opción "*Filtrar centros
+     sin oferta*".
+   + Elegir en **filtrado** la enseñanza bilingüe correspondiente.
+
+#. **¿Qué fiabilidad tiene esto?**
+
+   Ninguna: "Rentabilidades pasadas no garantizan rentabilidades futuras". Esto
+   es lo mismo, pero sin apropiarse en el ínterin de dinero alguno.
+
+
+.. raw:: html
+
+   <blockquote lang="la" style="text-align: right">Pro bono malum.</blockquote>
 
 
 .. rubric:: Notas al pie

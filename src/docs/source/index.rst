@@ -13,10 +13,3 @@ Dónde está Lobatón
 
 * `Mapa de consulta <http://geo.iescdl.es>`_
 * `Repositorio en github <https://github.com/sio2sio2/lobaton>`_
-
-Índices y tablas
-================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
