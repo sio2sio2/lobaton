@@ -46,7 +46,7 @@ recogerá la barra lateral:
 
 .. image:: files/cargados.png
 
-En el mapa aparecerá dos tipos de iconos:
+En el mapa aparecerán dos tipos de iconos:
 
 - Los iconos que representa centros individuales como el icono que se deja
   entrever en la esquina superior derecha de la captura.
@@ -62,9 +62,9 @@ En el mapa aparecerá dos tipos de iconos:
    especialidad no está relacioanda con la |ESO|, puesto que lo habitual es que
    no exista puesto en centros de estas características\ [#]_.
 
-.. note:: En el caso de dispositivos con un ancho de pantalla muy pequeño, como
-   los teléfonos móviles en posición vertical, el panel lateral ocupa todo el
-   espacio y no podrá verse el mapa hasta que no se repliegue la barra lateral.
+.. note:: En el caso de dispositivos con un ancho de pantalla muy pequeño en
+   posición vertical, como los teléfonos móviles, el panel lateral ocupa todo el
+   espacio y no podrá verse el mapa hasta que no se repliegue éste.
 
 Selección de centro
 ===================
@@ -96,9 +96,9 @@ presenta información sustanciosa sobre el propio mapa:
 + Una segunda sección de estadísticas con mero carácter informativo.
 
 + Una tercera sección que muestra cuáles son las entidades geográficas que hemos
-  definido definido sobre el mapa y que no da pistas de cuál es la siguiente
-  acción que debemos llevar a cabo para crearlas. A ellas dedicaremos el
-  siguiente epígrafe.
+  definido sobre el mapa y que no da pistas de cuál es la siguiente acción que
+  debemos llevar a cabo para crearlas. A ellas dedicaremos el siguiente
+  epígrafe.
 
 .. image:: files/info1.png
 
@@ -148,7 +148,7 @@ Isocronas
    misma distancia en espacio o tiempo. La aplicación generá automáticamente
    las isocronas de 10 a 60 minutos\ [#]_ en intervalos de 10 minutos y colorea
    de distinto color las áreas entre medias. Para crearlas no hay más que pulsar
-   con el botón derecho sobre el origen y seleccionadar la opción oportuna en
+   con el botón derecho sobre el origen y seleccionar la opción oportuna en
    el menú contextual:
 
    .. image:: files/isocronas.png
@@ -166,7 +166,7 @@ Isocronas
 
    Si enmbargo, si aplicamos botón derecho sobre cualquiera de las áreas, la
    aplicación nos brindará la posibilidad de elimianr los centros que queden
-   fuera de la isocronas correspondiente. Si hacemos tal acción sobre el área
+   fuera de la isocrona correspondiente. Si hacemos tal acción sobre el área
    violácea que representa limitada por la isocrona de 20 minutos:
 
    .. image:: files/isocronas3.png
@@ -202,7 +202,7 @@ Filtrar centros sin adjudicación
 Recordar el estado del mapa
    Recuerda el estado del mapa entre sesiones. Esto significa que si cerramos
    el navegador y volvernos a abrirlo, la aplicación cargará automáticamente
-   los datos, los filtros, las correcciones y presentará el mapa centro en el
+   los datos, los filtros, las correcciones y presentará el mapa centrado en el
    mismo lugar y con el mismo nivel de *zoom*. Consecuentemente, la aplicación
    quedará inicialmente en el mismo estado con que se cerró.
 
@@ -233,10 +233,11 @@ Corregir con el |CGT|
 
 Filtrado
 ========
-La carga de datos (si no se procede de la recuperación de un estado anterior) presenta
-todos los centros posibles, todas las enseñanzas y puestos relevantes para la
-especialidad seleccionada. Lo habitual, sin embargo, es pretender afinar la
-búsqueda añadiendo correcciones a los datos que van eliminando aquellos que no interesan:
+La carga de datos (si no se procede de la recuperación de un estado anterior)
+presenta todos los centros posibles, y todas las enseñanzas y puestos
+relevantes para la especialidad seleccionada. Lo habitual, sin embargo, es
+afinar la búsqueda añadiendo correcciones a los datos para deshacerse de
+aquellos que no interesan:
 
 .. image:: files/filtros1.png
 
@@ -268,9 +269,9 @@ Enseñanzas preferibles
    de formación profesional para especialidades predominantemente de formación profesional.
    Por tanto, habilitar esta corrección para el caso de un profesor de *Inglés*, significa
    eliminar las enseñanzas de ESO del mapa y para un profesor de *Informática* eliminar
-   todas las enseñanzas que no sean los cuatro ciclos formativos de esa familia profesional.
+   todas las enseñanzas que no sean los cuatro ciclos formativos de su familia profesional.
    Si se acompaña esta correccion con filtrar los centros sin oferta (a través del panel
-   de ajustes), haremos desaparecer los centros que carecen de estas enseñanzas.
+   de :ref:`ajustes <panel-ajustes>`), haremos desaparecer los centros que carecen de estas enseñanzas.
 
    .. note:: Para eliminar enseñanzas individualmente, existe otra corrección que se tratará
       más adelante.
@@ -281,10 +282,10 @@ Turno
    Permite escoger centro antendiendo al turno de sus enseñanzas:
 
    * El primer ítem permite eliminar enseñanzas de mañana que si se acompaña con
-     el filtro que elimina centros sin oferta (en ajustes), mostrará en pantalla
-     exclusivamente los centros con enseñanzas de tarde relevantes para nuestra
-     especialidad.
-  
+     el filtro que elimina centros sin oferta (en :ref:`ajustes
+     <panel-ajustes>`), mostrará en pantalla exclusivamente los centros con
+     enseñanzas de tarde relevantes para nuestra especialidad.
+
    * El segundo ítem filtra los centros que tengan alguna enseñanza de tarde,
      por lo que es útil si no nos interesa correr el riesgo de trabajar en este
      turno.
@@ -293,8 +294,8 @@ Turno
    él otro
 
 Plan de compensación
-   Este filtro permite eliminar centros dependiendo de si es un centro com
-   compensatoria, un centro con difícil desempeño o un centro normal.
+   Este filtro permite eliminar centros dependiendo de si es un centro con
+   compensatoria, un centro de difícil desempeño o un centro normal.
 
 Vacantes telefónicas
    Elimina las adjudicaciones que se produjeron en el procedimiento de verano.
@@ -348,6 +349,11 @@ Enseñanzas
 
    Usando :ref:`las isocronas <isocronas>`.
 
+#. **Me interesan centros que estén alejados hasta una hora y media de mi casa,
+   pero la aplicación sólo genera hasta la isocrona de 60 minutos. ¿Qué hago?**
+
+   `Esperar sentado <https://openrouteservice.org/restrictions/>`_.
+
 #. **Soy interino bilingüe y no me interesan ni las enseñanzas no bilingües ni
    los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
    inútil?**
@@ -374,18 +380,38 @@ Enseñanzas
    #. En :ref:`filtrado <panel-filtros>`, aplique la corrección  "*Vacantes
       telefónicas*".
 
-#. **¿Por qué en :ref:`ajustes <panel-ajustes>` no puedo incluir las vacantes
+#. **¿Por qué en** :ref:`ajustes <panel-ajustes>` **no puedo incluir las vacantes
    telefónicas o las correcciones del concurso?**
 
    Porque los datos no incorporan información sobre las unas, sobre el otro o
    sobre ambos. Échele un vistazo al :ref:`panel de información
    <panel-informacion>`.
 
+#. **El programa tiene un bug, ha dejado de funcionar correctamete, pero por
+   más que abro y cierro el navegador, no consigo limpiar el mapa y empezar de nuevo.
+   ¿Qué hago?**
+
+   En :ref:`ajustes <panel-ajustes>` desmarque la opción "*Recordar el estado
+   del mapa*"; y, por supuesto, procure reproducir el fallo y advertir de él
+   a los desarrolladores para que lo subsanen.
+
+#. **¿Puedo usar ilimitadamente el mapa?**
+
+   Evidentemente, sí, pero no debería. No hay limitación en la visita al mapa,
+   ni en la consulta de la información de los centros o en la aplicación o
+   remoción de filtros y correcciones a los datos; pero las isocronas, el
+   cálculo de rutas y la obtención de la dirección postal del origen usan la
+   |API| de OpenRouteService_ que sí tiene `restricciones al uso
+   <https://openrouteservice.org/plans/>`_. En la sección de estadísticas del
+   :ref:`panel de información <panel-informacion>` hay un contador con las
+   consultas que hemos hecho durante la sesión a la |API| de OpenRouteService_.
+   Moderarse en el uso de estas consultas es conveniente para que no se alcance
+   la limitación diaria.
+
 #. **¿Qué fiabilidad tiene esto?**
 
    Ninguna: "Rentabilidades pasadas no garantizan rentabilidades futuras". Esto
    es lo mismo, pero sin apropiarse en el ínterin de dinero alguno.
-
 
 .. raw:: html
 

@@ -349,6 +349,11 @@ Enseñanzas
 
    Usando :ref:`las isocronas <isocronas>`.
 
+#. **Me interesan centros que estén alejados hasta una hora y media de mi casa,
+   pero la aplicación sólo genera hasta la isocrona de 60 minutos. ¿Qué hago?**
+
+   `Esperar sentado <https://openrouteservice.org/restrictions/>`_.
+
 #. **Soy interino bilingüe y no me interesan ni las enseñanzas no bilingües ni
    los puestos de la bolsa normal, ¿tengo forma de eliminar toda la información
    inútil?**
@@ -389,6 +394,19 @@ Enseñanzas
    En :ref:`ajustes <panel-ajustes>` desmarque la opción "*Recordar el estado
    del mapa*"; y, por supuesto, procure reproducir el fallo y advertir de él
    a los desarrolladores para que lo subsanen.
+
+#. **¿Puedo usar ilimitadamente el mapa?**
+
+   Evidentemente, sí, pero no debería. No hay limitación en la visita al mapa,
+   ni en la consulta de la información de los centros o en la aplicación o
+   remoción de filtros y correcciones a los datos; pero las isocronas, el
+   cálculo de rutas y la obtención de la dirección postal del origen usan la
+   |API| de OpenRouteService_ que sí tiene `restricciones al uso
+   <https://openrouteservice.org/plans/>`_. En la sección de estadísticas del
+   :ref:`panel de información <panel-informacion>` hay un contador con las
+   consultas que hemos hecho durante la sesión a la |API| de OpenRouteService_.
+   Moderarse en el uso de estas consultas es conveniente para que no se alcance
+   la limitación diaria.
 
 #. **¿Qué fiabilidad tiene esto?**
 
