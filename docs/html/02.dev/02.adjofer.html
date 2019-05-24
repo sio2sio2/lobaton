@@ -1,0 +1,1323 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="es" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="es" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3.2. Mapa de oferta y adjudicaciones &mdash; documentación de Lobatón - 0.1.0</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" />
+    <link rel="prev" title="3.1. Creación de mapas" href="01.map.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Lobatón
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html">1. ¿Qué es Lobatón?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../01.intro/index.html#uso">2. Uso</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">3. Documentación de desarrollo</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="01.map.html">3.1. Creación de mapas</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3.2. Mapa de oferta y adjudicaciones</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#caracteristicas">3.2.1. Características</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requisitos">3.2.2. Requisitos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#datos">3.2.3. Datos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creacion-del-objeto">3.2.4. Creación del objeto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atributos">3.2.5. Atributos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#metodos">3.2.6. Métodos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#correcciones">3.2.7. Correcciones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtros">3.2.8. Filtros</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#eventos">3.2.9. Eventos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Lobatón</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">3. Documentación de desarrollo</a> &raquo;</li>
+        
+      <li>3.2. Mapa de oferta y adjudicaciones</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/02.dev/02.adjofer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mapa-de-oferta-y-adjudicaciones">
+<h1>3.2. Mapa de oferta y adjudicaciones<a class="headerlink" href="#mapa-de-oferta-y-adjudicaciones" title="Enlazar permanentemente con este título">¶</a></h1>
+<p>La aplicación utiliza <code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> para desarrollar un objeto que
+implemente un mapa de adjudicaciones provisionales y oferta educativa. Tal
+desarrollo se encuentra dentro del directorio <code class="file docutils literal notranslate"><span class="pre">dist/adjofer/maps</span></code> y el
+epígrafe esta dedicado a describir cómo usar tal objeto para construir una
+interfaz visual para ese mapa.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Se presupondrá que el desarrollador está familiarizado con el uso
+de la librería <a class="reference external" href="https://leafletjs.com/">Leaflet</a>.</p>
+</div>
+<div class="section" id="caracteristicas">
+<h2>3.2.1. Características<a class="headerlink" href="#caracteristicas" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>El objeto posibilita:</p>
+<ul class="simple">
+<li>Disponer sobre el mapa marcas que representas centros educativos y cuyo
+aspecto despende de su oferta educativa, sus planes de bilinguismo, su tipo y
+sus adjudicaciones.</li>
+<li>Agrupar marcas usando el plugin <a class="reference external" href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.MarkerCluster</a>.</li>
+<li>Realizar <a class="reference internal" href="#adjofer-corr"><span class="std std-ref">correcciones</span></a> sobre las adjudicaciones y la
+oferta educativa.</li>
+<li>Aplicar distintos <a class="reference internal" href="#adjofer-filtros"><span class="std std-ref">filtros</span></a> predefinidos.</li>
+<li>Utilizar distintos estilos para los iconos que representan centros.</li>
+<li>Definir un origen de viajes.</li>
+<li>Consultar la ruta entre el origen y cualquier centro.</li>
+<li>Definir con respecto al origen las isocronas de 10, 20, 30, 40, 50 y 60
+minutos.</li>
+</ul>
+</div>
+<div class="section" id="requisitos">
+<h2>3.2.2. Requisitos<a class="headerlink" href="#requisitos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>En el documento <abbr title="HyperText Markup Language">HTML</abbr> es necesario cargar una serie de <em>scripts</em> y hojas de
+estilo:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!-- Leaflet --&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet@1.4.0/dist/leaflet.css&quot;</span>
+      <span class="na">integrity</span><span class="o">=</span><span class="s">&quot;sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==&quot;</span>
+      <span class="na">crossorigin</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet@1.4.0/dist/leaflet.js&quot;</span>
+         <span class="na">integrity</span><span class="o">=</span><span class="s">&quot;sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==&quot;</span>
+         <span class="na">crossorigin</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Plugin: Añade botón para maximizar el mapa --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js&#39;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css&#39;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Plugin: Agrupa marcas contiguas --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css&quot;</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Plugin: Menu contextual con el botón derecho --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://aratcliffe.github.io/Leaflet.contextmenu/dist/leaflet.contextmenu.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://aratcliffe.github.io/Leaflet.contextmenu/dist/leaflet.contextmenu.css&quot;</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Librería turf: necesaria para isocronas --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;https://npmcdn.com/@turf/turf/turf.min.js&#39;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Plugin: Leaflet Control Search --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.min.css&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;alternate stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/leaflet-search@2.4.0/dist/leaflet-search.mobile.min.css&quot;</span><span class="p">&gt;</span>
+<span class="c">&lt;!-- Fuse.js: Fuzzy-search --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://cdnjs.cloudflare.com/ajax/libs/fuse.js/1.2.2/fuse.min.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>A esta dependencias habría que añadir los scripts propios del mapa:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!-- Extensión para el soporte de iconos mutables --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;../../dist/leafext.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- Particularidades de esta página --&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;../../dist/maps/adjofer/map.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;scripts/demo.visual.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;../../dist/maps/adjofer/css/adjofer.css&quot;</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="datos">
+<span id="adjofer-datos"></span><h2>3.2.3. Datos<a class="headerlink" href="#datos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Los datos se facilitan en un formato <a class="reference external" href="https://geojson.org/">GeoJSON</a> en que la primera <em>feature</em>
+describe aspectos generales de los datos suministrados (p.e. qué nombre se
+corresponde con cada código de puesto) y cada una de las restantes <em>features</em>
+se corresponde con los datos relevantes de un centro.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+   <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;curso&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;tipo&quot;</span><span class="p">:</span> <span class="s2">&quot;adjoferta&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;objetivo&quot;</span><span class="p">:</span> <span class="s2">&quot;especialidad&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;entidad&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="mi">590107</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;spider&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;cgt&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+               <span class="nt">&quot;vt&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+               <span class="nt">&quot;organica&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ofertafp&quot;</span><span class="p">:</span> <span class="s2">&quot;2018\/19&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ofertasec&quot;</span><span class="p">:</span> <span class="s2">&quot;2019\/20&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;limite&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;00590059&quot;</span><span class="p">:</span> <span class="s2">&quot;APOYO AL ÁREA CIENTÍFICA O TECNOLÓGICA&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;00590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática P.E.S&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;11590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Inglés) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;CI590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Nueva implantación) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;DU590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Dual) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;ED590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (IEDA) P.E.S.&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;SP590107&quot;</span><span class="p">:</span> <span class="s2">&quot;Informática (Semipresencial) P.E.S.&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;colectivos&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;B&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Suprimido&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;C&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Desplazado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;N&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;ExDirector&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;E&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Adscrito&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;F&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Reingresado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DA&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;SaludPropia&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DB&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Conciliación&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DC&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;CargoElecto&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;G&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Provisional&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;PueEspec&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;H&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;EnPracticas&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;I&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Aprobado&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;DZ&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;InterCom&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;J&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;o&quot;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
+                  <span class="nt">&quot;v&quot;</span><span class="p">:</span> <span class="s2">&quot;Interino&quot;</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;23GMSMR168&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Sistemas Microinformáticos y Redes&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGM&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSASI820&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Administración de Sistemas Informáticos en Red&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSDA859&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Desarrollo de Aplicaciones Web&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;23GSDAM517&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Desarrollo de Aplicaciones Multiplataforma&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;grado&quot;</span><span class="p">:</span> <span class="s2">&quot;CFGS&quot;</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BAE&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Artes Escénicas&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BAP&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Artes Plásticas&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BCT&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Ciencias&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">},</span>
+               <span class="nt">&quot;BHCS&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;nombre&quot;</span><span class="p">:</span> <span class="s2">&quot;Bachillerato de Humanidades y Ciencias Sociales&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;puestos&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;11590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;CI590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;DU590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;ED590107&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;SP590107&quot;</span>
+                  <span class="p">]</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mf">0.2</span>
+         <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+         <span class="nt">&quot;geometry&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;coordinates&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="mf">-3.0248339999999998</span><span class="p">,</span>
+               <span class="mf">36.746941</span>
+            <span class="p">]</span>
+         <span class="p">},</span>
+         <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;cod&quot;</span><span class="p">:</span> <span class="mi">4000110</span><span class="p">,</span>
+               <span class="nt">&quot;nom&quot;</span><span class="p">:</span> <span class="s2">&quot;I.E.S. Abdera&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;dom&quot;</span><span class="p">:</span> <span class="s2">&quot;C\/ Marisma, 6&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;mun&quot;</span><span class="p">:</span> <span class="s2">&quot;Adra&quot;</span><span class="p">,</span>
+               <span class="nt">&quot;cp&quot;</span><span class="p">:</span> <span class="mi">4770</span><span class="p">,</span>
+               <span class="nt">&quot;pro&quot;</span><span class="p">:</span> <span class="s2">&quot;Almeria&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;oferta&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BHCS&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;semi&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BHCS&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;BCT&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;ens&quot;</span><span class="p">:</span> <span class="s2">&quot;23GSDA859&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="s2">&quot;pres&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;idi&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;adu&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ext&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ene&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;nue&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="nt">&quot;tur&quot;</span><span class="p">:</span> <span class="s2">&quot;matutino&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esp&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;pla&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                  <span class="nt">&quot;pro&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;mar&quot;</span><span class="p">:</span> <span class="kc">true</span>
+               <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;mod&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;bil&quot;</span><span class="p">:</span> <span class="p">[</span>
+                  <span class="mi">11</span>
+               <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;pla&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="nt">&quot;00590107&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="nt">&quot;fun&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;org&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                  <span class="nt">&quot;norg&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+                  <span class="nt">&quot;vi&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="nt">&quot;vt&quot;</span><span class="p">:</span> <span class="mi">0</span>
+               <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;adj&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;col&quot;</span><span class="p">:</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esc&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="mi">2</span><span class="p">,</span>
+                     <span class="mi">9</span><span class="p">,</span>
+                     <span class="mi">7</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;pue&quot;</span><span class="p">:</span> <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;pet&quot;</span><span class="p">:</span> <span class="s2">&quot;15&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;per&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ubi&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">},</span>
+               <span class="p">{</span>
+                  <span class="nt">&quot;col&quot;</span><span class="p">:</span> <span class="s2">&quot;J&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;esc&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="mi">1</span><span class="p">,</span>
+                     <span class="mi">7</span><span class="p">,</span>
+                     <span class="mi">6</span>
+                  <span class="p">],</span>
+                  <span class="nt">&quot;pue&quot;</span><span class="p">:</span> <span class="s2">&quot;00590107&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;pet&quot;</span><span class="p">:</span> <span class="s2">&quot;7&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;per&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                  <span class="nt">&quot;ubi&quot;</span><span class="p">:</span> <span class="kc">false</span>
+               <span class="p">}</span>
+            <span class="p">]</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+   <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Algunas apuntes clave para entender los datos son:</p>
+<ul class="simple">
+<li>La «<em>o</em>» en los colectivos representa el orden de prelación de cada colectivo.
+Cuanto menor sea, mayor será la prelación. El dato es útil para la corrección
+<a class="reference internal" href="#adjofer-correct-adjref"><span class="std std-ref">adjref</span></a>.</li>
+<li>Las características de cada enseñanza son las siguientes:<ul>
+<li><em>ens</em>, código de la enseñanza.</li>
+<li><em>mod</em>, modalidad de enseñanza que puede ser <em>pres</em> (presencial),
+<em>semi</em> (semipresencial) y <em>dist</em> (a distancia).</li>
+<li><em>idi</em>, idioma (Inglés, Francés o Alemán).</li>
+<li><em>adu</em>, enseñanza de adultos.</li>
+<li><em>ext</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, si la enseñanza se extinguió y el curso presente ya no existe.</li>
+<li><em>ene</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code>, en extinción, pero sigue aún existiendo.</li>
+<li><em>nue</em>, nueva implantación: <strong>1</strong>, en primer año; <strong>2</strong>, en segundo año;
+<strong>0</strong>, no es una nueva enseñanza.</li>
+<li><em>mar</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si la enseñanza es deseable.</li>
+<li><em>tur</em>, que puede ser <em>matutino</em>, <em>vespertino</em> o <em>ambos</em>. Sólo aparece en
+enseñanzas de formación profesional. En las enseñanzas de secundaria y
+bachillerato, se sobreentiende que la enseñanza de adultos es por la tarde.</li>
+<li><em>esp</em>, <em>especial</em> que puede ser «<em>parcial</em>», «<em>dual</em>»</li>
+<li><em>pla</em>, número de plazas (F.P.).</li>
+<li><em>aum</em>, que representa la variación de plazas y puede ser un número positivo
+o negativo.</li>
+<li><em>pro</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si es un programa específico de formación profesional.</li>
+</ul>
+</li>
+<li>Las características de cada adjudicación son las siguientes:<ul>
+<li><em>col</em>, letra que representa al colectivo.</li>
+<li><em>esc</em>, escalafón o tiempo de servicio, si es funcionario interino.</li>
+<li><em>pue</em>, puesto de adjudicación.</li>
+<li><em>pet</em>, número de petición.</li>
+<li><em>per</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si la vacante se adjudicó en el concurso de traslados y,
+consecuentemente, no estará disponible más en el procedimiento.</li>
+<li><em>ubi</em>, <code class="docutils literal notranslate"><span class="pre">true</span></code> si el funcionario obtuvo plaza en el concurso de traslados y,
+en principio, no volverá a ocupar esa plaza.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="creacion-del-objeto">
+<span id="crea-mapadjofer"></span><h2>3.2.4. Creación del objeto<a class="headerlink" href="#creacion-del-objeto" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>La primera acción para disponer del mapa es contruir el objeto y almacenarlo en
+una variable que sea accesible desde el resto del código.</p>
+<dl class="function">
+<dt id="mapAdjOfer">
+<code class="descname">mapAdjOfer</code><span class="sig-paren">(</span><em>path</em>, <em>opts</em><span class="sig-paren">)</span><a class="headerlink" href="#mapAdjOfer" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>La función permite contruir un objeto de tipp <code class="docutils literal notranslate"><span class="pre">MapAdjOfer</span></code> que será el
+que nos permita crear e interactuar con el mapa:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">g</span> <span class="o">=</span> <span class="nx">mapAdjOfer</span><span class="p">(</span><span class="s2">&quot;../../dist&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">zoom</span><span class="o">:</span> <span class="mi">8</span><span class="p">,</span>
+   <span class="nx">center</span><span class="o">:</span> <span class="p">[</span><span class="mf">37.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">],</span>
+   <span class="nx">ors</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">key</span><span class="o">:</span> <span class="s2">&quot;xxxxx&quot;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>Los parámerros necesarios son:</p>
+<ul>
+<li><p class="first">La ruta relativa al directorio donde se encuentre la aplicación.</p>
+</li>
+<li><p class="first">Un objeto con las opciones de constitución del objeto. Estas opciones
+pueden ser:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">id</span></code></dt>
+<dd><p class="first last">Identificador del elemento <abbr title="HyperText Markup Language">HTML</abbr> donde se empotrará el mapa. Por defecto,
+«<em>map</em>».</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">light</span></code></dt>
+<dd><p class="first">Si <code class="docutils literal notranslate"><span class="pre">true</span></code>, implementa algunos aspectos del comportamiento del mapa:</p>
+<ul class="simple">
+<li><em>Click</em> sobre el centro, lo selecciona.</li>
+<li>Crea menús contextuales al hacer <em>click</em> derecho sobre el mapa, la marca
+que representa el origen de los viajes, la marca de los centros y las
+áreas que encierran las isocronas.</li>
+</ul>
+<p class="last">Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">search</span></code></dt>
+<dd><p class="first last">Crea un cajetín para localizar centros por nombre. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">icon</span></code></dt>
+<dd><p class="first last">Estilo del icono. Puede ser «<em>boliche</em>» o «<em>chupachups</em>». Por defecto,
+<em>boliche</em>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">loading</span></code></dt>
+<dd><p class="first last">Función que construye un indicador para notar la carga de datos remotos.
+Si es <code class="docutils literal notranslate"><span class="pre">true</span></code>, usa el indicador interno; y si <code class="docutils literal notranslate"><span class="pre">false</span></code>, se prescindirá
+de indicador alguno. Valor predeterminado: <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">unclusterZoom</span></code></dt>
+<dd><blockquote class="first">
+<div><p>Zoom a partir del cual las marcas de centro se mostrarán siembre
+desagregadas. Por defecto, <strong>14</strong>.</p>
+</div></blockquote>
+<dl class="last docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">status</span></code></dt>
+<dd><p class="first last">Pasa un objeto de configuración del estado inicial codificado en base64.
+Su decodificación pasará a ser el valor inicial del atributo
+<a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">autostatus</span></code></dt>
+<dd><p class="first last">Aplica automáticamente la configuración proporcionada a través de la
+opción <code class="docutils literal notranslate"><span class="pre">status</span></code>. Por defecto, <code class="docutils literal notranslate"><span class="pre">true</span></code>. Véase el método
+<a class="reference internal" href="#setStatus" title="setStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setStatus()</span></code></a>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ors</span></code></dt>
+<dd><p class="first">Objeto que facilita las opciones para generar isocronas, crear rutas y
+geocodificar puntos utilizando la <abbr title="Application Programming Interface">API</abbr> de <a class="reference external" href="https://openrouteservice.org/">OpenRouteService</a>. Acepta
+los siguientes atributos:</p>
+<ul class="last simple">
+<li><code class="docutils literal notranslate"><span class="pre">key</span></code>: clave para el uso de la <abbr title="Application Programming Interface">API</abbr> <abbr title="Representational State Transfer">REST</abbr> de <a class="reference external" href="https://openrouteservice.org/">OpenRouteService</a>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">rutaPopup</span></code>: Función que construye el popup con información sobre
+la ruta generada. La función recibe como primer argumento la marca
+de origen, como segundo la marca del centro destino y como último
+argumento el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> que representa la ruta. También admite
+los valores <code class="docutils literal notranslate"><span class="pre">true</span></code> si se desea usar la función predefinida,
+o <code class="docutils literal notranslate"><span class="pre">false</span></code> si no desea mostrar <em>popup</em>. Valor predeterminado:
+<code class="docutils literal notranslate"><span class="pre">true</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">loading</span></code>: Tiene exactamente el mismo significado que la opción
+general. Su valor predeterminado es el que tenga la opción general.</li>
+<li><code class="docutils literal notranslate"><span class="pre">chunkProgress</span></code>: Función para mostrar el progreso en operaciones
+lentas (cálculo de isocronas). Si <code class="docutils literal notranslate"><span class="pre">true</span></code>, se usa el indicador interna,
+y si <code class="docutils literal notranslate"><span class="pre">false</span></code>, se prescinde de indicador.  Valor predeterminado:
+<code class="docutils literal notranslate"><span class="pre">true</span></code>.</li>
+</ul>
+</dd>
+</dl>
+<p>Pueden, además, añadirse opciones propias del objeto <a class="reference external" href="https://leafletjs.com/reference-1.5.0.html#map">L.Map</a> como
+en el ejemplo <code class="docutils literal notranslate"><span class="pre">zoom</span></code> o <code class="docutils literal notranslate"><span class="pre">center</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Si no se facilita centro (opción <code class="docutils literal notranslate"><span class="pre">center</span></code>), la aplicación
+intentará averiguar las coordenadas del dispositivo para situar en ellas
+el centro.</p>
+</div>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="atributos">
+<h2>3.2.5. Atributos<a class="headerlink" href="#atributos" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">No sobreescriba los valores de estos atributos. Limítese
+a consultarlos y usarlos. Para cambiarlos existen métodos específicos.</p>
+</div>
+<dl class="attribute">
+<dt id="cluster">
+<code class="descname">cluster</code><a class="headerlink" href="#cluster" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Es la capa a la que se añaden las marcas de centro. En consecuencia:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">getLayers</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>nos devolvería todas las marcas de centro que se encuentren sobre el mapa<a class="footnote-reference" href="#id2" id="id1">[1]</a>.  No presenta ninguna característica extendida.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Centro">
+<code class="descname">Centro</code><a class="headerlink" href="#Centro" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Clase de iconos mutables a la que pertenecen las marcas de centro. Sobra esta
+clase se pueden aplicar las correcciones y filtros.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Revise lo expuesto sobre <a class="reference internal" href="01.map.html#leafext-marca"><span class="std std-ref">marcas en leafext.js</span></a> y cómo se aplican <a class="reference internal" href="01.map.html#leafext-corr"><span class="std std-ref">correcciones</span></a> y
+<a class="reference internal" href="01.map.html#leafext-filtro"><span class="std std-ref">filtros</span></a>.</p>
+</div>
+<p>El atributo añade el método <code class="docutils literal notranslate"><span class="pre">.get(codigo)</span></code> que permite obtener la marca
+del centro cuyo código es el suministrado:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">centro</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">23001111</span><span class="p">);</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">id</span><span class="p">.</span><span class="nx">cod</span> <span class="c1">// Devuelve 23001111</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="general">
+<code class="descname">general</code><a class="headerlink" href="#general" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Almacena la información general del mapa que ofrece el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> de
+datos.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="status">
+<code class="descname">status</code><a class="headerlink" href="#status" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve el estado actual del mapa (origen, filtros correcciones, etc.).
+El estado adicional que aporte la interfaz visual se encontrará dentro de su
+atributo <code class="docutils literal notranslate"><span class="pre">visual</span></code>. Este estado es dinámico y varía cada vez que se realiza
+una acción sobre el mapa que modifica el estado. excepto <code class="docutils literal notranslate"><span class="pre">visual</span></code>, que como
+recoge caractarísticas del estado de la interfaz ajenas al mapa, mantendrá
+sus valores iniciales.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Consulte el método <a class="reference internal" href="#getStatus" title="getStatus"><code class="xref js js-meth docutils literal notranslate"><span class="pre">getStatus()</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="seleccionado">
+<code class="descname">seleccionado</code><a class="headerlink" href="#seleccionado" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Establece un centro como el seleccionado, lo que se notará visualmente
+rodeando el icono con una circunferencia roja. Es la única propiedad
+a la que podríamos asociar valor directamente:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">seleccionado</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">21002100</span><span class="p">);</span>  <span class="c1">// Seleccionamos el centro 21002100.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">seleccionado</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>     <span class="c1">// Deshacemos la selección.</span>
+</pre></div>
+</div>
+<p>La selección de un centro tiene asociado el evento <a class="reference internal" href="#adjofer-event-markerselect"><span class="std std-ref">markerselect</span></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="origen">
+<code class="descname">origen</code><a class="headerlink" href="#origen" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Marca que representa el origen del viaje. Puede no existir, si no se ha
+definido ningún origen, y cambia al cambiar de origen. El establecimniento
+del origen está asociado al evento <a class="reference internal" href="#adjofer-event-originset"><span class="std std-ref">originset</span></a>.</p>
+<p>Presenta un atributo <code class="docutils literal notranslate"><span class="pre">g.origen.postal</span></code> que almacena la dirección postal,
+si es que se llegó a averiguar.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p>La asignación de un valor a <code class="docutils literal notranslate"><span class="pre">g.origen.postal</span></code> tiene asociado
+el evento <em>geocode</em> aplicable a la propia marca de origen:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;originset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+   <span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;geocode&quot;</span><span class="p">,</span> <span class="nx">x</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Pues sí, estoy en &#39;</span><span class="si">${</span><span class="nx">x</span><span class="p">.</span><span class="nx">newval</span><span class="si">}</span><span class="sb">&#39;`</span><span class="p">);</span>
+   <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="contador">
+<code class="descname">contador</code><a class="headerlink" href="#contador" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Número de consultas realizadas al servicio de <a class="reference external" href="https://openrouteservice.org/">OpenRouteService</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="direccion">
+<code class="descname">direccion</code><a class="headerlink" href="#direccion" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Almacena el resultado de una geocodificación. Si se realizó la consulta
+de la dirección postal de unas coordenadas contendrá una cadena; y, si se
+pretendió obtener las coordenadas de una dirección postal, el objeto
+<a class="reference external" href="https://geojson.org/">GeoJSON</a> con todas las localizaciones posibles.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="isocronas">
+<code class="descname">isocronas</code><a class="headerlink" href="#isocronas" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Array con las marcas que representan las áreas de los anillos que se forman
+entre isocronas. Tales marcas tienen asociadas mediante su atributo
+<code class="docutils literal notranslate"><span class="pre">feature</span></code> el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> que define el área.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ruta">
+<code class="descname">ruta</code><a class="headerlink" href="#ruta" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Objeto que contiene dos atributos: <code class="docutils literal notranslate"><span class="pre">ruta.destino</span></code>, que es la marca de
+centro que se usó como destino de la ruta; y <code class="docutils literal notranslate"><span class="pre">ruta.layer</span></code> que es la
+capa que representa la ruta (la cual a su vez tendrá asociada en su
+atributo <code class="docutils literal notranslate"><span class="pre">feature</span></code> el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> que define la ruta).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="metodos">
+<h2>3.2.6. Métodos<a class="headerlink" href="#metodos" title="Enlazar permanentemente con este título">¶</a></h2>
+<dl class="method">
+<dt id="agregarCentros">
+<code class="descname">agregarCentros</code><span class="sig-paren">(</span><em>datos</em><span class="sig-paren">)</span><a class="headerlink" href="#agregarCentros" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Método apropiado para agregar los centros asociados a una especialidad. Los
+datos pueden ser el objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> o la dirección <abbr title="Uniform Resource Locator">URL</abbr> de la que descargar
+dicho objeto. Por tanto, cargar una nueva especialidad debería suponer:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">agregarCentros</span><span class="p">(</span><span class="s2">&quot;json/590107.json&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Ahora bien, de haber una especialidad previa, convendría antes eliminar
+todo lo que se hubiera hecho anteriormente:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;dataloaded&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Acabo de terminar de cargar los datos&quot;</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="nx">g</span><span class="p">.</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">clearLayers</span><span class="p">();</span>  <span class="c1">// Eliminamos los anteriores centros.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">reset</span><span class="p">();</span>         <span class="c1">// Eliminamos correcciones aplicadas.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">setRuta</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>          <span class="c1">// Eliminamos la ruta dibujada.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">seleccionado</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>    <span class="c1">// Deseleccionamos el centro.</span>
+
+<span class="c1">// Cargamos unos nuevos datos.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">agregarCentros</span><span class="p">(</span><span class="s2">&quot;json/590107.json&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>El fin de la carga de datos está asociado al evento <a class="reference internal" href="#adjofer-event-dataloaded"><span class="std std-ref">dataloaded</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="geoCodificar">
+<code class="descname">geoCodificar</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="headerlink" href="#geoCodificar" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene la dirección postal de unas coordenadas, si no se suministra un
+punto; o un objeto <a class="reference external" href="https://geojson.org/">GeoJSON</a> con posibles ubicaciones si se suministra una
+dirección. En el primer caso, el punto debe ser un objeto con los atributos
+<code class="docutils literal notranslate"><span class="pre">lat</span></code> y <code class="docutils literal notranslate"><span class="pre">lng</span></code>; y en el segundo, una cadena.</p>
+<p>La geocodificación tiene asociado el evento <a class="reference internal" href="#adjofer-event-addressset"><span class="std std-ref">addressset</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setOrigen">
+<code class="descname">setOrigen</code><span class="sig-paren">(</span><em>latlng</em><span class="sig-paren">)</span><a class="headerlink" href="#setOrigen" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Establece el origen de los viajes en el punto pasado como argumento.</p>
+<p>La obtención del origen tiene asociado el evento <a class="reference internal" href="#adjofer-event-originset"><span class="std std-ref">originset</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="calcularOrigen">
+<code class="descname">calcularOrigen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#calcularOrigen" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtener la dirección postal del origen, si de este sólo se conocen
+las coordenadas. La dirección se almacenará en <code class="docutils literal notranslate"><span class="pre">g.origen.postal</span></code>.
+Es útil cuando el origen se ha obtenido pinchando sobre el mapa.
+En caso de que el origen se establezca escribiendo una dirección
+a través de la interfaz virtual, lo conveniente sería:</p>
+<ul>
+<li><p class="first">Utilizar <a class="reference internal" href="#geoCodificar" title="geoCodificar"><code class="xref js js-meth docutils literal notranslate"><span class="pre">geoCodificar()</span></code></a> a partir de la dirección suministrada
+por el usuario, para obtener los distintos candidatos.</p>
+</li>
+<li><p class="first">Permitir al usuario escoger uno de los candidatos, del cual se
+podrá obtener tanto las coordenadas como la dirección postal.</p>
+</li>
+<li><p class="first">Usar <a class="reference internal" href="#setOrigen" title="setOrigen"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setOrigen()</span></code></a> para establecer el origen.</p>
+</li>
+<li><p class="first">Fijar la dirección postal, haciendo:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">origen</span><span class="p">.</span><span class="nx">postal</span> <span class="o">=</span> <span class="nx">direccion_postal_del_candidato</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="setIsocronas">
+<code class="descname">setIsocronas</code><span class="sig-paren">(</span><em>point</em><span class="sig-paren">)</span><a class="headerlink" href="#setIsocronas" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Genera las isocronas referidas al punto suministrado. Si no se suministra
+ninguno, se entiende que el punto es el origen del viaje, y si <code class="docutils literal notranslate"><span class="pre">null</span></code> se
+eliminan las isocronas que pudieran haberse generado anterioremente.  No
+puede haber más de un juego de isocronas</p>
+<p>La generación de las isocronas tiene asociado el evento <a class="reference internal" href="#adjofer-event-isochroneset"><span class="std std-ref">isochroneset</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getIsocronas">
+<code class="descname">getIsocronas</code><span class="sig-paren">(</span><em>maciza</em><span class="sig-paren">)</span><a class="headerlink" href="#getIsocronas" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Si <code class="docutils literal notranslate"><span class="pre">maciza</span></code> es <code class="docutils literal notranslate"><span class="pre">false</span></code> (u otro valor evaluable a falso), devuelve un
+array con las capas que se dibujan al crear las isocronas.  De lo contrario,
+devuelve un array con la definición en formato <em>GeoJSON</em> de las áreas que
+encierran las isocronas. Lo primero es útil si se quiere manipular desde la
+interfaz visual el dibujo de las isocronas (por ejemplo, asociando eventos de
+ratón a tales capas). Lo segundo es útil si se desea aplicar el <a class="reference internal" href="#filtro-lejos"><span class="std std-ref">filtro
+lejos</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setRuta">
+<code class="descname">setRuta</code><span class="sig-paren">(</span><em>destino</em><span class="sig-paren">)</span><a class="headerlink" href="#setRuta" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Calcula una ruta entre el origen de viajes y el centro de destino
+suministrado. Como argumento debe usarse la marca del centro. Si se
+proporciona <code class="docutils literal notranslate"><span class="pre">null</span></code>, la ruta anteriomente calculada y dibujada, se elimina.</p>
+<p>La generación de la ruta tiene asociado el evento <a class="reference internal" href="#adjofer-event-routeset"><span class="std std-ref">routeset</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getStatus">
+<code class="descname">getStatus</code><span class="sig-paren">(</span><em>extra</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve una cadena que describe el estado actual del mapa (centro, zoom,
+origen, isochronas, correcciones, filtros. etc.). La cadena es la
+codificación en base64 del objeto que devuelve el atributo <a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a>.
+El argumento <code class="docutils literal notranslate"><span class="pre">extra</span></code> deberá aportar las caracterísicas que depende de la
+interfaz y sobreescribirá las opciones incluidas dentro del atrbuto <code class="docutils literal notranslate"><span class="pre">visual</span></code>
+de dicho atributo.</p>
+<p>El retorno proporcionado por este método es apto como valor de la opción
+<em>status</em> que se puede pasar al <a class="reference internal" href="#crea-mapadjofer"><span class="std std-ref">crear el objeto</span></a>,</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setStatus">
+<code class="descname">setStatus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setStatus" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Aplica la configuración proporcionada a través de la opción <em>status</em> al
+crear el objeto.  Sólo es necesario en caso de que se haya establecido la
+opción <em>autostatus</em> a <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getIcon">
+<code class="descname">getIcon</code><span class="sig-paren">(</span><em>estilo</em><span class="sig-paren">)</span><a class="headerlink" href="#getIcon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve la clase icono cuyo nombre se especifica en el argumento:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Boliche</span> <span class="o">=</span> <span class="nx">g</span><span class="p">,</span><span class="nx">getIcon</span><span class="p">(</span><span class="s2">&quot;boliche&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="setIcon">
+<code class="descname">setIcon</code><span class="sig-paren">(</span><em>estilo</em><span class="sig-paren">)</span><a class="headerlink" href="#setIcon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Define un nuevo estilo para el icono de las marcas de centro. El parámetro es
+una cadena con el nombre del nuevo estilo que puede ser:</p>
+<ul class="simple">
+<li><em>boliche</em>, que es el predeterminado y se basa en <abbr title="Scalable Vector Graphics">SVG</abbr>.</li>
+<li><em>chupachups</em>, un estilo basado en <abbr title="Cascading Style Sheets">CSS</abbr> mucho más sencillo.</li>
+<li><em>solicitud</em>, que es un estilo pensado para el futuro módulo de peticiones.</li>
+</ul>
+<p>El método modifica el estilo para todas las marcas y luego las redibuja. Si
+lo que se pretende es alterar el estilo de nuevas marcas que se añadan,
+entonces debería alterarse la opción <code class="docutils literal notranslate"><span class="pre">icon</span></code>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">icon</span> <span class="o">=</span> <span class="s2">&quot;solicitud&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Y si se pretende alterar el estilo de una marca ya existente usar el meodo
+homónimo para la marca en particular:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="c1">// centro es una marca que representa un centro concreto.</span>
+<span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">getIcon</span><span class="p">(</span><span class="s2">&quot;solicitud&quot;</span><span class="p">);</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">());</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="correcciones">
+<span id="adjofer-corr"></span><h2>3.2.7. Correcciones<a class="headerlink" href="#correcciones" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Se han definido las siguientes correcciones a los datos de los centros:</p>
+<dl class="docutils">
+<dt>Sobre la <em>oferta</em></dt>
+<dd><dl class="first last docutils">
+<dt><em>bilingue</em></dt>
+<dd><p class="first">Permite corregir las enseñanzas impartidas basándose en los planes de
+bilingüismo. Se aplica así:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;bilingue&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">bil</span><span class="o">:</span> <span class="p">[</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span> <span class="s2">&quot;Francés&quot;</span><span class="p">],</span>
+   <span class="nx">inv</span><span class="o">:</span> <span class="kc">false</span>
+<span class="p">})</span><span class="o">:</span>
+</pre></div>
+</div>
+<p>Su sentido es el de eliminar las enseñanzas que sean bilingües en alguno
+de los idiomas mencionados. Este sentido se produce cuando no se incluye
+la opción <code class="docutils literal notranslate"><span class="pre">inv</span></code> o se hace con un valor falso. Añadir <code class="docutils literal notranslate"><span class="pre">inv</span></code> con valor
+<code class="docutils literal notranslate"><span class="pre">true</span></code> implica invertir el significado, por lo que en este caso
+concreto:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;bilingue&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">bil</span><span class="o">:</span> <span class="p">[</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span> <span class="s2">&quot;Francés&quot;</span><span class="p">],</span>
+   <span class="nx">inv</span><span class="o">:</span> <span class="kc">true</span>
+<span class="p">})</span><span class="o">:</span>
+</pre></div>
+</div>
+<p>significa <strong>no</strong> eliminar las enseñanzas que sean bilingües en <em>inglés</em> o
+<em>francés</em>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Hay otras correcciones que admiten la opción <code class="docutils literal notranslate"><span class="pre">inv</span></code> como
+inversor de significado. Se notará a partir de aahora incluyéndola como
+en el primer ejemplo con su valor a <code class="docutils literal notranslate"><span class="pre">false</span></code>, pero sin detallar más
+para no resultar tedioso.</p>
+</div>
+<p>Si se añade un añade un tercer argumento <code class="docutils literal notranslate"><span class="pre">true</span></code>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span> <span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;bilingue&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">bil</span><span class="o">:</span> <span class="p">[</span> <span class="s2">&quot;Inglés&quot;</span><span class="p">,</span> <span class="s2">&quot;Francés&quot;</span><span class="p">],</span>
+    <span class="nx">inv</span><span class="o">:</span> <span class="kc">false</span>
+ <span class="p">},</span> <span class="kc">true</span><span class="p">)</span><span class="o">:</span>
+
+<span class="nx">nza</span> <span class="nx">automáticamente</span> <span class="nx">una</span> <span class="nx">corrección</span> <span class="o">*</span><span class="nx">adjpue</span><span class="o">*</span> <span class="nx">que</span> <span class="nx">elimina</span> <span class="nx">los</span> <span class="nx">puestos</span>
+<span class="nx">bilingües</span> <span class="nx">asociados</span><span class="p">.</span>
+</pre></div>
+</div>
+<div class="last admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">A partir de ahora, si la corrección es capaz de lanzar
+automáticamente alguna otra, se notará este hecho incluyendo un tercer
+argumento <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</div>
+</dd>
+<dt><em>ofens</em></dt>
+<dd><p class="first">Elimina las enseñanzas que se sumunistran:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;ofens&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">ens</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;23GMSMR168&quot;</span><span class="p">,</span> <span class="s2">&quot;23GSASI820&quot;</span><span class="p">],</span>
+   <span class="nx">inv</span><span class="o">:</span> <span class="kc">false</span>
+<span class="p">},</span> <span class="kc">false</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>En este caso, se eliminarán de las oferta de cada centro las enseñanzas
+con esos dos códigos.</p>
+<p class="last">Si se habilita el encadenamiento, se lanzará una corrección <em>adjpue</em> que
+elimina los puestos que sólo puedan impartir clase en las enseñanzas
+eliminadas.</p>
+</dd>
+<dt><em>deseable</em></dt>
+<dd><p class="first">Elimina enseñanzas no desables, que son aquellas como marcadas como
+preferentes en la base de datos. Por ejemplo, para una especialidad normal
+de secundaria, los bachilleratos (frente a la enseñanza secundaria que no
+lo es):</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">conrrect</span><span class="p">(</span><span class="s2">&quot;deseable&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
+<div class="last admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">En realidad, la corrección está implementada como una una
+corrección que no filtrada nada, pero lenza automáticamente una
+corrección <em>ofens</em>. No es necesario añadir el tercer argumentoa
+<cite>true</cite>, porque el encadenamiento se lanza automáticamente.`</p>
+</div>
+</dd>
+<dt><em>turno</em></dt>
+<dd><p class="first">Elimina enseñanzas que sean del turno indicado, de manera que <strong>1</strong>
+representa la mañana y <strong>2</strong> la tarde:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;turno&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">turno</span> <span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+   <span class="nx">inv</span><span class="o">:</span> <span class="kc">false</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p class="last">En este caso, se eliminan las enseñanzas que se impartan por
+la mañana.</p>
+</dd>
+<dt><em>nueva</em></dt>
+<dd><p class="first">Elimina enseñanzas que no sean de nueva implantación:</p>
+<blockquote class="last">
+<div>Centro.correct(«nueva», {});</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Sobre las <strong>adjudicaciones</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><em>vt+</em></dt>
+<dd><p class="first">Agrega a las adjudicaciones del procedimiento, las aparecidas en
+septiembre como consecuencia del aumento en las plantillas de
+funcionamiento. Son las que se notan como telefónicas en la aplicación. No
+requiere opciones:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;vt+&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
+</dd>
+<dt><em>adjpue</em></dt>
+<dd><p class="first">Elimina adjudicaciones según el puesto. En este caso:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">puesto</span><span class="o">:</span> <span class="p">[</span> <span class="s2">&quot;00590059&quot;</span><span class="p">,</span> <span class="s2">&quot;11590107&quot;</span> <span class="p">],</span>
+   <span class="nx">inv</span><span class="o">:</span> <span class="kc">false</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p class="last">elimina las adjudicaciones que sean de los puestos <em>00590059</em> y
+<em>11590107</em>.</p>
+</dd>
+<dt><em>vi</em></dt>
+<dd><p class="first">Elimina adjudicaciones que no respondan a vacantes iniciales:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;vi&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
+</dd>
+<dt><em>vt</em></dt>
+<dd><p class="first">Elimina adjudicaciones que no hayan sido telefónicas:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;vt&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="docutils" id="adjofer-correct-adjref">
+<dt><em>adjref</em></dt>
+<dd><p class="first">Elimina adjudicaciones hechas a adjudicatarios con mayor prioridad
+que el adjudicatario que se proporciona como referencia. Para establecer
+este adjudicatario de referencia se proporcionan tres opciones:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">col</span></code>, que representa el colectivo, según la letra que tiene asignada
+(véase el <a class="reference internal" href="#adjofer-datos"><span class="std std-ref">GeoJSON de datos</span></a>).</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">ts</span></code>, que es el tiempo de servicio del funcionario y se expresa como</dt>
+<dd>un array de tres números: <code class="docutils literal notranslate"><span class="pre">[años,</span> <span class="pre">meses,</span> <span class="pre">días]</span></code>. Si no se proporciona
+este tiempo para los funcionarios no interinos, se estima basándose en
+el escalafón.</dd>
+</dl>
+</li>
+<li><code class="docutils literal notranslate"><span class="pre">esc</span></code>, que es el número de escalafón de los funcionarios de carrera y
+en prácticas.</li>
+</ul>
+<p>Por ejemplo:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">Centro</span><span class="p">.</span><span class="nx">correct</span><span class="p">(</span><span class="s2">&quot;adjref&quot;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="nx">colectivo</span><span class="o">:</span> <span class="s2">&quot;DB&quot;</span><span class="p">,</span>  <span class="c1">// Funcioanrio con comisión de servicios.</span>
+   <span class="nx">esc</span><span class="o">:</span> <span class="mi">20041111</span><span class="p">,</span>
+   <span class="nx">ts</span><span class="o">:</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Recuerde que la aplicación de una corrección C tiene asociado el
+evento «<em>correct:C</em>»; y su desaplicación, el evento «<em>uncorrect:C</em>».</p>
+</div>
+</div>
+<div class="section" id="filtros">
+<span id="adjofer-filtros"></span><h2>3.2.8. Filtros<a class="headerlink" href="#filtros" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Se han definido los siguientes filtros:</p>
+<dl class="docutils">
+<dt><em>adj</em></dt>
+<dd><p class="first">Elimina centros que se hayan con menos de un determinado número de
+adjudicaciones. Requiere pasar el atributo <code class="docutils literal notranslate"><span class="pre">min</span></code>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;adj&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>
+</pre></div>
+</div>
+<p class="last">En este caso, se filtrarán los centros sin ninguna adjudicación.</p>
+</dd>
+<dt><em>oferta</em></dt>
+<dd><p class="first">Elimina centros que se hayan quedado con menos de un determinado número
+de enseñanzas. Se usa exactamente del mismo modo que el anterior:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;oferta&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">min</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>
+</pre></div>
+</div>
+</dd>
+<dt><em>tipo</em></dt>
+<dd><p class="first">Elimina centros según su dificultad, que puede ser <em>normal</em>, <em>compensataria</em>
+(<strong>1</strong>) <em>dificil</em> [<em>desempeño</em>] (<strong>2</strong>). Debe pasársele
+un atributo <code class="docutils literal notranslate"><span class="pre">tipo</span></code> cuyo valor debe ser la suma de los tipos de centro que
+se quieren filtrar:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">tipo</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>  <span class="c1">// Filtra centro de compensatoria.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">tipo</span><span class="o">:</span> <span class="mi">2</span><span class="p">});</span>  <span class="c1">// Filtra centro de difícil desempeño.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">tipo</span><span class="o">:</span> <span class="mi">3</span><span class="p">});</span>  <span class="c1">// Filtra ambos tipos de centro.</span>
+</pre></div>
+</div>
+<p>Es posible añadir la atributo <code class="docutils literal notranslate"><span class="pre">inv</span></code> para invertir el sentido del filtro:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">tipo</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span> <span class="nx">inv</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>  <span class="c1">// Filtra centros normales.</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="docutils" id="filtro-lejos">
+<dt><em>lejos</em></dt>
+<dd><p class="first">Elimina centros que se encuentren fuera de una determinada área. El nombre
+deriva de que se aplica a las áreas que encierran las isocronas y, en
+consecuencia, filtra centros más lejano en tiempo al que define la isocrona.
+Puede aplicarse pasando  un <code class="docutils literal notranslate"><span class="pre">area</span></code> en formato <em>GeoJSON</em>:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">iso20</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">getIsocronas</span><span class="p">(</span><span class="kc">true</span><span class="p">)[</span><span class="mi">1</span><span class="p">];</span>   <span class="c1">// Área que encierra la isocrona de 20 min</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;lejos&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nx">area</span><span class="o">:</span> <span class="nx">iso20</span><span class="p">});</span> <span class="c1">// Filtro centros alejados en más de 20 min</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Recuerde que la aplicación de un filtro <em>F</em> tiene asociado el
+evento «<em>filter:F</em>»; y su desaplicación, el evento «<em>unfilter:F</em>». Además,
+las marcas concretas disparan el evento «<em>filtered</em>», si un filtro las
+filtra desde un estado no filtrado, y disparan el evento «<em>unfiltered</em>» si
+su remoción las restituye desde un estado filtrado.</p>
+</div>
+</div>
+<div class="section" id="eventos">
+<span id="adjofer-eventos"></span><h2>3.2.9. Eventos<a class="headerlink" href="#eventos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Hay toda una serie de eventos que pueden ayudarnos a capturar acciones que se
+realizan sobre el mapa:</p>
+<dl class="docutils" id="adjofer-event-dataloaded">
+<dt><em>dataloaded</em></dt>
+<dd>Se desencadena al terminar de cargar los datos el método
+<a class="reference internal" href="#agregarCentros" title="agregarCentros"><code class="xref js js-meth docutils literal notranslate"><span class="pre">agregarCentros()</span></code></a>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-markerselect">
+<dt><em>markerselect</em></dt>
+<dd><p class="first">Se desencadena al seleccionar o deseleccionar un centro. En el objeto de
+evento <code class="docutils literal notranslate"><span class="pre">e.oldval</span></code> y <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> contienen respectivamente la marca
+anteriormente y posteriomente seleccionadas:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;markerselect&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">oldval</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Antes tenía seleccionado el centro </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">oldval</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">id</span><span class="p">.</span><span class="nx">nom</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Acaba de seleccionar el centro </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">newoldval</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">id</span><span class="p">.</span><span class="nx">nom</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-addressset">
+<dt><em>addressset</em></dt>
+<dd>Se desencadena tras resolver una geocodificación con <a class="reference external" href="https://openrouteservice.org/">OpenRouteService</a> a
+través del método <a class="reference internal" href="#geoCodificar" title="geoCodificar"><code class="xref js js-meth docutils literal notranslate"><span class="pre">geoCodificar()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> contiene el resultado
+de la geocodificación.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-originset">
+<dt><em>originset</em></dt>
+<dd>Se desencadena tras establecer un origen de viajes. Dispone de <code class="docutils literal notranslate"><span class="pre">e.oldval</span></code> y
+<code class="docutils literal notranslate"><span class="pre">e.newval</span></code> como el evento <em>markerselect</em>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-isochroneset">
+<dt><em>isochroneset</em></dt>
+<dd>Se desencadena al terminar de generar un juego de isocronas a través del
+método <a class="reference internal" href="#setIsocronas" title="setIsocronas"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setIsocronas()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">e.newval</span></code> proporcionará el
+nuevo valor del atributo <a class="reference internal" href="#isocronas" title="isocronas"><code class="xref js js-attr docutils literal notranslate"><span class="pre">isocronas</span></code></a>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-routeset">
+<dt><em>routeset</em></dt>
+<dd>Se desencadena al terminar de generar la ruta entre el origen y el centro
+definido como destino mediante el método <a class="reference internal" href="#setRuta" title="setRuta"><code class="xref js js-meth docutils literal notranslate"><span class="pre">setRuta()</span></code></a>. <cite>e.newval</cite>
+proporcionará el nuevo calor del atributo <a class="reference internal" href="#ruta" title="ruta"><code class="xref js js-attr docutils literal notranslate"><span class="pre">ruta</span></code></a>.</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-statuschange">
+<dt><em>statuschange</em></dt>
+<dd><p class="first">Se desencadena siempre que se lleva a cabo una acción que provoca un cambio
+en el mapa desde crear un origen o cambiar de <em>zoom</em>. Para conocer cuál es la
+acción, puede consultarse el atributo <code class="docutils literal notranslate"><span class="pre">attr</span></code> del evento:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;statuschange&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`El culpable soy yo, </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">attr</span><span class="si">}</span><span class="sb">`</span><span class="p">));</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Se enumeran exclusivamente los nuevos tipos de eventos que introduce
+el objeto <code class="docutils literal notranslate"><span class="pre">MapAdjOfer</span></code>. Es obvio que para la creación de la interfaz visual
+seguiran siendo necesarios otros eventos como los asociados a las
+correcciones y filtros o a los eventos de ratón.</p>
+</div>
+<p class="rubric">Notas al pie</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Lo cual no significa que devuelve todas las marcas de centro, ya que
+puede haber centros que no se encuentren sobre el mapa porque hayan sido
+desaparecido al filtrarse. Para obtener todos los centros necesitaría
+recurrir a <code class="docutils literal notranslate"><span class="pre">g.Centro.store</span></code>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="01.map.html" class="btn btn-neutral float-left" title="3.1. Creación de mapas" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, José Miguel Sánchez Alés/José Manuel Bermudo Ancio
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

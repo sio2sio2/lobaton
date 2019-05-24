@@ -2,16 +2,17 @@ const Interfaz = (function() {
 
    // Opciones predeterminadas al arrancar la interfaz.
    const defaults = {
-      filtrarOferta: true,    // Filtrar centros sin oferta.
-      filtrarAdj: false,      // Filtrar centros sin adjudicaciones.
-      incluirTlfo: false,     // Incluir vacantes telefónicas.
-      incluirCGT: false,      // Incluir correcciones por CGT.
+      "filter:oferta": true,    // Filtrar centros sin oferta.
+      "filter:adj": false,      // Filtrar centros sin adjudicaciones.
+      "correct:vt+": false,     // Incluir vacantes telefónicas.
+      "correct:cgt": false,     // Incluir correcciones por CGT.
    }
 
    // Opciones predeterminadas propias exclusivamente de la interfaz.
    const defaults_v = {
       ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
-      recordar: false         // Recuerda entre sesiones el estado del mapa.
+      recordar: false,        // Recuerda entre sesiones el estado del mapa.
+      mostrarFiltrados: false // Si true, muestra en gris los centros filtrados.
    }
 
    function Interfaz(opts) {
@@ -77,6 +78,18 @@ const Interfaz = (function() {
       // deja de tener sentido aplicar la eliminación de adj. no telefónicas.
       this.g.Centro.on("uncorrect:vt+", e => {
          if(this.g.Centro.uncorrect("vt")) this.g.Centro.invoke("refresh");
+      });
+
+      // Las correcciones se borran al cargar una especialidad,
+      // pero las que se aplican automáticamente por mor de las opciones
+      // de la interfaz, deberían aplicarse automáticamente.
+      this.g.on("dataloaded", e => {
+         for(const opt in this.options) {
+            if(this.options[opt] && opt.startsWith("correct:")) {
+               const name = opt.split(":")[1];
+               this.g.Centro.correct(name, {});
+            }
+         }
       });
 
       // TODO: DEBUG: Elimínese esto en producción.
@@ -687,7 +700,7 @@ const Interfaz = (function() {
                                         .map(c => new Object({label: this.ens[c], value: c}));
 
                const puestos = {
-                  titulo: "Adjudicaciones",
+                  titulo: "Puestos",
                   desc: "Elimina adjudicaciones de los puestos",
                   nombre: "adjpue",
                   tipo: "correct",
@@ -710,19 +723,36 @@ const Interfaz = (function() {
    }
 
    function initAjustes() {
-      const self = this;
+      // Que los ajustes referentes a las telefónicas y el CGT
+      // estén habilitados, depende de que se disponga de datos.
+      this.g.on("dataloaded", e => {
+         for(const ajuste of this.ajustes.$children) {
+            switch(ajuste.a.tipo) {
+               case "correct:vt+":
+                  ajuste.disabled = !this.g.general.spider.vt;
+                  break;
+               case "correct:cgt":
+                  ajuste.disabled = !this.g.general.spider.cgt;
+                  break;
+            }
+         }
+      });
 
       Vue.component("ajuste", {
          props: ["a"],
          template: "#ajuste",
          data: function() {
             return {
-               checked: self.options[this.a.opt]
+               checked: this.a.tipo === "visual"?this.$parent.options[this.a.opt]:false,
+               disabled: false
             }
          },
          watch: {
             checked: function() {
-               self.options[this.a.opt] = this.checked;
+               // Sólo actualizamos las opciones de interfaz visuales,
+               // las relativas a filtros y correcciones deben conservar
+               // sus valores iniciales.
+               if(this.a.tipo === "visual") this.$parent.options[this.a.opt] = this.checked;
             }
          },
          computed: {
@@ -734,7 +764,7 @@ const Interfaz = (function() {
          methods: {
             // Qué acción se desencadena al cambiar el ajuste.
             ajustar: function(e) {
-               this.$parent.options[this.a.opt] = this.checked;
+               //this.$parent.options[this.a.opt] = this.checked;
 
                if(this.a.accion) {
                   this.a.accion(this.a.opt, this.checked);
@@ -760,14 +790,14 @@ const Interfaz = (function() {
             options: this.options,
             ajustes: [
                {
-                  desc: "Ocultar centros sin oferta",
-                  opt: "filtrarOferta",
+                  desc: "Filtrar centros sin oferta",
+                  opt: "filter:oferta",
                   tipo: "filter:oferta",
                   value: {min: 1}
                },
                {
-                  desc: "Ocultar centros sin adjudicaciones",
-                  opt: "filtrarAdj",
+                  desc: "Filtrar centros sin adjudicaciones",
+                  opt: "filter:adj",
                   tipo: "filter:adj",
                   value: {min: 1}
                },
@@ -788,13 +818,22 @@ const Interfaz = (function() {
                   tipo: "visual"
                },
                {
+                  desc: "Mostrar (en gris) centros filtrados",
+                  opt: "mostrarFiltrados",
+                  tipo: "visual",
+                  accion: (name, value) => {
+                     value = true?L.utils.grayFilter:this.g.cluster;
+                     this.g.Centro.setFilterStyle(value);
+                  }
+               },
+               {
                   desc: "Incluir vacantes telefónicas",
-                  opt: "incluirTlfo",
+                  opt: "correct:vt+",
                   tipo: "correct:vt+"
                },
                {
                   desc: "Corregir con el CGT",
-                  opt: "incluirCGT",
+                  opt: "correct:cgt",
                   tipo: "correct:cgt"
                }
             ]
@@ -807,7 +846,7 @@ const Interfaz = (function() {
 
       this.g.on("dataloaded", e => {
          const data = this.g.general;
-         this.info.especialidad = data.entidad[0];
+         this.info.especialidad = this.selector.todas[data.entidad[0]];
          this.info.colocacion = data.curso;
          this.info.ofertasec = data.spider.ofertasec;
          this.info.ofertafp = data.spider.ofertafp;
@@ -841,7 +880,6 @@ const Interfaz = (function() {
       });
 
       this.g.Centro.on("unfilter:lejos", e => {
-         console.log("PASO POR AQUÍ", e);
          this.info.isocronas = !!this.g.isocronas;
       });
 
@@ -849,17 +887,18 @@ const Interfaz = (function() {
          this.info.isocronas = this.g.isocronas[e.opts.idx].feature.properties.value / 60;
       });
 
-      this.g.on("routeset", e => {
-         this.info.ruta = e.newval;
-      });
+      this.g.on("routeset", e => this.info.ruta = e.newval);
 
-      this.g.on("markerselect", e => {
-         this.info.seleccionado = e.newval;
+      this.g.on("markerselect", e => this.info.seleccionado = e.newval);
+
+      this.g.on("statuschange", e => {
+         this.info.link = `${window.location.href}?status=${this.status}`;
       });
 
       return new Vue({
          el: "#info :nth-child(2)",
          data: {
+            link: window.location.href,
             especialidad: "-",
             colocacion: "-",
             ofertasec: "-",
@@ -941,6 +980,17 @@ const Interfaz = (function() {
                }
                else this.g.map.panTo(sitio.getLatLng());
                return false;
+            },
+            copyToClipboard: function(e) {
+               const input = e.target.previousElementSibling;
+               /*
+               navigator.clipboard.writeText(input.value).then(() => {
+                  alert("Copiado el enlace en el portapapeles");
+               });
+               */
+               input.select();
+               document.execCommand("copy");
+               alert("Copiado el enlace en el portapapeles");
             }
          }
       });
@@ -1093,8 +1143,8 @@ const Interfaz = (function() {
       reflejarOpciones.call(this, opciones);
 
       // Si no se incluyen vacantes telefónicas, entonces
-      // debe desabilitarse la corrección por adjudicaciones no telefónicas.
-      if(!this.options.incluirTlfo) {
+      // debe deshabilitarse la corrección por adjudicaciones no telefónicas.
+      if(!this.options["correct:vt+"]) {
          for(const f of this.filtrador.$children) {
             if(f.c.tipo === "correct" && f.c.nombre === "vt") {
                f.$children[0].disabled = true;

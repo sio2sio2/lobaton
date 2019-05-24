@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
    <meta charset="UTF-8">
-   <title>Prueba de sidebar</title>
+   <title>Mapa de adjudicaciones y oferta educativa</title>
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <!-- Leaflet -->
@@ -123,7 +123,7 @@
                   <label class="col-form-label col-10" :for="id">{{a.desc}}</label>
                   <div class="custom-switch custom-switch-xs pl-0 col-2">
                      <input type="checkbox" :name="a.opt" :value="JSON.stringify(a.value || '{}')"
-                            @change="ajustar" :id="id" v-model="checked"
+                            @change="ajustar" :id="id" v-model="checked" :disabled="disabled"
                             class="custom-switch-input filtro">
                      <label class="custom-switch-btn" :for="id"></label>
                   </div>
@@ -137,7 +137,7 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <div id="esp">
+            <article id="esp">
                <label>Escriba o seleccione una especialidad
                   <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
                          value="" @input="selEspec" autocomplete=off autofocus>
@@ -145,7 +145,8 @@
                      <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
                   </datalist>
                </label>
-            </div>
+	       <p>Especialidad cargada: <strong>{{todas[especialidad]}}</strong></p>
+            </article>
          </div>
 
          <div class="leaflet-sidebar-pane" id="centro">
@@ -432,6 +433,10 @@
                      </dl>
                   </div>
                </article>
+               <footer class="card-body text-center p-0">
+                  <input style="z-index: -1; opacity: .01; height:0; position: absolute" name="link" type="text" :value="link">
+                  <button type="button" class="btn btn-primary" @click="copyToClipboard">Compartir mapa</button>
+               </footer>
             </section>
 
          </div>
@@ -451,9 +456,9 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
             <article>
-               <input name="centro" @input="sugerir" placeholder="Escriba el nombre...">
-               <ul>
-                  <li v-for="c in candidatos"><data :value="c.getData().id.cod" @click="seleccionar">
+               <input autocomplete="off" class="form-control" name="centro" @input="sugerir" placeholder="Escriba el nombre...">
+               <ul class="list-group">
+                  <li class="list-group-item" v-for="c in candidatos"><data :value="c.getData().id.cod" @click="seleccionar">
                      <span>{{String(c.getData().id.cp).padStart(5, "0").substring(0, 2)}}</span>
                      <span>{{c.getData().id.nom}}</span>
                   </data> </li>

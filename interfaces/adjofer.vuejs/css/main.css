@@ -21,16 +21,6 @@
 }
 
 /* Cajetín de búsqueda */
-#busqueda input {
-   box-sizing: 100%;
-   width: 100%;
-}
-
-#busqueda ul {
-   list-style: none;
-   padding-left: 0;
-}
-
 #busqueda li {
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -39,7 +29,8 @@
 
 #busqueda li:hover {
    cursor: pointer;
-   background-color: #eee;
+   background-color: #0074d9;
+   color: #fff;
 }
 
 #busqueda data {
@@ -50,10 +41,9 @@
 
 /* Elimina la flecha del input con sugerencias */
 #esp input::-webkit-calendar-picker-indicator,
-#esp input::-webkit-list-button {
+#esp input[type=number]::-webkit-list-button {
    display: none;
 }
-
 
 .leaflet-sidebar-content {
    font-family: Roboto, sans-serif;
@@ -68,12 +58,13 @@
    background: rgba(0, 116, 217,.4);
 }
 
-#correcciones input::-webkit-outer-spin-button, #correcciones input::-webkit-inner-spin-button {
+#correcciones input[type=number]::-webkit-outer-spin-button,
+#correcciones input[type=number]::-webkit-inner-spin-button {
    -webkit-appearance: none;
    margin: 0;
 }
 
-#correccciones input {
+#correccciones input[type=number] {
    -moz-appearance: textfield;
 }
 
