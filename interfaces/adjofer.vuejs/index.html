@@ -137,7 +137,7 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <div id="esp">
+            <article id="esp">
                <label>Escriba o seleccione una especialidad
                   <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
                          value="" @input="selEspec" autocomplete=off autofocus>
@@ -145,7 +145,8 @@
                      <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
                   </datalist>
                </label>
-            </div>
+	       <p>Especialidad cargada: <strong>{{todas[especialidad]}}</strong></p>
+            </article>
          </div>
 
          <div class="leaflet-sidebar-pane" id="centro">

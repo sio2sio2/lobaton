@@ -32,7 +32,7 @@
 /* Fin cajetín */
 
 /* Elimina la flecha del input con sugerencias */
-#esp input[type=number]::-webkit-calendar-picker-indicator,
+#esp input::-webkit-calendar-picker-indicator,
 #esp input[type=number]::-webkit-list-button {
    display: none;
 }

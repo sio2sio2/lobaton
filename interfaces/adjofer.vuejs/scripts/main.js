@@ -839,7 +839,7 @@ const Interfaz = (function() {
 
       this.g.on("dataloaded", e => {
          const data = this.g.general;
-         this.info.especialidad = data.entidad[0];
+         this.info.especialidad = this.selector.todas[data.entidad[0]];
          this.info.colocacion = data.curso;
          this.info.ofertasec = data.spider.ofertasec;
          this.info.ofertafp = data.spider.ofertafp;
