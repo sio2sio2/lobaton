@@ -207,6 +207,7 @@
                      </div>
                      <div class="card-body">
                         <oferta v-for="(of, index) in datosCentro.oferta" :of="of" :info="info" :key="index" />
+                        <span v-if="hayNoVisibles">Hay enseñanzas ocultas</span>
                      </div>
                      <div class="card-header">
                         Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>

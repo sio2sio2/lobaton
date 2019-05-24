@@ -992,18 +992,36 @@ const Interfaz = (function() {
          this.centro.g = this.g;
       });
 
+      // #issue69. Cada vez que el estado cambie, vamos a actualizar la variable que oculta los centros filtrados
+      this.g.Centro.on("correct:* uncorrect:*", e => {
+         console.log("---------------")
+         console.debug(this.filtrador)
+         this.centro.datosCentro = e.newval?e.newval.getData():null;
+         this.centro.ocultarBorrado = this.options.ocultarBorrado;
+      });
+
       return new Vue({
          el: "#centro :nth-child(2)",
          data: {
             datosCentro: null,
             info: null,
             g: null,
-            ocultarBorrado: this.options.ocultarBorrado
+            ocultarBorrado: false
          },
          template: "#template-centro",
          computed: {
             tienePlazas: function () {
                return Object.keys(this.datosCentro.pla).length > 0
+            },
+            hayNoVisibles: function () {
+               let hayOcultas = false;
+               if (!!this.datosCentro && this.ocultarBorrado) {
+                  for(let oferta of this.datosCentro.oferta){
+                     hayOcultas = oferta.ext || oferta.filters.length > 0;
+                     if (hayOcultas) break;
+                  }
+               }
+               return hayOcultas;
             }
          },
          filters: {
