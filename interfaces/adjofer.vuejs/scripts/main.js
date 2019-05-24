@@ -1009,6 +1009,7 @@ const Interfaz = (function() {
                *  - O cuando ocultarBorrado es verdadera pero:
                *     - La oferta no está extinta Y la oferta no está filtrada
                */
+              console.log("check visible")
                return !this.$parent.ocultarBorrado || (!this.of.ext && this.of.filters.length === 0)
             }
          },
@@ -1043,11 +1044,12 @@ const Interfaz = (function() {
       });
 
       // #issue69. Cada vez que el estado cambie, vamos a actualizar la variable que oculta los centros filtrados
-      this.g.Centro.on("correct:* uncorrect:*", e => {
-         console.log("---------------")
-         console.debug(this.filtrador)
-         this.centro.datosCentro = e.newval?e.newval.getData():null;
-         this.centro.ocultarBorrado = this.options.ocultarBorrado;
+      this.g.on("statuschange", e => {
+         if(e.attr === "visual.ocultarBorrado" || e.attr.substring(0, 4) === "cor.") {
+            console.log("checking status")
+            this.centro.datosCentro = this.info.seleccionado.getData();
+            this.centro.ocultarBorrado = this.options.ocultarBorrado;
+         }
       });
 
       return new Vue({
