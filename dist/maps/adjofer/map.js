@@ -444,18 +444,9 @@ const mapAdjOfer = (function(path, opts) {
 
          this.status.fil[e.name] = filter.getParams(e.name);
          if(e.name === "lejos") {
-            const macizas = this.getIsocronas(true);
-            for(const idx in macizas) {
-               if(macizas[idx] === this.status.fil.lejos.area) {
-                  delete this.status.fil.lejos.area;
-                  this.status.fil.lejos.idx = Number(idx);
-                  break;
-               }
-            }
-            if(this.status.fil.lejos.area) {
-               console.error("No se logra determinar cuál es el área que 'lejos' usó para filtrar");
-               delete this.status.fil.lejos;
-            }
+            // Nos cargamos el área que puede volver
+            // a hallarse y ocupa muchísimo espacio.
+            this.status.fil.lejos = {idx: this.status.fil.lejos.idx};
          }
          this.fire("statuschange", {attr: `fil.${e.name}`});
       });
@@ -1858,7 +1849,12 @@ const mapAdjOfer = (function(path, opts) {
                   text: `Filtrar centros alejados más de ${area.feature.properties.value/60} min`,
                   callback: e => {
                      const maciza = area.feature.properties.area;
-                     adjofer.Centro.filter("lejos", {area: maciza});
+                     let idx;
+                     for(idx in this.areas) {
+                        if(this.areas[idx] === area) break;
+                     }
+
+                     adjofer.Centro.filter("lejos", {area: maciza, idx: Number(idx)});
                      adjofer.Centro.invoke("refresh");
                      this.dibujarAreaMaciza(maciza);
                   },
