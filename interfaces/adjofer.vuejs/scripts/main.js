@@ -159,15 +159,37 @@ const Interfaz = (function() {
                  .dispatchEvent(new Event("click"));
       }));
 
-      // Al seleccionar un centro, muestra automáticamente su información.
+      // Al seleccionar un centro, muestra automáticamente su información y
+      // habilita el botón correspndiente de la barra.
       this.g.on("markerselect", e => {
-         if(!e.newval) return;
+         const boton = this.sidebar._container
+                  .querySelector("#sidebar .leaflet-sidebar-tabs a[href='#centro']").parentNode;
+
+         if(!e.newval) {  // Deshabilitamos botón.
+            const activa = this.sidebar._container
+                  .querySelector("#sidebar .leaflet-sidebar-tabs li.active");
+            // Si el panel activo, es el de información de centro, lo cerramos.
+            if(activa && activa.querySelector("a[href='#centro']")) {
+               this.sidebar.close();
+            }
+            boton.classList.add("disabled");
+            return;
+         }
+
+         boton.classList.remove("disabled");
          if(!this.sidebar._map) { // La barra no está desplegada.
             document.getElementById("view-sidebar").dispatchEvent(new Event("click"));
          }
          this.sidebar.open("centro");
       });
 
+      // Al cargar datos por primera vez deben habilitarse todos los
+      // botones deshabilitados de la barra, excepto el de información de centro.
+      this.g.once("dataloaded", e => {
+         console.log("DEBUG", "Paso por aquí");
+         this.sidebar._container.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
+             .forEach(e => !e.querySelector("a[href='#centro']") && e.classList.remove("disabled"));
+      });
    }
 
 
@@ -347,18 +369,6 @@ const Interfaz = (function() {
                }
             },
             cambiarSidebar(codigo) {
-               if(codigo) {
-                  const especialidad = this.todas[codigo];
-                  // TODO:: ¿Ponemos el nombre de la especialidad en algún sitio?
-                  console.log("DEBUG: Nombre:", especialidad);
-               }
-
-               // Hay que habilitar todos los botones de la barra lateral.
-               if(!this.especialidad) {
-                  document.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
-                     .forEach(e => e.classList.remove("disabled"));
-               }
-
                // Cambiamos al panel de filtros.
                interfaz.sidebar.open("correcciones");
                // Cerramos paneles para mostrar el mapa.
