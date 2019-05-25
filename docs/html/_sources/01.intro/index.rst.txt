@@ -81,7 +81,16 @@ automáticamente el panel lateral de información de centro:
 
 Si nos fijamos en los iconos de la barra, veremos que aparecerán habilitados ya
 todos. Los deshabilatos al principio eran aquellos con nula utilidad mientras no
-hubiera datos cargados.
+hubiera datos cargados. No obstante, el icono que permite mostrar la información
+de centro, sólo está habilitado si hay un centro seleccionado; si se
+deselecciona pinchando otra vez sobre el propio centro seleccionado, el panel se
+cerrará y se volverá a deshabilitar ese icono.
+
+La información de centro presenta los datos del centro, sus plantillas, las
+enseñanzas relevantes para la especialidad seleccionada y las adjudicaciones a
+los puestos relacionados con la especialidad:
+
+.. image:: files/seleccionado2.png
 
 .. _panel-informacion:
 
@@ -207,10 +216,15 @@ Recordar el estado del mapa
    quedará inicialmente en el mismo estado con que se cerró.
 
 Ocultar datos filtrados
-   Deshabilitada esta opción las enseñanzas y los adjudicaciones filtradas
-   aparecen en la información detallada del centro tachadas y con indicación
-   de cuál es la razón por la que se tacharon. Al habilitarla, tales enseñanzas
-   y adjudicaciones, simplemente, desaparecen.
+   Deshabilitada esta opción, las :ref:`enseñanzas y adjudicaciones filtradas
+   <panel-filtros>` aparecen en la información detallada del centro tachadas y
+   con indicación de cuál es la razón por la que se tacharon.
+  
+   .. image:: files/tachadas.png 
+  
+   Al habilitarla, tales enseñanzas y adjudicaciones, simplemente, desaparecen:
+
+   .. image:: files/ocultas.png
 
 Mostrar (en gris) centros filtrados
    Al quedar filtrado un centro, este desaparece del mapa. Si se habilita esta
@@ -368,10 +382,10 @@ Enseñanzas
 #. **¿Por qué está deshabilitado el filtro de vacantes telefónicas?**
 
    Muy probablemente porque en :ref:`ajustes <panel-ajustes>` no se ha marcado
-   "*Incluir vacantes telefónicas**."
+   "*Incluir vacantes telefónicas*".
 
-#. **¿Cómo hago para saber las vacantes de septiembre que no se ofertaron en el
-   procedimiento de verano?**
+#. **¿Cómo hago para conocer las vacantes de septiembre que no se ofertaron en
+   el procedimiento de verano?**
 
    a. En :ref:`ajustes <panel-ajustes>` cerciórese de que están marcadas las
       opciones "*Filtrar centros sin adjudicaciones*" y "*Incluir vacantes
