@@ -999,31 +999,26 @@ const Interfaz = (function() {
    function initCentro() {
 
       Vue.component("oferta", {
-         props: ["of", "info"],
+         props: ["of"],
          template: "#oferta",
          computed: {
             visible: function() {
-               /*
-               * Una oferta es visible:
-               *  - Siempre que la opción ocultarBorrado es falsa
-               *  - O cuando ocultarBorrado es verdadera pero:
-               *     - La oferta no está extinta Y la oferta no está filtrada
-               */
-              console.log("check visible")
-               return !this.$parent.ocultarBorrado || (!this.of.ext && this.of.filters.length === 0)
+               // Visible si no está filtrada o, si estándolo, no se quiere ocultar.
+               return !this.$parent.ocultarBorrado || this.of.filters.length === 0
+            },
+            nombre: function() {
+               const ens = this.$parent.g.general.ens[this.of.ens];
+               return ens.grado?`${ens.grado} ${ens.nombre}`:ens.nombre;
             }
          },
          filters: {
             capitalize: function (value) {
-               if (!value) return ''
-               value = value.toString()
+               if (!value) return '';
+               value = value.toString();
                return value.charAt(0).toUpperCase() + value.slice(1)
             },
-            /*
-            * La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
-            */
+            // La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
             traduceModalidad: function (nombreAbreviado) {
-               let nombre = "A distancia";
                switch (nombreAbreviado) {
                   case "pres":
                      nombre = "Presencial";
@@ -1031,24 +1026,47 @@ const Interfaz = (function() {
                   case "semi":
                      nombre = "Semipresencial";
                      break;
+                  default:
+                     nombre = "A distancia";
                }
                return nombre;
             }
-         },
+         }
       });
 
+      Vue.component("adjudicacion", {
+         props: ["adj"],
+         template: "#adjudicacion",
+         methods: {
+            // Devuelve el nombre de un puesto dado su código
+            nombrePuesto: function(codigo) {
+               return this.$parent.g.general.puestos[codigo];
+            },
+            // Devuelve el nombre de un colectivo dada su letra
+            nombreColectivo: function(letra) {
+               return this.$parent.g.general.colectivos[letra].v;
+            }
+         }
+      });
+
+      //Al seleccionar un centro, cambian los datos a presentar.
       this.g.on("markerselect", e => {
          this.centro.datosCentro = e.newval?e.newval.getData():null;
-         this.centro.info = this.g.general;
+      });
+
+      // Al cargar una nueva especialidad, cambian los datos
+      this.g.on("dataloaded", e => {
          this.centro.g = this.g;
       });
 
-      // #issue69. Cada vez que el estado cambie, vamos a actualizar la variable que oculta los centros filtrados
       this.g.on("statuschange", e => {
-         if(e.attr === "visual.ocultarBorrado" || e.attr.substring(0, 4) === "cor.") {
-            console.log("checking status")
-            this.centro.datosCentro = this.info.seleccionado.getData();
+         // Si el usuario cambia su preferencia de ver los datos filtrados
+         if(e.attr === "visual.ocultarBorrado") {
             this.centro.ocultarBorrado = this.options.ocultarBorrado;
+         }
+         // Se aplica alguna corrección habiendo un centro seleccionado.
+         else if(this.g.seleccionado && e.attr.startsWith("cor.")) {
+            this.centro.datosCentro = Object.assign({}, this.g.seleccionado.getData());
          }
       });
 
@@ -1056,53 +1074,47 @@ const Interfaz = (function() {
          el: "#centro :nth-child(2)",
          data: {
             datosCentro: null,
-            info: null,
             g: null,
-            ocultarBorrado: false
+            ocultarBorrado: this.options.ocultarBorrado
          },
-         template: "#template-centro",
          computed: {
             tienePlazas: function () {
                return Object.keys(this.datosCentro.pla).length > 0
             },
-            hayNoVisibles: function () {
-               let hayOcultas = false;
-               if (!!this.datosCentro && this.ocultarBorrado) {
-                  for(let oferta of this.datosCentro.oferta){
-                     hayOcultas = oferta.ext || oferta.filters.length > 0;
-                     if (hayOcultas) break;
-                  }
-               }
-               return hayOcultas;
+            dificultad: function() {
+               const dificultad = this.datosCentro.mod.dif;
+               return dificultad === "dificil"?"difícil desempeño":"compensatoria";
             }
          },
          filters: {
-            /*
-            * Devuelve el nombre de un filtro dado su atributo name en html del menú
-            */
-            detallaFiltros: function (filtro) {
-               let nombre;
-               for (cor of menuCorrecciones) {
-                  if (sanitizeNombreCorreccion(cor.correccion_name) === filtro) {
-                     nombre = cor.nombre;
-                     break;
-                  }
-               }
-               return nombre;
-            }
+            normalizaCodigo: function(codigo) {
+               return codigo.toString().padStart(8, "0");
+            },
          },
          methods: {
-            /*
-             * Devuelve el nombre de un puesto dado su código
-             */
-            nombrePuesto: function (codPuesto) {
-               return this.g.general.puestos[codPuesto];
-            },
             /* 
             * DecodificaCentro devuelve el nombre de un centro dado un código. 
             * Utilizado principalmente para obtener el nombre del centro en enseñanzas trasladadas
             */
-           decodificaCentro: codigo => this.g.Centro.get(codigo).getData().id.nom,
+            decodificaCentro: codigo => this.g.Centro.get(codigo).getData().id.nom,
+            hayNoVisibles: function(attr) {
+               return this.ocultarBorrado && this.datosCentro[attr].length > this.datosCentro[attr].total;
+            },
+            // Confiere a la corrección un nombre más compresible para el usuario.
+            apelaCorreccion: correccion => {
+               let nombre = correccion;
+               for(const f of this.filtrador.correcciones) {
+                  if(f.nombre === correccion) {
+                     nombre = f.titulo;
+                     break
+                  }
+               }
+               return nombre;
+            },
+            // Devuelve el númerod de miembros de la plantilla orgánica.
+            organica: function(org, norg) {
+               return norg === undefined || norg === org?org:`${org} (${norg})`;
+            }
          }
       });
 

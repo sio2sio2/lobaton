@@ -156,10 +156,6 @@
             </h1>
 
             <div class="section-cardbox-content">
-               
-            </div>
-
-            <script type="text/x-template" id="template-centro">
                <div v-if="datosCentro === null" class="section-cardbox">
                   <div class="card">
                      <div class="card-body">
@@ -170,15 +166,16 @@
                <div v-else class="section-cardbox">
                   <div class="card" id="info-centro">
                      <div class="card-body">
-                        <h5 class="card-title">{{datosCentro.id.nom}} (Cod. {{datosCentro.id.cod}})</h5>
+                        <h5 class="card-title">{{datosCentro.id.nom}} ({{datosCentro.id.cod | normalizaCodigo}})</h5>
                         
                         <p class="card-text">Dirección: {{datosCentro.id.dom}}. {{datosCentro.id.mun}}. {{datosCentro.id.cp}}.
                            {{datosCentro.id.pro}}.</p>
+                        <p v-if="datosCentro.mod.dif" class="font-weight-bold" :class="datosCentro.mod.dif">Es centro de {{dificultad}}</p>
                      </div>
                      <div class="card-header">
                         Plazas relevantes
                      </div>
-                     <div class="card-body">
+                     <div class="card-body pl-0 pr-0">
                         <div class="table-responsive-sm">
                            <table v-if="tienePlazas" class="table table-striped">
                               <thead>
@@ -192,8 +189,8 @@
                               </thead>
                               <tbody>
                                  <tr v-for="(plantilla, cod) in datosCentro.pla">
-                                    <th scope="row"><abbr v-bind:title="info.puestos[cod]">{{cod}}</abbr></th>
-                                    <td>{{plantilla.org}}</td>
+                                    <th scope="row"><abbr v-bind:title="g.general.puestos[cod]">{{cod}}</abbr></th>
+                                    <td>{{organica(plantilla.org, plantilla.norg)}}</td>
                                     <td>{{plantilla.fun}}</td>
                                     <td>{{plantilla.vi}}</td>
                                     <td>{{plantilla.vt}}</td>
@@ -206,36 +203,22 @@
                      <div class="card-header">
                         Oferta educativa
                      </div>
-                     <div class="card-body">
-                        <oferta v-for="(of, index) in datosCentro.oferta" :of="of" :info="info" :key="index" />
-                        <span v-if="hayNoVisibles">Hay enseñanzas ocultas</span>
+                     <div class="card-body pl-0 pr-0" v-if="datosCentro.oferta.length">
+                        <ul class="list-group">
+                           <li class="list-group-item text-center" v-if="hayNoVisibles('oferta')">Hay enseñanzas ocultas</li>
+                           <oferta v-for="(of, index) in datosCentro.oferta" :of="of" :key="index" />
+                        </ul>
+                     </div>
+                     <div class="card-body" v-else>
+                        <p class="card-text puesto-pce">Sin oferta relevante</p>
                      </div>
                      <div class="card-header">
                         Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
                      </div>
-                     <div class="card-body" v-if="datosCentro.adj.length">
-                        <ul class="listaSinPadding">
-                           <template v-for="plaza in datosCentro.adj">
-                              <li class="div-puesto" v-bind:class="{'filtrado': plaza.filters.length}">
-                                 <h5 class="card-title">{{plaza.pue}} <span
-                                       class="nombrePuesto">({{nombrePuesto(plaza.pue)}})</span></h5>
-                                 <p class="card-text puesto-pce" v-if="plaza.pet === null">Vacante telefónica</p>
-                                 <p class="card-text puesto-pce" v-else-if="plaza.col==='J'">({{plaza.col}})
-                                    {{info.colectivos[plaza.col].v}}: T.S. {{plaza.esc[0]}}-{{plaza.esc[1]}}-{{plaza.esc[2]}} (pet.
-                                    {{plaza.pet}}).</p>
-                                 <p class="card-text puesto-pce" v-else>({{plaza.col}}) {{info.colectivos[plaza.col].v}}: Esc:
-                                    {{plaza.esc}} (pet. {{plaza.pet}}).</p>
-                                 <div class="textoFiltrado" v-if="plaza.filters.length">
-                                    Filtrado por
-                                    <ul>
-                                       <template v-for="filtro in plaza.filters">
-                                          <li>{{filtro | detallaFiltros}}</li>
-                                       </template>
-                                    </ul>
-                                 </div>
-                              </li>
-            
-                           </template>
+                     <div class="card-body pl-0 pr-0" v-if="datosCentro.adj.length">
+                        <ul class="list-group">
+                           <li class="list-group-item text-center" v-if="hayNoVisibles('adj')">Hay adjudicaciones ocultas</li>
+                           <adjudicacion v-for="(adj, index) in datosCentro.adj" :adj="adj" :key="index" />
                         </ul>
                      </div>
                      <div class="card-body" v-else>
@@ -243,11 +226,33 @@
                      </div>
                   </div>
                </div>
+            </div>
+
+            <script type="text/x-template" id="adjudicacion">
+               <li class="list-group-item" v-if="!$parent.ocultarBorrado || adj.filters.length === 0">
+                  <div v-bind:class="{'tachado': adj.filters.length}">
+                     <h6 class="card-title">{{adj.pue}} - <span
+                         class="nombrePuesto">{{nombrePuesto(adj.pue)}}</span></h6>
+                     <p class="card-text puesto-pce" v-if="adj.pet === null">Vacante telefónica</p>
+                     <p class="card-text puesto-pce" v-else-if="adj.col==='J'">({{adj.col}})
+                        {{nombreColectivo(adj.col)}}: T.S. {{adj.esc[0]}}-{{adj.esc[1]}}-{{adj.esc[2]}} (pet.
+                        {{adj.pet}}).</p>
+                     <p class="card-text puesto-pce" v-else>({{adj.col}}) {{nombreColectivo(adj.col)}}: Esc:
+                        {{adj.esc}} (pet. {{adj.pet}}).</p>
+                  </div>
+                  <div v-if="adj.filters.length">
+                     Filtrado por
+                     <ul>
+                        <li v-for="filtro in adj.filters">{{$parent.apelaCorreccion(filtro)}}</li>
+                     </ul>
+                  </div>
+               </li>
             </script>
+
             <script type="text/x-template" id="oferta">
-               <div class="oferta" v-if="visible">
-                  <h5 class="card-title" v-bind:class="{'tachado': of.ext || of.filters.length > 0}">{{info.ens[of.ens].nombre}} <span
-                        v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h5>
+               <li class="list-group-item" v-if="!$parent.ocultarBorrado || of.filters.length === 0">
+                  <h6 class="card-title" v-bind:class="{'tachado': of.filters.length}">{{nombre}} <span
+                        v-if="of.adu">(Adultos) </span><span v-if="of.idi">({{of.idi}}) </span></h6>
                   <p class="card-text info-oferta">
                      <span v-if="of.ext">(Extinto) </span>
                      <!-- ¿Está en extinción? -->
@@ -268,15 +273,13 @@
                      <!-- ¿Es un programa específico de FP? -->
                      <span v-if="of.pro">(Programa específico de FP) </span>
                   </p>
-                  <div class="textoFiltrado" v-if="of.filters.length">
+                  <div class="textoFiltrado" v-if="of.filters.length && !of.ext">
                      Filtrada por
                      <ul>
-                        <template v-for="filtro in of.filters">
-                           <li>{{filtro}}</li>
-                        </template>
+                        <li v-for="filtro in of.filters">{{$parent.apelaCorreccion(filtro)}}</li>
                      </ul>
                   </div>
-               </div>
+               </li>
                <!--<p class="card-text info-oferta">(Dual. Trasladado desde I.E.S. Diego Macías)</p>-->
             </script>
          </div>
