@@ -87,7 +87,7 @@
          <!-- Arriba -->
          <ul role="tablist">
             <li><a><i class="fa fa-arrow-up"></i></a></li>
-            <li><a><i class="fa fa-square-o"></i></a></li>
+            <li><a><i class="fa fa-arrows-alt"></i></a></li>
             <li><a href="#ajustes" role="tab"><i class="fa fa-cog"></i></a></li>
             <li class="disabled"><a href="#correcciones" role="tab"><i class="fa fa-filter"></i></a></li>
             <li class="disabled"><a href="#busqueda" role="tab"><i class="fa fa-search"></i></a></li>
@@ -297,7 +297,7 @@
 
             <script type="text/x-template" id="correccion">
                <fieldset :id="id" class="form-group">
-                  <legend>{{c.titulo}}</legend>
+                  <legend class="bg-light">{{c.titulo}}</legend>
                   <small class="help form-text text-muted">{{c.desc}}</small>
                   <opcion-corr v-for="(o, index) in c.opciones" :o="o" :idx="index" :key="index" />
                </fieldset>

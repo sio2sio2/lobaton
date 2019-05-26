@@ -147,7 +147,7 @@ const Interfaz = (function() {
       });
 
       // Botón para pantalla completa.
-      document.querySelector("#sidebar i.fa-square-o").parentNode
+      document.querySelector("#sidebar i.fa-arrows-alt").parentNode
               .addEventListener("click", e => {
          this.g.map.toggleFullscreen();
       });
