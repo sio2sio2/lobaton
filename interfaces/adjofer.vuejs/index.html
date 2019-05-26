@@ -203,10 +203,10 @@
                      <div class="card-header">
                         Oferta educativa
                      </div>
-                     <div class="card-body pl-0 pr-0" v-if="datosCentro.oferta.length">
+                     <div class="card-body pl-0 pr-0" v-if="oferta.length">
                         <ul class="list-group">
                            <li class="list-group-item text-center" v-if="hayNoVisibles('oferta')">Hay enseñanzas ocultas</li>
-                           <oferta v-for="(of, index) in datosCentro.oferta" :of="of" :key="index" />
+                           <oferta v-for="(of, index) in oferta" :of="of" :key="index" />
                         </ul>
                      </div>
                      <div class="card-body" v-else>
@@ -215,10 +215,10 @@
                      <div class="card-header">
                         Adjudicaciones del <abbr title="Procedimiento de Colocación de Efectivos">PCE</abbr>
                      </div>
-                     <div class="card-body pl-0 pr-0" v-if="datosCentro.adj.length">
+                     <div class="card-body pl-0 pr-0" v-if="adj.length">
                         <ul class="list-group">
                            <li class="list-group-item text-center" v-if="hayNoVisibles('adj')">Hay adjudicaciones ocultas</li>
-                           <adjudicacion v-for="(adj, index) in datosCentro.adj" :adj="adj" :key="index" />
+                           <adjudicacion v-for="(a, index) in adj" :adj="a" :key="index" />
                         </ul>
                      </div>
                      <div class="card-body" v-else>

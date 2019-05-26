@@ -186,7 +186,6 @@ const Interfaz = (function() {
       // Al cargar datos por primera vez deben habilitarse todos los
       // botones deshabilitados de la barra, excepto el de información de centro.
       this.g.once("dataloaded", e => {
-         console.log("DEBUG", "Paso por aquí");
          this.sidebar._container.querySelectorAll("#sidebar .leaflet-sidebar-tabs li.disabled")
              .forEach(e => !e.querySelector("a[href='#centro']") && e.classList.remove("disabled"));
       });
@@ -996,7 +995,14 @@ const Interfaz = (function() {
 
       //Al seleccionar un centro, cambian los datos a presentar.
       this.g.on("markerselect", e => {
-         this.centro.datosCentro = e.newval?e.newval.getData():null;
+         if(e.newval) {
+            this.centro.datosCentro = e.newval.getData();
+            this.centro.adj = this.centro.datosCentro.adj;
+            this.centro.oferta = this.centro.datosCentro.oferta;
+         }
+         else {
+            this.centro.datosCentro = this.centro.adj = this.centro.oferta = null;
+         }
       });
 
       // Al cargar una nueva especialidad, cambian los datos
@@ -1009,9 +1015,11 @@ const Interfaz = (function() {
          if(e.attr === "visual.ocultarBorrado") {
             this.centro.ocultarBorrado = this.options.ocultarBorrado;
          }
-         // Se aplica alguna corrección habiendo un centro seleccionado.
+         // Si se aplica alguna corrección
          else if(this.g.seleccionado && e.attr.startsWith("cor.")) {
-            this.centro.datosCentro = Object.assign({}, this.g.seleccionado.getData());
+            // Objec.create para que el objeto sea otro y VueJS detecte el cambio.
+            this.centro.oferta = Object.create(this.centro.datosCentro.oferta);
+            this.centro.adj = Object.create(this.centro.datosCentro.adj);
          }
       });
 
@@ -1019,6 +1027,10 @@ const Interfaz = (function() {
          el: "#centro :nth-child(2)",
          data: {
             datosCentro: null,
+            // Apartamos oferta y adj, porque son lo único que puede requerir
+            // actualización después de haber seleccionado un centro.
+            oferta: null,
+            adj: null,
             g: null,
             ocultarBorrado: this.options.ocultarBorrado
          },
@@ -1043,7 +1055,7 @@ const Interfaz = (function() {
             */
             decodificaCentro: codigo => this.g.Centro.get(codigo).getData().id.nom,
             hayNoVisibles: function(attr) {
-               return this.ocultarBorrado && this.datosCentro[attr].length > this.datosCentro[attr].total;
+               return this.ocultarBorrado && this[attr].length > this[attr].total;
             },
             // Confiere a la corrección un nombre más compresible para el usuario.
             apelaCorreccion: correccion => {
