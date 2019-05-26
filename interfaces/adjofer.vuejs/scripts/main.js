@@ -942,6 +942,18 @@ const Interfaz = (function() {
 
    function initCentro() {
 
+      // Confiere a la corrección un nombre más compresible para el usuario.
+      Vue.filter("identificarCorreccion", correccion => {
+         let nombre = correccion;
+         for(const f of this.filtrador.correcciones) {
+            if(f.nombre === correccion) {
+               nombre = f.titulo;
+               break
+            }
+         }
+         return nombre;
+      });
+
       Vue.component("oferta", {
          props: ["of"],
          template: "#oferta",
@@ -1056,17 +1068,6 @@ const Interfaz = (function() {
             decodificaCentro: codigo => this.g.Centro.get(codigo).getData().id.nom,
             hayNoVisibles: function(attr) {
                return this.ocultarBorrado && this[attr].length > this[attr].total;
-            },
-            // Confiere a la corrección un nombre más compresible para el usuario.
-            apelaCorreccion: correccion => {
-               let nombre = correccion;
-               for(const f of this.filtrador.correcciones) {
-                  if(f.nombre === correccion) {
-                     nombre = f.titulo;
-                     break
-                  }
-               }
-               return nombre;
             },
             // Devuelve el númerod de miembros de la plantilla orgánica.
             organica: function(org, norg) {

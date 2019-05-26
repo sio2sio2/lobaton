@@ -243,7 +243,7 @@
                   <div v-if="adj.filters.length">
                      Filtrado por
                      <ul>
-                        <li v-for="filtro in adj.filters">{{$parent.apelaCorreccion(filtro)}}</li>
+                        <li v-for="corr in adj.filters">{{corr | identificarCorreccion}}</li>
                      </ul>
                   </div>
                </li>
@@ -276,7 +276,7 @@
                   <div class="textoFiltrado" v-if="of.filters.length && !of.ext">
                      Filtrada por
                      <ul>
-                        <li v-for="filtro in of.filters">{{$parent.apelaCorreccion(filtro)}}</li>
+                        <li v-for="corr in of.filters">{{corr | identificarCorreccion}}</li>
                      </ul>
                   </div>
                </li>
