@@ -4,6 +4,10 @@
    box-sizing: border-box;
 }
 
+.leaflet-sidebar-tabs {
+   overflow-y: auto;
+}
+
 #sidebar .leaflet-sidebar-pane article {
    padding: 10px;
 }
@@ -105,4 +109,12 @@
     .leaflet-sidebar.leaflet-touch {
        border-right: none;
     }
+}
+
+
+@media (max-height: 400px) {
+   /* Corrección de bug visual que hacía que los iconos de la barra lateral se superpusieran unos a otros */
+   .leaflet-sidebar-tabs, .leaflet-sidebar-tabs > ul {
+      position: relative;
+   }
 }
