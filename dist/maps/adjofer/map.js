@@ -161,6 +161,7 @@ const mapAdjOfer = (function(path, opts) {
          if(this.options.loading === true) this.options.loading = ajaxGif;
 
          loadMap.call(this);
+         createLoc.call(this); // Issue #79
          createMarker.call(this);
          buildStatus.call(this);  // Issue #62
 
@@ -254,18 +255,29 @@ const mapAdjOfer = (function(path, opts) {
                         title: f.properties.id.nom
                      });
 
-                     // Issue #33
+                     // Issue #33, #79
                      // Para cada centro que creemos hay que añadir a los datos
                      // la propiedad que indica si la marca está o no seleccionada.
-                     centro.on("dataset", e => e.target.changeData({sel: false}));
+                     // y otra que representa su solicitud (0, si no está solicitado)
+                     centro.on("dataset", e => e.target.changeData({
+                        sel: false,
+                        peticion: 0
+                     }));
 
                      // Issue #41
                      if(this.options.light) centro.once("dataset", e => {
                         e.target.on("click", e => {
-                           this.seleccionado = this.seleccionado === e.target?null:e.target
+                           switch(this.mode) {
+                              case "normal":
+                                 this.seleccionado = this.seleccionado === e.target?null:e.target
+                                 break;
+                              case "solicitud":
+                                 this.solicitado = e.target;
+                                 break;
+                           }
                         });
                      });
-                     // Fin issue #41, #33
+                     // Fin issue #33, #41, #79
 
                      return centro;
                   },
@@ -528,6 +540,11 @@ const mapAdjOfer = (function(path, opts) {
       crearAttrEvent.call(this, "seleccionado", "markerselect");
       // Fin issue #27
 
+      // Issue #79
+      crearAttrEvent.call(this, "solicitado", "solset");
+      crearAttrEvent.call(this, "mode", "modeset", "normal"); 
+      // Issue #79
+
       // Aplicación de issue #33: Cambiamos la marca
       // al seleccionarla o deseleccionarla.
       this.on("markerselect", function(e) {
@@ -735,8 +752,88 @@ const mapAdjOfer = (function(path, opts) {
 
    }
 
+
+   // Issue #79
    /**
-   Crea la clase de marca para los centros y le
+    * Crea la capa con las localidades
+    */
+   function createLoc() {
+
+      const icono = new L.Icon({
+         iconUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
+         iconRetinaUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
+         iconSize: [25, 41],
+         iconAnchor: [12, 41]
+      });
+
+      /**
+       * Marca para localidad
+       * @memberof MadAdjOfer.prototype
+       * @type {L.Marker}
+       *
+       */
+      this.Localidad = L.Marker.extend({
+         options: {
+            icon: icono
+         },
+         getData: function() {
+            return this.feature.properties;
+         }
+      });
+
+      this.Localidad.get = function(cod) {
+         for(const loc of this.Localidad.store) {
+            if(loc.getData().cod == cod) return loc;
+         }
+         return null;
+      }
+
+      /**
+       * Capa para almacenar las localidades.
+       * @memberof MadAdjOfer.prototype
+       * @type {L.GeoJSON}
+       *
+       */
+      this.localidades = L.geoJSON(undefined, {
+         pointToLayer: (f, p) => new this.Localidad(p, { title: f.properties.nom }),
+         onEachFeature: (f, l) => {
+            l.on("click", e => {
+               if(this.options.light) this.solicitado = e.target;
+            });
+         }
+      });
+
+      if(!this.options.pathLoc) {
+         console.error("No pueden cargarse las localidades");
+         return;
+      }
+
+      L.utils.load({
+         url: this.options.pathLoc,
+         callback: xhr => {
+            const data = JSON.parse(xhr.responseText);
+            this.localidades.addData(data);
+            this.Localidad.store = this.localidades.getLayers();
+
+            // https://github.com/Leaflet/Leaflet/issues/1324
+            this.map.on("moveend", e => {
+               const mapBounds = this.map.getBounds();
+               for(const loc of this.Localidad.store) {
+                  const visible = mapBounds.contains(loc.getLatLng());
+                  if(loc._icon && !visible) loc.removeFrom(this.localidades);
+                  else if(!loc._icon && visible) loc.addTo(this.localidades);
+               }
+            });
+         },
+         failback: xhr => {
+            console.error("No pueden cargarse las localidades");
+         }
+      });
+   }
+   // Fin issue #79
+
+   /**
+   * Crea la clase de marca para los centros y le
    * añade las correcciones y filtros definidos para ella.
    * @this {MapAdjOfer} El objeto que implemnta el mapa
    * @private
@@ -2150,6 +2247,219 @@ const mapAdjOfer = (function(path, opts) {
       return new ORS();
    });
 
+
+   // Issue #79
+   // Módulo para gestionar las solicitudes de centro.
+   const Solicitud = (function() {
+
+      /**
+       * centros debe ser la propiedad donde se almacenan los centros
+       * y localidades la propiedad donde se almacenan localidades,
+       * Puede usarse la notación de punto.
+       */
+      function Solicitud(adjofer) {
+         Object.defineProperties(this, {
+            "store": {
+               value: [],
+               writable: false,
+               enumerable: false,
+               configurable: false,
+            },
+            "adjofer": {
+               value: adjofer,
+               writable: false,
+               enumerable: false,
+               configurable: false
+            }
+         });
+      }
+
+      Object.defineProperties(Solicitud.prototype, {
+         centros: {
+            get: function() {
+               return this.adjofer.Centro.store;
+            },
+            enumerable: true,
+            configurable: false,
+         },
+         localidades: {
+            get: function() {
+               return this.adjofer.localidades.getLayers();
+            },
+            enumerable: true,
+            configurable: false,
+         }
+      });
+
+      // Obtiene la marca de un centro o una localidad a partir del código.
+      function getMarker(centro) {
+         if(centro instanceof L.Marker) return centro;
+
+         let ret,
+             cod = centro.toString(cod);
+
+         const last = cod.charAt(cod.length-1);
+         if(last === "C" || last === "L") cod = cod.slice(0,-1);
+
+         switch(last) {
+            case "C":
+               ret = this.adjofer.Centro.get(cod);
+               break;
+
+            case "L":
+               ret = this.adjofer.Localidad.get(cod);
+               break;
+
+            default:  // No sabemos aún qué es.
+               switch(cod.length) {
+                  case 7:  // Es con seguridad un centro.
+                     ret = this.adjofer.Centro.get(cod);
+                     break;
+
+                  case 9:  // Es con seguridad una localidad
+                     ret = this.adjofer.Localidad.get(cod);
+                     break;
+
+                  case 8:
+                     ret = this.adjofer.Centro.get(cod);
+                     // Es un centro a menos que empiece por 41,
+                     // en cuyo caso puede ser una localidad de Almería
+                     // o un centro de Sevilla.
+                     if(cod.charAt(0) === "41" && !ret) {
+                        ret = this.adjofer.Localidad.get(cod);
+                     }
+                     break;
+
+                  default:
+                     ret = null;
+               }
+         }
+
+         return ret;
+      }
+
+      /**
+       * Devuelve cuál es el centro que ocupa la petición N. null, si no
+       * ocupa ninguna petición.
+       */
+      Solicitud.prototype.getCentro = function(position) {
+         return this.centro[position - 1] || null;
+      }
+
+      /**
+       * Devuelve qué petición ocupa el centro. 0, si no está pedido.
+       */
+      Solicitud.prototype.getPosition = function(centro) {
+         centro = getMarker.call(this, centro);
+         if(!centro) return 0;
+
+         for(let i=0; i<this.store.length; i++) {
+            if(this.store[i] === centro) return i+1;
+         }
+         return 0;
+      }
+
+
+      /**
+       * Añade un centro al final de la lista de peticiones.
+       * @param {L.Marker|Number|String} centro El centro a añadir.
+       *
+       * @returns {L.Marker} El propio centro si se añadió, o null
+       * si no se hizo.
+       */
+      Solicitud.prototype.add = function(centro) {
+         centro = getMarker.call(this, centro);
+         if(!centro || this.getPosition(centro)) return null;
+
+         this.store.push(centro);
+         if(centro.changeData) centro.changeData({solicitud: this.store.length});
+         return centro;
+      }
+
+
+      function actualiza(pos1, pos2) {
+         pos2 = pos2 || this.store.length;
+         for(let i=pos1 - 1; i < pos2; i++) {
+            const centro = this.store[i];
+            if(centro.changeData) centro.changeData({solicitud: i+1});
+         }
+         return this.store.slice(pos1 - 1, pos2);
+      }
+
+      /**
+       * Elimina uno o varios centros por su posición en la lista.
+       * @param {Number} pos  Posición a partir de la cuál se eliminarán centros.
+       * @param {Number} cuantos  Cuantos centros se quieren borrar. Si no
+       * se especifican, se borran todos hasta el final.
+       *
+       * @returns Array  Un array con los centros afectados.
+       */
+      Solicitud.prototype.delete = function(pos, cuantos) {
+         const primero = this.getPosition(pos);
+         if(!primero) return [];
+
+         const restantes = this.store.length - pos - 1;
+         if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
+         const eliminados = this.store.splice(pos-1, restantes);
+         for(const centro of eliminados) {
+            if(centro.changeData) centro.changeData({solicitud: 0});
+         }
+         return actualiza.call(this, pos);
+      }
+
+      /**
+       * Elimina un centro de la lista de peticiones.
+       * @param {L.Marker|Number|String} centro El centro a añadir.
+       * 
+       * @returns Array  Un array con los centros afectados.
+       */
+      Solicitud.prototype.remove = function(centro) {
+         centro = getMarker.call(this, centro);
+         if(!centro) return [];
+         const pos = this.getPosition(centro);
+         return pos > 0?this.delete(pos, 1):[];
+      }
+
+
+      /**
+       * Inserta un centro en la posición indicada de la lista de peticiones.
+       * @param {L.Marker|Number|String} centro El centro a añadir.
+       * @param Number pos  La posición que debe ocupar en la lista.
+       * 
+       * @returns Array  Un array con los centros afectados.
+       */
+      Solicitud.prototype.insert = function(centro, pos) {
+         centro = getMarker.call(this, centro);
+         if(!centro || this.getPosition(centro)) return [];
+
+         this.store.splice(pos - 1, 0, centro);
+         return actualiza.call(this, pos - 1);
+      }
+
+
+      /**
+       * Mueve de una posición a otra de la lista un número determinado de centros.
+       */
+      Solicitud.prototype.move = function(pos1, pos2, cuantos) {
+         if(pos2 < 1) pos2 = 1;
+         else if(pos2>this.store.length) pos2 = this.store.length;
+
+         const restantes = this.store.length - pos1 - 1;
+         if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
+
+         const incr = pos2 - pos1;
+         if(incr === 0 || incr > 0 && cuantos > incr
+            || pos1 > this.store.length) return [];
+
+         const movidos = this.store.splice(pos1 - 1, cuantos);
+         this.store.splice(pos2 - 1, 0, movidos);
+
+         return incr < 0?actualiza.call(p2, p1 + cuantos):actualiza.call(p1, p2 + cuantos);
+      }
+
+      return Solicitud;
+   })();
+   // Fin issue #79
 
    function crearPopup(destino, ruta) {
       const container = document.createElement("article"),

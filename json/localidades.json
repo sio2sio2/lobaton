@@ -1,0 +1,27 @@
+{
+   "type": "FeatureCollection",
+   "features": [
+      {
+         "type": "Feature",
+         "geometry": {
+            "type": "Point",
+            "coordinates": [-6.116667, 36.7]
+         },
+         "properties": {
+            "nom": "Jerez de la Frontera",
+            "cod": "10200014"
+         }
+      },
+      {
+         "type": "Feature",
+         "geometry": {
+            "type": "Point",
+            "coordinates": [-5.983333, 37.383333]
+         },
+         "properties": {
+            "nom": "Sevilla",
+            "cod": "410910002"
+         }
+      }
+   ]
+}
