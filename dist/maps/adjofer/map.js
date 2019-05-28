@@ -2322,15 +2322,26 @@ const mapAdjOfer = (function(path, opts) {
             get: function() {
                return this.adjofer.Centro.store;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: false,
          },
          localidades: {
             get: function() {
                return this.adjofer.localidades.getLayers();
             },
-            enumerable: true,
+            enumerable: false,
             configurable: false,
+         },
+         list: {
+            get: function() {
+               return this.store.map(e => {
+                  const data = e.getData();
+                  return data.cod?(data.cod + "L").padStart(10, "0"):
+                                  (data.id.cod + "C").padStart(9, "0");
+               });
+            },
+            enumerable: true,
+            configurable: false
          }
       });
 
@@ -2386,7 +2397,7 @@ const mapAdjOfer = (function(path, opts) {
        * ocupa ninguna petición.
        */
       Solicitud.prototype.getCentro = function(position) {
-         return this.centro[position - 1] || null;
+         return this.store[position - 1] || null;
       }
 
       /**
@@ -2438,16 +2449,16 @@ const mapAdjOfer = (function(path, opts) {
        * @returns Array  Un array con los centros afectados.
        */
       Solicitud.prototype.delete = function(pos, cuantos) {
-         const primero = this.getPosition(pos);
-         if(!primero) return [];
+         if(pos<1 || pos>this.store.length) return [];
 
-         const restantes = this.store.length - pos - 1;
+         const restantes = this.store.length - pos + 1;
          if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
-         const eliminados = this.store.splice(pos-1, restantes);
+         const eliminados = this.store.splice(pos-1, cuantos);
          for(const centro of eliminados) {
             if(centro.changeData) centro.changeData({peticion: 0});
          }
-         return actualiza.call(this, pos);
+         const actualizados = actualiza.call(this, pos);
+         return eliminados.concat(actualizados);
       }
 
       /**

@@ -54,14 +54,33 @@ window.onload = function() {
          console.log("DEBUG - oferta", Array.from(e.target.getData().oferta));
          console.log("DEBUG - adj", Array.from(e.target.getData().adj));
       });
-
-
-   g.once("dataloaded", function() {
-      setTimeout(() => {
-
-      }, 200);
    });
 
+
+   // Para seguir los centros que se piden y dejan de pedirse.
+   g.on("requestset", e => {
+      const data = e.marker.getData(),
+       nom = data.id?data.id.nom:data.nom;
+
+      if(e.newval === 0) {
+         console.log(`Deja de pedirse '${nom}'`);
+      }
+      else {
+         console.log(`Se pide '${nom}' en la petición ${e.newval}`);
+      }
+   });
+
+
+   function solicitar() {
+      g.solicitud.add("11004866");
+      g.solicitud.add(21002100);
+      g.solicitud.add(g.Centro.get(23001111));
+      g.solicitud.add("11700603C");
+   }
+
+   g.once("dataloaded", function(e) {
+      if(g.general.entidad[0] === 590107) solicitar();
+      else setTimeout(() => g.once("dataloaded", arguments.callee), 250);
    });
 
    poblarSelectores();

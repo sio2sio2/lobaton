@@ -1032,10 +1032,115 @@ realizan sobre el mapa:
    seguiran siendo necesarios otros eventos como los asociados a las
    correcciones y filtros o a los eventos de ratón.
 
+Petición de centros
+*******************
+Para facilitar la creación de un formulario de petición de destinos, el
+:ref:`objeto de manipulación del mapa <crea-mapadjofer>`_ añade un **atributo**:
+
+.. js:attribute:: solicitud
+
+   Objeto que permite manipular la lista de peticiones. Tiene sus propios
+   métodos y atributos que será necesario conocer si se implementa la solicitud
+   de centros. Por ejemplo, esta orden::
+
+      g.solicitud.add(11004866)
+
+   añade el centro con el código indicado al final de la lista de peticiones.
+
+Además de este atributo, los centros tiene dos características más relacionadas
+con la petición de destinos:
+
+* Entre sus datos un atributo llamado petición que indica cuál en que posición
+  se pidio el centro. Si el centro no está pedido, vale **0**. Al comienzo,
+  todos los centros tiene este atributo a **0**.
+
+* El estilo de icono "*solicitud*", distinto radicalmente al estilo "*boliche*"
+  y que sólo muestra como dato relevante el número de petición.
+
+Descripción de ``solicitud``
+============================
+
+Atributos
+---------
+
+.. js:attribute:: list
+
+   Array con los códigos de los centros y localidades solicitadas. En el caso
+   de los centros el código se muestra como una cadena de 9 caracteres el último
+   de los cuales es el carácter "*C*"; y en el caso de las localidades, como
+   una cadena de 10 caracteres el último de los cuales es el carácter "*L*".
+
+.. seealso:: Revice los referente a localidades, indicado :ref:`más adelante
+   <adjofer-localidades>`_.
+
+Métodos
+-------
+
+.. js:method:: add(centro)
+
+   Añade el centro (o localidad) suminitrado al final de la lista de peticiones.
+   El argumento puede ser el código (como número o como cadena o incluso como
+   cadena acabada en "*C*" o "*L*") o el objeto marca que lo representa en el
+   mapa.
+
+   .. note:: Para el resto de métodos en los que sea posible pasar como argumento
+      un centro, son posibles todas estas posibilidades.
+
+   Si la adición tiene éxite, devuelve el propio centro; en caso contrario
+   (p.e. porque el centro no existe o porque ya se encontraba en la lista,
+   devuelve ``null``.
+
+   Ejemplo::
+
+      g.solicitud.add(11004866);
+      g.solicitud.add(21002100);
+      g.solicitud.add("23001111C");
+      g.solicitud.list;  // Devuelve ["11004866C", "21002100C", "23001111C"]
+
+.. js:method:: getCentro(pos)
+
+   Devuelve la marca del centro (o localidad) que ocupa la posición *N* en la
+   lista de peticiones. Devuelve ``null``, si la posición no existe::
+
+      const centro = g.solicitud.getCentro(1);
+      centro.getData().id.cod  // Devuelve 11004866
+
+.. js:method:: getPosition(centro)
+
+   Devuelve la posición en la lista de peticiones del centro (o localidad)
+   suministrado. Si no se encuentra el centro, se devuelve **0**::
+
+      g.solicitud.getPosition(11004866);  // Devuelve 1.
+      g.solicitud.getPosition("11004866C");  // Devuelve 1.
+      g.solicitud.getPosition(centro);  // Devuelve 1.
+
+.. js:method:: delete(pos, cuantos)
+
+   Elimina de la listas tantos centros (o localidades) como se especifique en
+   *cuántos* a partir de la posición indicada::
+
+      g.solicitud.delete(2, 2);
+      g.solicitud.list;  // Devuelve ["11004866C"]
+
+   Devuelve un array con las marcas de los centros afectados por la
+   eliminación, o sea, los eliminados y todos los que iban por detrás en lista
+   de peticiones.
+
+Eventos
+=======
+
+Recetas
+=======
+
+.. _adjofer-localidades:
+
+Localidades
+***********
+
 .. rubric:: Notas al pie
 
 .. [#] Lo cual no significa que devuelve todas las marcas de centro, ya que
-   puede haber centros que no se encuentren sobre el mapa porque hayan sido
+   puede haber centros que no se encuentren sobre el mapa porque hayan ido
    desaparecido al filtrarse. Para obtener todos los centros necesitaría
    recurrir a ``g.Centro.store``.
 
