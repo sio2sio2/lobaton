@@ -256,13 +256,41 @@ const mapAdjOfer = (function(path, opts) {
                      });
 
                      // Issue #33, #79
-                     // Para cada centro que creemos hay que añadir a los datos
-                     // la propiedad que indica si la marca está o no seleccionada.
-                     // y otra que representa su solicitud (0, si no está solicitado)
-                     centro.on("dataset", e => e.target.changeData({
-                        sel: false,
-                        peticion: 0
-                     }));
+                     centro.on("dataset", e => {
+                        // Para cada centro que creemos hay que añadir a los datos
+                        // la propiedad que indica si la marca está o no seleccionada.
+                        e.target.changeData({sel: false });
+
+                        const self = this;
+
+                        // y otra que representa su solicitud
+                        // En este caso, el cambio se asocia al evento requestset
+                        Object.defineProperties(e.target.getData(), {
+                           _peticion: {
+                              value: 0,
+                              writable: true,
+                              configurable: false,
+                              enumerable: false
+                           },
+                           peticion: {
+                              get: function() {
+                                 return this._peticion;
+                              },
+                              set: function(value) {
+                                 const oldval = this.peticion;
+                                 this._peticion = value;
+                                 self.fire("requestset", {
+                                    oldval: oldval,
+                                    newval: value,
+                                    marker: e.target
+                                 });
+                              },
+                              enumerable: true,
+                              configurable: false
+                           }
+                        });
+                     });
+
 
                      // Issue #41
                      if(this.options.light) centro.once("dataset", e => {
@@ -272,7 +300,7 @@ const mapAdjOfer = (function(path, opts) {
                                  this.seleccionado = this.seleccionado === e.target?null:e.target
                                  break;
                               case "solicitud":
-                                 this.solicitado = e.target;
+                                 this.fire("requestclick", {marker: e.target});
                                  break;
                            }
                         });
@@ -540,10 +568,7 @@ const mapAdjOfer = (function(path, opts) {
       crearAttrEvent.call(this, "seleccionado", "markerselect");
       // Fin issue #27
 
-      // Issue #79
-      crearAttrEvent.call(this, "solicitado", "solset");
-      crearAttrEvent.call(this, "mode", "modeset", "normal"); 
-      // Issue #79
+      crearAttrEvent.call(this, "mode", "modeset", "normal"); // Issue #79
 
       // Aplicación de issue #33: Cambiamos la marca
       // al seleccionarla o deseleccionarla.
@@ -798,7 +823,7 @@ const mapAdjOfer = (function(path, opts) {
          pointToLayer: (f, p) => new this.Localidad(p, { title: f.properties.nom }),
          onEachFeature: (f, l) => {
             l.on("click", e => {
-               if(this.options.light) this.solicitado = e.target;
+               if(this.options.light) this.fire("requestclick", {marker: e.target});
             });
          }
       });
