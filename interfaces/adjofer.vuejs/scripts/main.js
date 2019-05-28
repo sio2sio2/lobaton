@@ -43,6 +43,7 @@ const Interfaz = (function() {
          unclusterZoom: 13,
          autostatus: false,
          search: false,
+         pathLoc: "../../json/localidades.json",
          ors: {
             key: "5b3ce3597851110001cf62489d03d0e912ed4440a43a93f738e6b18e",
          }

@@ -95,6 +95,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#correcciones">3.2.7. Correcciones</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filtros">3.2.8. Filtros</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#eventos">3.2.9. Eventos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#peticion-de-centros">3.2.10. Petición de centros</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#descripcion-de-solicitud">3.2.10.1. Descripción de <code class="docutils literal notranslate"><span class="pre">solicitud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">3.2.10.2. Eventos</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">3.2.10.3. Filtros</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#localidades">3.2.10.4. Localidades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#recetas">3.2.10.5. Recetas</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -695,7 +703,7 @@ a consultarlos y usarlos. Para cambiarlos existen métodos específicos.</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">getLayers</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>nos devolvería todas las marcas de centro que se encuentren sobre el mapa<a class="footnote-reference" href="#id2" id="id1">[1]</a>.  No presenta ninguna característica extendida.</p>
+<p>nos devolvería todas las marcas de centro que se encuentren sobre el mapa<a class="footnote-reference" href="#id7" id="id1">[1]</a>.  No presenta ninguna característica extendida.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1260,16 +1268,360 @@ el objeto <code class="docutils literal notranslate"><span class="pre">MapAdjOfe
 seguiran siendo necesarios otros eventos como los asociados a las
 correcciones y filtros o a los eventos de ratón.</p>
 </div>
+</div>
+<div class="section" id="peticion-de-centros">
+<h2>3.2.10. Petición de centros<a class="headerlink" href="#peticion-de-centros" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Para facilitar la creación de un formulario de petición de destinos, el
+<a class="reference internal" href="#crea-mapadjofer"><span class="std std-ref">objeto de manipulación del mapa</span></a> añade dos <strong>atributos</strong>:</p>
+<dl class="attribute">
+<dt id="mode">
+<code class="descname">mode</code><a class="headerlink" href="#mode" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Modo de trabajo. Hay definidos dos: el modo «<em>normal</em>» que provoca que un
+<em>click</em> de ratón sobre la marca de un centro lo seleccione y el modo
+«<em>solicitud</em>» que en vez de seleccionar el centro, lanza el evento
+<a class="reference internal" href="#adjofer-event-requestclick"><span class="std std-ref">requestclick</span></a>. En este segundo modo, el
+evento también se lanza cuando se hace <em>click</em> sobre la marca de una
+localidad.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Esto es cierto siempre que la opción <em>light</em> del objeto sea
+verdadera. Si no es el caso, no hay ninguna acción asociada al <em>click</em>
+sobre el centro.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="solicitud">
+<code class="descname">solicitud</code><a class="headerlink" href="#solicitud" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Objeto que permite manipular la lista de peticiones. Tiene sus propios
+métodos y atributos que será necesario conocer si se implementa la solicitud
+de centros. Por ejemplo, esta orden:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">11004866</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>añade al final de la lista de peticiones el centro con el código indicado.</p>
+</dd></dl>
+
+<p>Además de este atributo, los centros tiene dos características más relacionadas
+con la petición de destinos:</p>
+<ul class="simple">
+<li>Entre sus datos un atributo llamado <code class="docutils literal notranslate"><span class="pre">peticion</span></code> que indica en que
+posición se pidió el centro. Si el centro no está pedido, vale <strong>0</strong>. Al
+comienzo, todos los centros tiene este atributo a <strong>0</strong>.</li>
+<li>El estilo de icono «<em>solicitud</em>», distinto radicalmente al estilo «<em>boliche</em>»,
+y que sólo muestra como dato relevante el número de petición.</li>
+</ul>
+<div class="section" id="descripcion-de-solicitud">
+<h3>3.2.10.1. Descripción de <code class="docutils literal notranslate"><span class="pre">solicitud</span></code><a class="headerlink" href="#descripcion-de-solicitud" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="id2">
+<h4>3.2.10.1.1. Atributos<a class="headerlink" href="#id2" title="Enlazar permanentemente con este título">¶</a></h4>
+<dl class="attribute">
+<dt id="list">
+<code class="descname">list</code><a class="headerlink" href="#list" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Array con los códigos de los centros y localidades solicitadas. En el caso
+de los centros el código se muestra como una cadena de 9 caracteres el último
+de los cuales es el carácter «<em>C</em>»; y en el caso de las localidades, como
+una cadena de 10 caracteres el último de los cuales es el carácter «<em>L</em>».</p>
+</dd></dl>
+
+<div class="admonition seealso">
+<p class="first admonition-title">Ver también</p>
+<p class="last">Revise lo referente a localidades, indicado <a class="reference internal" href="#adjofer-localidades"><span class="std std-ref">más adelante</span></a>.</p>
+</div>
+<dl class="attribute">
+<dt id="BolicheIcono">
+<code class="descname">BolicheIcono</code><a class="headerlink" href="#BolicheIcono" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Constructor para el icono de tipo <em>boliche</em>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">BolicheIcono</span><span class="p">;</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">());</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SolicitudIcono">
+<code class="descname">SolicitudIcono</code><a class="headerlink" href="#SolicitudIcono" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Constructir para el icono de tipo <em>solicitud</em>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id3">
+<h4>3.2.10.1.2. Métodos<a class="headerlink" href="#id3" title="Enlazar permanentemente con este título">¶</a></h4>
+<dl class="method">
+<dt id="add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>centro</em><span class="sig-paren">)</span><a class="headerlink" href="#add" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Añade el centro (o localidad) suminitrado al final de la lista de peticiones.
+El argumento puede ser el código (como número o como cadena o incluso como
+cadena acabada en «<em>C</em>» o «<em>L</em>») o el objeto marca que lo representa en el
+mapa.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Para el resto de métodos en los que sea posible pasar como argumento
+un centro, son posibles todas estas posibilidades.</p>
+</div>
+<p>Si la adición tiene éxite, devuelve el propio centro; en caso contrario
+(p.e. porque el centro no existe o porque ya se encontraba en la lista,
+devuelve <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+<p>Ejemplo:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">11004866</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">21002100</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s2">&quot;23001111C&quot;</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">11700603</span><span class="p">));</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">list</span><span class="p">;</span>  <span class="c1">// Devuelve [&quot;11004866C&quot;, &quot;21002100C&quot;, &quot;23001111C&quot;, &quot;11700603C&quot;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="getCentro">
+<code class="descname">getCentro</code><span class="sig-paren">(</span><em>pos</em><span class="sig-paren">)</span><a class="headerlink" href="#getCentro" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve la marca del centro (o localidad) que ocupa la posición <em>N</em> en la
+lista de peticiones. Devuelve <code class="docutils literal notranslate"><span class="pre">null</span></code>, si la posición no existe:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">centro</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">getCentro</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">id</span><span class="p">.</span><span class="nx">cod</span><span class="p">;</span>  <span class="c1">// Devuelve 11004866</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="getPosition">
+<code class="descname">getPosition</code><span class="sig-paren">(</span><em>centro</em><span class="sig-paren">)</span><a class="headerlink" href="#getPosition" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Devuelve la posición en la lista de peticiones del centro (o localidad)
+suministrado. Si no se encuentra el centro, se devuelve <strong>0</strong>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">getPosition</span><span class="p">(</span><span class="mi">11004866</span><span class="p">);</span>  <span class="c1">// Devuelve 1.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">getPosition</span><span class="p">(</span><span class="s2">&quot;11004866C&quot;</span><span class="p">);</span>  <span class="c1">// Devuelve 1.</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">getPosition</span><span class="p">(</span><span class="nx">centro</span><span class="p">);</span>  <span class="c1">// Devuelve 1.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>centro</em><span class="sig-paren">)</span><a class="headerlink" href="#remove" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Elimina el centro solicitado de la lista de peticiones. Devuelve un array con
+todos los centros afectados, esto es, un array que contiene el propio centro
+y todos los posteriores:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="mi">23001111</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">list</span><span class="p">;</span>  <span class="c1">// Devuelve [&quot;11004866C&quot;, &quot;21002100C&quot;, &quot;11700603C&quot;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>pos</em>, <em>cuantos</em><span class="sig-paren">)</span><a class="headerlink" href="#delete" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Elimina de la listas tantos centros (o localidades) como se especifique en
+<em>cuántos</em> a partir de la posición indicada. Si no se especifica cuántos,
+borra hasta el final de la lista:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">list</span><span class="p">;</span>  <span class="c1">// Devuelve [&quot;11004866C&quot;, &quot;11700603C&quot;]</span>
+</pre></div>
+</div>
+<p>Devuelve un array con las marcas de los centros afectados por la
+eliminación, o sea, los eliminados y todos los que iban por detrás en lista
+de peticiones.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>centro</em>, <em>pos</em><span class="sig-paren">)</span><a class="headerlink" href="#insert" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Agrega un centro (o localidad) en la posición indicada de la lista de
+peticiones. Devuelve un array con las marcas de los centros afectados por la
+eliminación:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">insert</span><span class="p">(</span><span class="mi">11004039</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="move">
+<code class="descname">move</code><span class="sig-paren">(</span><em>pos1. pos2</em>, <em>cuantos</em><span class="sig-paren">)</span><a class="headerlink" href="#move" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Mueve tantos centros como especifique <em>cuantos</em> desde la <em>pos1</em> a la posición
+necesaria para que se inserten antes del que ocupa la <em>pos2</em>:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">list</span><span class="p">;</span>  <span class="c1">// Devuelve [&quot;11004866C&quot;, &quot;21002100C&quot;, &quot;23001111C&quot;, &quot;11700603C&quot;]</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">move</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">.</span><span class="nx">list</span><span class="p">;</span>  <span class="c1">// Devuelve [&quot;23001111C&quot;, &quot;11004866C&quot;, &quot;21002100C&quot;, &quot;11700603C&quot;]</span>
+</pre></div>
+</div>
+<p>Devuelve, como el resto de métodos, un array con todos los centros.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Todos los métodos que alteran la lista de peticiones, se encargan de
+modificar el atributo <code class="docutils literal notranslate"><span class="pre">peticion</span></code> de los datos de cada centro que sufre
+cambios en su número de petición. También alteran el valor de
+<a class="reference internal" href="#status" title="status"><code class="xref js js-attr docutils literal notranslate"><span class="pre">status</span></code></a> para incorporar la nueva lista.</p>
+</div>
+<div class="admonition warning" id="adjofer-solicitud-no-centro">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">La lista de peticiones se conserva, aunque se cambie de
+especialidad. Los centros solicitados que en la nueva especialidad no
+existan, carecerán de marca, por lo que internamente se almacenará para ellos
+no una marca, sino el código correspondiente. Esto tiene repercusión en los
+valores de retorno de aquellos métodos que devuelven las marcas de los
+centros afectados por un cambio en la lista, ya que consecuentemente no
+devolverán las marcas de estos centros inexistentes, sino sus códigos
+normalizados<a class="footnote-reference" href="#id8" id="id4">[2]</a>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>3.2.10.2. Eventos<a class="headerlink" href="#id5" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Hay varios eventos del objeto <code class="docutils literal notranslate"><span class="pre">MapAdjOfer</span></code> aplicables exclusivamente a la
+petición de centros y localidades:</p>
+<dl class="docutils">
+<dt><strong>modeset</strong></dt>
+<dd><p class="first">Se lanza cuando cambia el modo de trabajo. Como en otros tipos de eventos,
+el objeto evento guarda en el atributo <code class="docutils literal notranslate"><span class="pre">oldval</span></code> el modo viejo y en
+<code class="docutils literal notranslate"><span class="pre">newval</span></code> el nuevo:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;modeset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">oldval</span> <span class="o">!==</span> <span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Ha pasado de </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">oldval</span><span class="si">}</span><span class="sb"> a </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<div class="last admonition warning">
+<p class="first admonition-title">Advertencia</p>
+<p class="last">Pulsar sobre un centro en este modo «<em>solicitud</em>», no provoca
+ningún cambio en la lista de peticiones: es labor de programdor que así
+sea.</p>
+</div>
+</dd>
+</dl>
+<dl class="docutils" id="adjofer-event-requestclick">
+<dt><strong>requestclick</strong></dt>
+<dd><p class="first">Se lanza cada vez que se pulsa un centro o una localidad si se trabaja en el
+modo «<em>solicitud</em>». El evento añade el atributo <code class="docutils literal notranslate"><span class="pre">marker</span></code> que identifica la
+marca sobre la que se ha pulsado:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;requestclick&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">getData</span><span class="p">(),</span>
+         <span class="nx">nombre</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">nom</span><span class="o">?</span><span class="nx">data</span><span class="p">.</span><span class="nx">nom</span><span class="o">:</span><span class="nx">data</span><span class="p">.</span><span class="nx">id</span><span class="p">.</span><span class="nx">nom</span><span class="p">;</span>
+
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Parece que quiere pedir&quot;</span><span class="p">,</span> <span class="nx">nombre</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>requestset</strong></dt>
+<dd><p class="first">Se lanza cada vez que un centro modifica su atributo de petición. El evento
+dispone de los atributos <code class="docutils literal notranslate"><span class="pre">oldval</span></code> y <code class="docutils literal notranslate"><span class="pre">newval</span></code> para conocer los valores de
+las peticiones; y <code class="docutils literal notranslate"><span class="pre">marker</span></code> para conocer cuál fue el centro que modificó el
+atributo:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;requestset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="kr">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">getData</span><span class="p">(),</span>
+    <span class="nx">nom</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">id</span><span class="o">?</span><span class="nx">data</span><span class="p">.</span><span class="nx">id</span><span class="p">.</span><span class="nx">nom</span><span class="o">:</span><span class="nx">data</span><span class="p">.</span><span class="nx">nom</span><span class="p">;</span>
+
+   <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">newval</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Deja de pedirse &#39;</span><span class="si">${</span><span class="nx">nom</span><span class="si">}</span><span class="sb">&#39;`</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Se pide &#39;</span><span class="si">${</span><span class="nx">nom</span><span class="si">}</span><span class="sb">&#39; en la petición </span><span class="si">${</span><span class="nx">e</span><span class="p">.</span><span class="nx">newval</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>requestchange</strong></dt>
+<dd><p class="first">Se lanza cada vez que se cambia la lista de peticiones. El evento dispone de
+un atributo <code class="docutils literal notranslate"><span class="pre">markers</span></code> que es un array que contiene todas las marcas de los
+centros y localidades que han modificado su valor.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Advierta que cuando se provoca un cambio en la lista, este evento
+se desencadena una vez y el anterior lo hace tantas veces como cuentros
+hayan modificado su petición.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="id6">
+<h3>3.2.10.3. Filtros<a class="headerlink" href="#id6" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Para posibilitar el filtrado de centros según se hayan solicitado, está definido
+el filtro:</p>
+<dl class="docutils">
+<dt><strong>solicitado</strong></dt>
+<dd><p class="first">Elimina los centros que se hayan solicitado, a menos que se incluya la opción
+<code class="docutils literal notranslate"><span class="pre">inv</span></code> a verdadero, en cuyo caso tendrá el sentido contrario:</p>
+<div class="last highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;solicitado&quot;</span><span class="p">,</span> <span class="p">{});</span>  <span class="c1">// Filtra los centros solicitados.</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="localidades">
+<span id="adjofer-localidades"></span><h3>3.2.10.4. Localidades<a class="headerlink" href="#localidades" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Para facilitar la petición de localidades el objeto incorpora una capa
+<code class="docutils literal notranslate"><span class="pre">L.GeoJSON</span></code> de <a class="reference external" href="https://leafletjs.com/">Leaflet</a>:</p>
+<dl class="attribute">
+<dt>
+<code class="descname">localidades</code></dt>
+<dd><p>Capa de tipo <code class="docutils literal notranslate"><span class="pre">L.GeoJSON</span></code> que almacena las marcas que representan
+localidades.</p>
+</dd></dl>
+
+<p>La capa, por defecto, no se añade al mapa. Cada una de las marcas de esta capa
+es una marca <code class="docutils literal notranslate"><span class="pre">L.Marker</span></code> normal que añade métodos
+<a class="reference internal" href="01.map.html#Marker.getData" title="Marker.getData"><code class="xref js js-attr docutils literal notranslate"><span class="pre">Marker.getData</span></code></a> y <a class="reference internal" href="01.map.html#Marker.changeData" title="Marker.changeData"><code class="xref js js-attr docutils literal notranslate"><span class="pre">Marker.changeData</span></code></a>, análogos al
+de la clase de marca que define <code class="docutils literal notranslate"><span class="pre">leafext.js</span></code>. La definición de este tipo
+simple de marca se facilita a través del atributo:</p>
+<dl class="attribute">
+<dt id="Localidad">
+<code class="descname">Localidad</code><a class="headerlink" href="#Localidad" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Tipo de marca para las localidades.</p>
+</dd></dl>
+
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Por hacer</p>
+<p class="last">Este tipo de marca es muy simple y no soporta filtrado.</p>
+</div>
+<p>Además, hay definido el evento:</p>
+<dl class="docutils">
+<dt><strong>locloaded</strong></dt>
+<dd>Se lanza cuando acaban de cargarse las localidades de su archivo <em>geojson</em>
+correspondiente.</dd>
+</dl>
+</div>
+<div class="section" id="recetas">
+<h3>3.2.10.5. Recetas<a class="headerlink" href="#recetas" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="cambiar-icono-al-solicitar-centro">
+<h4>3.2.10.5.1. Cambiar icono al solicitar centro<a class="headerlink" href="#cambiar-icono-al-solicitar-centro" title="Enlazar permanentemente con este título">¶</a></h4>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;requestset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">marker</span> <span class="k">instanceof</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">Localidad</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+   <span class="kr">const</span> <span class="nx">tipo</span>  <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">newval</span> <span class="o">===</span> <span class="mi">0</span><span class="o">?</span><span class="s2">&quot;BolicheIcono&quot;</span><span class="o">:</span><span class="s2">&quot;SolicitudIcono&quot;</span><span class="p">,</span>
+         <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">[</span><span class="nx">tipo</span><span class="p">];</span>
+
+   <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">());</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ocultar-centros-filtrados">
+<h4>3.2.10.5.2. Ocultar centros filtrados<a class="headerlink" href="#ocultar-centros-filtrados" title="Enlazar permanentemente con este título">¶</a></h4>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;solicitado&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
 <p class="rubric">Notas al pie</p>
-<table class="docutils footnote" frame="void" id="id2" rules="none">
+<table class="docutils footnote" frame="void" id="id7" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Lo cual no significa que devuelve todas las marcas de centro, ya que
-puede haber centros que no se encuentren sobre el mapa porque hayan sido
+puede haber centros que no se encuentren sobre el mapa porque hayan ido
 desaparecido al filtrarse. Para obtener todos los centros necesitaría
 recurrir a <code class="docutils literal notranslate"><span class="pre">g.Centro.store</span></code>.</td></tr>
 </tbody>
 </table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[2]</a></td><td>Los códigos normalizados son cadenas de ocho dígitos y una letra «<em>C</em>»
+para centros y nuevo dígitos y una letra «<em>L</em>» para localidades.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 
