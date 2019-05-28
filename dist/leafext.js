@@ -870,7 +870,6 @@
        * @return {Boolean} ``true`` si se redibujó realmente el icono.
        */
       refresh: function() {
-         // TODO: Filtrado
          if(!this.options.params || this.options.params.updated) return false;
          this.options.updater.call(this._marker.getElement(), this.options.params.modified);
          this.options.params.reset();

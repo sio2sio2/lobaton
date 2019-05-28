@@ -161,8 +161,11 @@ const mapAdjOfer = (function(path, opts) {
          if(this.options.loading === true) this.options.loading = ajaxGif;
 
          loadMap.call(this);
-         createLoc.call(this); // Issue #79
          createMarker.call(this);
+         // Issue #79
+         createLoc.call(this);
+         this.solicitud = new Solicitud(this);
+         // Fin issue #79
          buildStatus.call(this);  // Issue #62
 
          new Promise(resolve => {
@@ -515,6 +518,10 @@ const mapAdjOfer = (function(path, opts) {
          this.fire("statuschange", {attr: `cor.${e.name}`});
       });
 
+      this.on("requestchange", e => {
+         this.status.list = this.solicitud.list;
+         this.fire("statuschange", {attr: "pet"});
+      });
    }
    // Fin issue #62
 
@@ -803,10 +810,14 @@ const mapAdjOfer = (function(path, opts) {
          },
          getData: function() {
             return this.feature.properties;
+         },
+         changeData: function(opts) {
+            return Object.assign(this.getData(), opts);
          }
       });
 
       this.Localidad.get = function(cod) {
+         if(typeof cod === "string" && cod.endsWith("L")) cod = cod.slice(0, -1);
          for(const loc of this.Localidad.store) {
             if(loc.getData().cod == cod) return loc;
          }
@@ -849,14 +860,13 @@ const mapAdjOfer = (function(path, opts) {
                   else if(!loc._icon && visible) loc.addTo(this.localidades);
                }
             });
+
+            this.fire("locloaded");
          },
          failback: xhr => {
             console.error("No pueden cargarse las localidades");
          }
       });
-
-
-      this.solicitud = new Solicitud(this);
    }
    // Fin issue #79
 
@@ -887,9 +897,9 @@ const mapAdjOfer = (function(path, opts) {
        * @returns {L.Marker} La marca del centro cuyo código es el suministrado.
        */
       this.Centro.get = function(codigo) {
-         codigo = Number(codigo);
+         if(typeof codigo === "string" && codigo.endsWith("C")) codigo = codigo.slice(0, -1);
          for(const c of this.store) {
-            if(c.getData().id.cod === codigo) return c;
+            if(c.getData().id.cod == codigo) return c;
          }
       }
 
@@ -964,6 +974,9 @@ const mapAdjOfer = (function(path, opts) {
          // después para evitar que interfieran las dos cargas (ambas cargan loading).
          if(!status.des) this.setIsocronas();
       }
+
+      // La carga del estado de las peticiones se implementa en la clase Solicitud.
+
    }
    // Fin issue #57
 
@@ -2302,17 +2315,80 @@ const mapAdjOfer = (function(path, opts) {
        */
       function Solicitud(adjofer) {
          Object.defineProperties(this, {
-            "store": {
+            store: {
                value: [],
                writable: false,
                enumerable: false,
                configurable: false,
             },
-            "adjofer": {
+            adjofer: {
                value: adjofer,
                writable: false,
                enumerable: false,
                configurable: false
+            },
+            BolicheIcono: {
+               value: adjofer.getIcon("boliche"),
+               writable: false,
+               enumerable: true,
+               configurable: false
+            },
+            SolicitudIcono: {
+               value: adjofer.getIcon("solicitud"),
+               writable: false,
+               enumerable: true,
+               configurable: false
+            }
+         });
+
+         // TODO: Esto es espantoso. Habría que cambiar
+         // el modo en que se crean los iconos.
+         this.SolicitudIcono.onready(() => true);
+         this.BolicheIcono.onready(() => true);
+
+         // Define un filtro para eliminar centros seleccionados
+         adjofer.Centro.registerF("solicitado", {
+            attrs: "peticion",
+            // opts= {inv: false}  // Si inv=true, elimina los no seleccionados.
+            func: function(opts) {
+               return !!(opts.inv ^ (this.getData().peticion > 0))
+            }
+         });
+
+         // Al cargar datos cambian las marcas de centro,
+         // pero queremos conservar la lista de peticiones,
+         // así que recostruimos "store" a partir de la lista
+         // de "status" y dejamos el código, si el centro no existe.
+         adjofer.on("dataloaded", e => {
+            this.store.length = 0;
+            if(!e.target.status.list) return;
+            for(let i=0; i<e.target.status.list.length; i++) {
+               const cod = e.target.status.list[i];
+               if(cod instanceof L.Marker) continue;
+
+               const tipo = cod.endsWith("L")?"Localidad":"Centro",
+                     entidad = e.target[tipo].get(cod);
+
+               if(entidad) {
+                  this.store[i] = entidad;
+                  entidad.changeData({peticion: i});
+               }
+               else this.store[i] = cod;
+            }
+         });
+
+         adjofer.on("locloaded", e => {
+            if(!e.target.status.list) return;
+            for(let i=0; i<e.target.status.list.length; i++) {
+               const cod = e.target.status.list[i];
+               if(cod instanceof L.Marker && cod.endsWith("C")) continue;
+
+               const localidad = e.target.Localidad.get(cod);
+               if(localidad) {
+                  this.store[i] = localidad;
+                  localidad.changeData({peticion: i});
+               }
+               else this.store[i] = cod;
             }
          });
       }
@@ -2334,62 +2410,77 @@ const mapAdjOfer = (function(path, opts) {
          },
          list: {
             get: function() {
-               return this.store.map(e => {
-                  const data = e.getData();
-                  return data.cod?(data.cod + "L").padStart(10, "0"):
-                                  (data.id.cod + "C").padStart(9, "0");
-               });
+               return this.store.map(normalizeCodigo.bind(this));
             },
             enumerable: true,
             configurable: false
          }
       });
 
-      // Obtiene la marca de un centro o una localidad a partir del código.
-      function getMarker(centro) {
-         if(centro instanceof L.Marker) return centro;
+      function normalizeCodigo(centro) {
+         if(centro instanceof L.Marker) {
+            const data = centro.getData();
+            return data.cod?(data.cod + "L").padStart(10, "0"):
+                            (data.id.cod + "C").padStart(9, "0");
+         }
 
-         let ret,
-             cod = centro.toString();
+         centro = centro.toString();
+         let ret;
 
-         const last = cod.charAt(cod.length-1);
-         if(last === "C" || last === "L") cod = cod.slice(0,-1);
-
+         // Ya era un código normalizado.
+         const last = centro.charAt(centro.length-1);
          switch(last) {
             case "C":
-               ret = this.adjofer.Centro.get(cod);
+               ret = centro.padStart(9, "0");
                break;
 
             case "L":
-               ret = this.adjofer.Localidad.get(cod);
+               ret = centro.padStart(10, "0");
                break;
 
-            default:  // No sabemos aún qué es.
-               switch(cod.length) {
-                  case 7:  // Es con seguridad un centro.
-                     ret = this.adjofer.Centro.get(cod);
+            default:
+               switch(centro.length) {
+                  case 7:  // Es con seguridad un centro
+                     ret = (centro + "C").padStart(9, "0");
                      break;
 
                   case 9:  // Es con seguridad una localidad
-                     ret = this.adjofer.Localidad.get(cod);
+                     ret = (centro + "L").padStart(10, "0");
                      break;
 
                   case 8:
-                     ret = this.adjofer.Centro.get(cod);
                      // Es un centro a menos que empiece por 41,
                      // en cuyo caso puede ser una localidad de Almería
                      // o un centro de Sevilla.
-                     if(cod.charAt(0) === "41" && !ret) {
-                        ret = this.adjofer.Localidad.get(cod);
+                     if(!centro.startsWith("41")) {
+                        ret = (centro + "C").padStart(9, "0");
+                     }
+                     else {
+                        // Si hay una localidad con ese código, resolvemos
+                        // que es la localidad y, si no, suponemos un centro.
+                        ret = this.adjofer.Localidad.get(centro);
+                        ret = ret?`0${centro}L`:`${centro}C`;
                      }
                      break;
 
                   default:
-                     ret = null;
+                     return null;
                }
          }
-
          return ret;
+
+      }
+
+      // Obtiene la marca de un centro o una localidad a partir del código.
+      function getMarker(centro) {
+         if(centro instanceof L.Marker) return centro;
+
+         centro = normalizeCodigo.call(this, centro);
+         if(!centro) return null;
+
+         const last = centro.charAt(centro.length-1);
+         return last === "C"?this.adjofer.Centro.get(centro):
+                             this.adjofer.Localidad.get(centro);
       }
 
       /**
@@ -2426,7 +2517,8 @@ const mapAdjOfer = (function(path, opts) {
          if(!centro || this.getPosition(centro)) return null;
 
          this.store.push(centro);
-         if(centro.changeData) centro.changeData({peticion: this.store.length});
+         centro.changeData({peticion: this.store.length});
+         this.adjofer.fire("requestchange", {markers: [centro]});
          return centro;
       }
 
@@ -2457,8 +2549,11 @@ const mapAdjOfer = (function(path, opts) {
          for(const centro of eliminados) {
             if(centro.changeData) centro.changeData({peticion: 0});
          }
-         const actualizados = actualiza.call(this, pos);
-         return eliminados.concat(actualizados);
+         const actualizados = actualiza.call(this, pos),
+               ret = eliminados.concat(actualizados);
+
+         this.adjofer.fire("requestchange", {markers: ret});
+         return ret
       }
 
       /**
@@ -2470,8 +2565,11 @@ const mapAdjOfer = (function(path, opts) {
       Solicitud.prototype.remove = function(centro) {
          centro = getMarker.call(this, centro);
          if(!centro) return [];
-         const pos = this.getPosition(centro);
-         return pos > 0?this.delete(pos, 1):[];
+         const pos = this.getPosition(centro),
+               ret = pos > 0?this.delete(pos, 1):[];
+
+         if(ret.length > 0) this.adjofer.fire("requestchange", {markers: ret});
+         return ret;
       }
 
 
@@ -2487,7 +2585,10 @@ const mapAdjOfer = (function(path, opts) {
          if(!centro || this.getPosition(centro)) return [];
 
          this.store.splice(pos - 1, 0, centro);
-         return actualiza.call(this, pos - 1);
+         const ret = actualiza.call(this, pos);
+
+         this.adjofer.fire("requestchange", {markers: ret});
+         return ret;
       }
 
 
@@ -2495,20 +2596,33 @@ const mapAdjOfer = (function(path, opts) {
        * Mueve de una posición a otra de la lista un número determinado de centros.
        */
       Solicitud.prototype.move = function(pos1, pos2, cuantos) {
-         if(pos2 < 1) pos2 = 1;
-         else if(pos2>this.store.length) pos2 = this.store.length;
+         pos2 = Math.max(pos2, 1);
+         pos2 = Math.min(pos2, this.store.length + 1);
 
-         const restantes = this.store.length - pos1 - 1;
+         const restantes = this.store.length - pos1 + 1;
          if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
 
-         const incr = pos2 - pos1;
-         if(incr === 0 || incr > 0 && cuantos > incr
-            || pos1 > this.store.length) return [];
+         const incr = pos2 - pos1,
+               tam = this.store.length;
+               
 
-         const movidos = this.store.splice(pos1 - 1, cuantos);
-         this.store.splice(pos2 - 1, 0, movidos);
+         let ret;
+         if(incr < 0) { // El bloque de movidos sube en la lista.
+            const movidos = this.store.splice(pos1 - 1, cuantos);
+            Array.prototype.splice.apply(this.store, [pos2 - 1, 0].concat(movidos));
+            ret = actualiza.call(this, pos2, pos1 + cuantos - 1);
+         }
+         else {
+            const pos_f = pos2 - cuantos;
+            if(pos_f <= pos1) return [];
 
-         return incr < 0?actualiza.call(p2, p1 + cuantos):actualiza.call(p1, p2 + cuantos);
+            const movidos = this.store.splice(pos1 - 1, cuantos);
+            Array.prototype.splice.apply(this.store, [pos_f - 1, 0].concat(movidos));
+            ret = actualiza.call(this, pos1, pos2 - 1);
+         }
+
+         this.adjofer.fire("requestchange", {markers: ret});
+         return ret;
       }
 
       return Solicitud;

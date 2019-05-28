@@ -56,7 +56,6 @@ window.onload = function() {
       });
    });
 
-
    // Para seguir los centros que se piden y dejan de pedirse.
    g.on("requestset", e => {
       const data = e.marker.getData(),
@@ -70,12 +69,22 @@ window.onload = function() {
       }
    });
 
+   // Usa el icono solicitud con los centros solicitados.
+   g.on("requestset", e => {
+      if(e.marker instanceof e.target.Localidad) return;
+
+      const tipo  = e.newval === 0?"BolicheIcono":"SolicitudIcono",
+            Icono = g.solicitud[tipo];
+
+      e.marker.setIcon(new Icono());
+   });
 
    function solicitar() {
       g.solicitud.add("11004866");
       g.solicitud.add(21002100);
       g.solicitud.add(g.Centro.get(23001111));
       g.solicitud.add("11700603C");
+      g.solicitud.add(21001910);
    }
 
    g.once("dataloaded", function(e) {

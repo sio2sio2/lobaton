@@ -1035,7 +1035,20 @@ realizan sobre el mapa:
 Petición de centros
 *******************
 Para facilitar la creación de un formulario de petición de destinos, el
-:ref:`objeto de manipulación del mapa <crea-mapadjofer>`_ añade un **atributo**:
+:ref:`objeto de manipulación del mapa <crea-mapadjofer>` añade dos **atributos**:
+
+.. js:attribute:: mode
+
+   Modo de trabajo. Hay definidos dos: el modo "*normal*" que provoca que un
+   *click* de ratón sobre la marca de un centro lo seleccione y el modo
+   "*solicitud*" que en vez de seleccionar el centro, lanza el evento
+   :ref:`requestclick <adjofer-event-requestclick>`. En este segundo modo, el
+   evento también se lanza cuando se hace *click* sobre la marca de una
+   localidad.
+
+   .. note:: Esto es cierto siempre que la opción *light* del objeto sea
+      verdadera. Si no es el caso, no hay ninguna acción asociada al *click*
+      sobre el centro.
 
 .. js:attribute:: solicitud
 
@@ -1043,18 +1056,18 @@ Para facilitar la creación de un formulario de petición de destinos, el
    métodos y atributos que será necesario conocer si se implementa la solicitud
    de centros. Por ejemplo, esta orden::
 
-      g.solicitud.add(11004866)
+      g.solicitud.add(11004866);
 
-   añade el centro con el código indicado al final de la lista de peticiones.
+   añade al final de la lista de peticiones el centro con el código indicado.
 
 Además de este atributo, los centros tiene dos características más relacionadas
 con la petición de destinos:
 
-* Entre sus datos un atributo llamado petición que indica cuál en que posición
-  se pidio el centro. Si el centro no está pedido, vale **0**. Al comienzo,
-  todos los centros tiene este atributo a **0**.
+* Entre sus datos un atributo llamado ``peticion`` que indica en que
+  posición se pidió el centro. Si el centro no está pedido, vale **0**. Al
+  comienzo, todos los centros tiene este atributo a **0**.
 
-* El estilo de icono "*solicitud*", distinto radicalmente al estilo "*boliche*"
+* El estilo de icono "*solicitud*", distinto radicalmente al estilo "*boliche*",
   y que sólo muestra como dato relevante el número de petición.
 
 Descripción de ``solicitud``
@@ -1070,8 +1083,19 @@ Atributos
    de los cuales es el carácter "*C*"; y en el caso de las localidades, como
    una cadena de 10 caracteres el último de los cuales es el carácter "*L*".
 
-.. seealso:: Revice los referente a localidades, indicado :ref:`más adelante
-   <adjofer-localidades>`_.
+.. seealso:: Revise lo referente a localidades, indicado :ref:`más adelante
+   <adjofer-localidades>`.
+
+.. js:attribute:: BolicheIcono
+
+   Constructor para el icono de tipo *boliche*::
+
+      const Icono = g.solicitud.BolicheIcono;
+      centro.setIcon(new Icono());
+
+.. js:attribute:: SolicitudIcono
+
+   Constructir para el icono de tipo *solicitud*.
 
 Métodos
 -------
@@ -1095,7 +1119,8 @@ Métodos
       g.solicitud.add(11004866);
       g.solicitud.add(21002100);
       g.solicitud.add("23001111C");
-      g.solicitud.list;  // Devuelve ["11004866C", "21002100C", "23001111C"]
+      g.solicitud.add(g.Centro.get(11700603));
+      g.solicitud.list;  // Devuelve ["11004866C", "21002100C", "23001111C", "11700603C"]
 
 .. js:method:: getCentro(pos)
 
@@ -1103,7 +1128,7 @@ Métodos
    lista de peticiones. Devuelve ``null``, si la posición no existe::
 
       const centro = g.solicitud.getCentro(1);
-      centro.getData().id.cod  // Devuelve 11004866
+      centro.getData().id.cod;  // Devuelve 11004866
 
 .. js:method:: getPosition(centro)
 
@@ -1114,28 +1139,189 @@ Métodos
       g.solicitud.getPosition("11004866C");  // Devuelve 1.
       g.solicitud.getPosition(centro);  // Devuelve 1.
 
+.. js:method:: remove(centro)
+
+   Elimina el centro solicitado de la lista de peticiones. Devuelve un array con
+   todos los centros afectados, esto es, un array que contiene el propio centro
+   y todos los posteriores::
+
+      g.solicitud.remove(23001111);
+      g.solicitud.list;  // Devuelve ["11004866C", "21002100C", "11700603C"]
+
 .. js:method:: delete(pos, cuantos)
 
    Elimina de la listas tantos centros (o localidades) como se especifique en
-   *cuántos* a partir de la posición indicada::
+   *cuántos* a partir de la posición indicada. Si no se especifica cuántos,
+   borra hasta el final de la lista::
 
       g.solicitud.delete(2, 2);
-      g.solicitud.list;  // Devuelve ["11004866C"]
+      g.solicitud.list;  // Devuelve ["11004866C", "11700603C"]
 
    Devuelve un array con las marcas de los centros afectados por la
    eliminación, o sea, los eliminados y todos los que iban por detrás en lista
    de peticiones.
 
+.. js:method:: insert(centro, pos)
+
+   Agrega un centro (o localidad) en la posición indicada de la lista de
+   peticiones. Devuelve un array con las marcas de los centros afectados por la
+   eliminación::
+
+      g.solicitud.insert(11004039, 3);
+
+.. js:method:: move(pos1. pos2, cuantos)
+
+   Mueve tantos centros como especifique *cuantos* desde la *pos1* a la posición
+   necesaria para que se inserten antes del que ocupa la *pos2*::
+
+      g.solicitud.list;  // Devuelve ["11004866C", "21002100C", "23001111C", "11700603C"]
+      g.solicitud.move(1, 4, 2);
+      g.solicitud.list;  // Devuelve ["23001111C", "11004866C", "21002100C", "11700603C"]
+
+   Devuelve, como el resto de métodos, un array con todos los centros.
+
+.. note:: Todos los métodos que alteran la lista de peticiones, se encargan de
+   modificar el atributo ``peticion`` de los datos de cada centro que sufre
+   cambios en su número de petición. También alteran el valor de
+   :js:attr:`status` para incorporar la nueva lista.
+
+.. _adjofer-solicitud-no-centro:
+
+.. warning:: La lista de peticiones se conserva, aunque se cambie de
+   especialidad. Los centros solicitados que en la nueva especialidad no
+   existan, carecerán de marca, por lo que internamente se almacenará para ellos
+   no una marca, sino el código correspondiente. Esto tiene repercusión en los
+   valores de retorno de aquellos métodos que devuelven las marcas de los
+   centros afectados por un cambio en la lista, ya que consecuentemente no
+   devolverán las marcas de estos centros inexistentes, sino sus códigos
+   normalizados\ [#]_.
+
 Eventos
 =======
+Hay varios eventos del objeto ``MapAdjOfer`` aplicables exclusivamente a la
+petición de centros y localidades:
 
-Recetas
+**modeset**
+   Se lanza cuando cambia el modo de trabajo. Como en otros tipos de eventos,
+   el objeto evento guarda en el atributo ``oldval`` el modo viejo y en
+   ``newval`` el nuevo::
+
+      g.on("modeset", e => {
+         if(e.oldval !== e.newval) {
+            console.log(`Ha pasado de ${e.oldval} a ${e.newval}`);
+         }
+      });
+
+   .. warning:: Pulsar sobre un centro en este modo "*solicitud*", no provoca
+      ningún cambio en la lista de peticiones: es labor de programdor que así
+      sea.
+
+.. _adjofer-event-requestclick:
+
+**requestclick**
+   Se lanza cada vez que se pulsa un centro o una localidad si se trabaja en el
+   modo "*solicitud*". El evento añade el atributo ``marker`` que identifica la
+   marca sobre la que se ha pulsado::
+
+      g.on("requestclick", e => {
+         const data = e.marker.getData(),
+               nombre = data.nom?data.nom:data.id.nom;
+         
+         console.log("Parece que quiere pedir", nombre);
+      });
+
+**requestset**
+   Se lanza cada vez que un centro modifica su atributo de petición. El evento
+   dispone de los atributos ``oldval`` y ``newval`` para conocer los valores de
+   las peticiones; y ``marker`` para conocer cuál fue el centro que modificó el
+   atributo::
+
+      g.on("requestset", e => {
+         const data = e.marker.getData(),
+          nom = data.id?data.id.nom:data.nom;
+
+         if(e.newval === 0) {
+            console.log(`Deja de pedirse '${nom}'`);
+         }
+         else {
+            console.log(`Se pide '${nom}' en la petición ${e.newval}`);
+         }
+      });
+
+**requestchange**
+   Se lanza cada vez que se cambia la lista de peticiones. El evento dispone de
+   un atributo ``markers`` que es un array que contiene todas las marcas de los
+   centros y localidades que han modificado su valor.
+
+   .. note:: Advierta que cuando se provoca un cambio en la lista, este evento
+      se desencadena una vez y el anterior lo hace tantas veces como cuentros
+      hayan modificado su petición.
+
+Filtros
 =======
+Para posibilitar el filtrado de centros según se hayan solicitado, está definido
+el filtro:
+
+**solicitado**
+   Elimina los centros que se hayan solicitado, a menos que se incluya la opción
+   ``inv`` a verdadero, en cuyo caso tendrá el sentido contrario::
+
+      g.Centro.filter("solicitado", {});  // Filtra los centros solicitados.
 
 .. _adjofer-localidades:
 
 Localidades
-***********
+===========
+Para facilitar la petición de localidades el objeto incorpora una capa
+``L.GeoJSON`` de Leaflet_:
+
+.. js:attribute:: localidades
+
+   Capa de tipo ``L.GeoJSON`` que almacena las marcas que representan
+   localidades.
+
+La capa, por defecto, no se añade al mapa. Cada una de las marcas de esta capa
+es una marca ``L.Marker`` normal que añade métodos
+:js:attr:`Marker.getData` y :js:attr:`Marker.changeData`, análogos al
+de la clase de marca que define ``leafext.js``. La definición de este tipo
+simple de marca se facilita a través del atributo:
+
+.. js:attribute:: Localidad
+
+   Tipo de marca para las localidades.
+
+.. todo:: Este tipo de marca es muy simple y no soporta filtrado.
+
+Además, hay definido el evento:
+
+**locloaded**
+   Se lanza cuando acaban de cargarse las localidades de su archivo *geojson*
+   correspondiente.
+
+Recetas
+=======
+
+Cambiar icono al solicitar centro
+---------------------------------
+
+::
+
+   g.on("requestset", e => {
+      if(e.marker instanceof e.target.Localidad) return;
+
+      const tipo  = e.newval === 0?"BolicheIcono":"SolicitudIcono",
+            Icono = g.solicitud[tipo];
+      
+      e.marker.setIcon(new Icono());
+   });
+
+Ocultar centros filtrados
+-------------------------
+
+::
+
+   g.Centro.filter("solicitado", {});
+
 
 .. rubric:: Notas al pie
 
@@ -1143,6 +1329,9 @@ Localidades
    puede haber centros que no se encuentren sobre el mapa porque hayan ido
    desaparecido al filtrarse. Para obtener todos los centros necesitaría
    recurrir a ``g.Centro.store``.
+
+.. [#] Los códigos normalizados son cadenas de ocho dígitos y una letra "*C*"
+   para centros y nuevo dígitos y una letra "*L*" para localidades.
 
 .. |HTML| replace:: :abbr:`HTML (HyperText Markup Language)`
 .. |API| replace:: :abbr:`API (Application Programming Interface)`
