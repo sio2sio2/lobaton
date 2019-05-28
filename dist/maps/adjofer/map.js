@@ -829,6 +829,9 @@ const mapAdjOfer = (function(path, opts) {
             console.error("No pueden cargarse las localidades");
          }
       });
+
+
+      this.solicitud = new Solicitud(this);
    }
    // Fin issue #79
 
@@ -1535,7 +1538,9 @@ const mapAdjOfer = (function(path, opts) {
          return this;
       }
 
-      const converterSol = new L.utils.Converter(["peticion"]).define("peticion");
+      const converterSol = new L.utils.Converter(["peticion", "sel"])
+                                       .define("peticion")
+                                       .define("sel");
 
       // Los boliches tienen mucha miga...
       const converterBol = new L.utils.Converter(["numvac", "tipo", "numofer", "bil", "ofervar", "sel"])
@@ -1692,6 +1697,19 @@ const mapAdjOfer = (function(path, opts) {
                   text.textContent = o.peticion;
                   var size = (o.peticion.toString().length > 2)?28:32;
                   text.setAttribute("font-size", size);
+               }
+
+               if(o.sel !== undefined) {
+                  const content = this.querySelector(".content"),
+                        defs    = this.querySelector("defs");
+                  let   e       = content.querySelector(".selected");
+                  if(!o.sel) {
+                     if(e) defs.appendChild(e);
+                  }
+                  else if(!e) {
+                     e = defs.querySelector(".selected");
+                     content.prepend(e);
+                  }
                }
                return this;
             }
@@ -2296,7 +2314,7 @@ const mapAdjOfer = (function(path, opts) {
          if(centro instanceof L.Marker) return centro;
 
          let ret,
-             cod = centro.toString(cod);
+             cod = centro.toString();
 
          const last = cod.charAt(cod.length-1);
          if(last === "C" || last === "L") cod = cod.slice(0,-1);
@@ -2372,7 +2390,7 @@ const mapAdjOfer = (function(path, opts) {
          if(!centro || this.getPosition(centro)) return null;
 
          this.store.push(centro);
-         if(centro.changeData) centro.changeData({solicitud: this.store.length});
+         if(centro.changeData) centro.changeData({peticion: this.store.length});
          return centro;
       }
 
@@ -2381,7 +2399,7 @@ const mapAdjOfer = (function(path, opts) {
          pos2 = pos2 || this.store.length;
          for(let i=pos1 - 1; i < pos2; i++) {
             const centro = this.store[i];
-            if(centro.changeData) centro.changeData({solicitud: i+1});
+            if(centro.changeData) centro.changeData({peticion: i+1});
          }
          return this.store.slice(pos1 - 1, pos2);
       }
@@ -2402,7 +2420,7 @@ const mapAdjOfer = (function(path, opts) {
          if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
          const eliminados = this.store.splice(pos-1, restantes);
          for(const centro of eliminados) {
-            if(centro.changeData) centro.changeData({solicitud: 0});
+            if(centro.changeData) centro.changeData({peticion: 0});
          }
          return actualiza.call(this, pos);
       }
