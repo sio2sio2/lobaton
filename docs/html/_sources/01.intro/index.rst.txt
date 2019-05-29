@@ -48,7 +48,7 @@ recogerá la barra lateral:
 
 En el mapa aparecerán dos tipos de iconos:
 
-- Los iconos que representa centros individuales como el icono que se deja
+- Los iconos que representan centros individuales como el icono que se deja
   entrever en la esquina superior derecha de la captura.
 - Los iconos que representan agrupaciones de centros y que dejan adivinar
   cuántos a través del número superpuesto que presentan.
@@ -79,12 +79,12 @@ automáticamente el panel lateral de información de centro:
 
 .. image:: files/seleccionado.png
 
-Si nos fijamos en los iconos de la barra, veremos que aparecerán habilitados ya
-todos. Los deshabilatos al principio eran aquellos con nula utilidad mientras no
-hubiera datos cargados. No obstante, el icono que permite mostrar la información
-de centro, sólo está habilitado si hay un centro seleccionado; si se
-deselecciona pinchando otra vez sobre el propio centro seleccionado, el panel se
-cerrará y se volverá a deshabilitar ese icono.
+Si nos fijamos en los iconos de la barra, veremos que aparecerán habilitados
+todos. Los deshabiltados al principio eran aquellos con nula utilidad mientras
+no hubiera datos cargados. No obstante, el icono que permite mostrar la
+información de centro, sólo está habilitado si hay un centro seleccionado; si
+se deselecciona pinchando otra vez sobre el propio centro seleccionado, el
+panel se cerrará y el icono volverá a deshabilitarse.
 
 La información de centro presenta los datos del centro, sus plantillas, las
 enseñanzas relevantes para la especialidad seleccionada y las adjudicaciones a
@@ -173,15 +173,15 @@ Isocronas
 
    .. image:: files/isocronas2.png
 
-   Si enmbargo, si aplicamos botón derecho sobre cualquiera de las áreas, la
+   Si embargo, si aplicamos botón derecho sobre cualquiera de las áreas, la
    aplicación nos brindará la posibilidad de elimianr los centros que queden
    fuera de la isocrona correspondiente. Si hacemos tal acción sobre el área
-   violácea que representa limitada por la isocrona de 20 minutos:
+   violácea que representa el área limitada por la isocrona de 20 minutos:
 
    .. image:: files/isocronas3.png
 
    desaparecerán los centros más allá de esta isocrona y el áreas violácea
-   invadirá toda la superficie hasta el punto de origen. Los centros
+   invadirá toda la superficie interna hasta el punto de origen. Los centros
    supervivientes a la acción son los únicos centros que podemos asegurar que
    se encuentran a menos de 20 minutos. Este filtro es el único que se aplica
    interactuando directamente con el mapa y no a través del :ref:`panel
