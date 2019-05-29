@@ -1284,6 +1284,16 @@ const Interfaz = (function() {
 
 
 window.onload = function() {
+   // Si no hay soporte para datalist, elimina los input.
+   function datalistSupport() {
+      if(document.createElement("datalist") && window.HTMLDataListElement) return;
+
+      Array.from(document.querySelectorAll(".datalist-supported")).forEach(e => {
+         e.parentNode.removeChild(e);
+      });
+   }
+
    interfaz = new Interfaz();
    interfaz.initVueJS();
+   datalistSupport();
 }

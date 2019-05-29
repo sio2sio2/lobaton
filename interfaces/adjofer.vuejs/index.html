@@ -139,13 +139,16 @@
 
             <article id="esp">
                <label>Escriba o seleccione una especialidad
-                  <input list="especialidades" class="custom-select" placeholder="Escoja especialidad..."
+                  <input list="especialidades" class="custom-select datalist-supported" placeholder="Escoja especialidad..."
                          value="" @input="selEspec" autocomplete=off autofocus>
                   <datalist id="especialidades">
-                     <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
+                     <select class="custom-select" @change="selEspec">
+                        <option disabled selected label="-- Escoja especialidad --">
+                        <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
+                     <select>
                   </datalist>
                </label>
-	       <p>Especialidad cargada: <strong>{{todas[especialidad]}}</strong></p>
+               <p>Especialidad cargada: <strong>{{todas[especialidad]}}</strong></p>
             </article>
          </div>
 
