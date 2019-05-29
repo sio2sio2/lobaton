@@ -74,7 +74,7 @@ window.onload = function() {
       if(e.marker instanceof e.target.Localidad) return;
 
       const tipo  = e.newval === 0?"BolicheIcono":"SolicitudIcono",
-            Icono = g.solicitud[tipo];
+            Icono = e.target.solicitud[tipo];
 
       e.marker.setIcon(new Icono());
    });
@@ -88,8 +88,8 @@ window.onload = function() {
    }
 
    g.once("dataloaded", function(e) {
-      if(g.general.entidad[0] === 590107) solicitar();
-      else setTimeout(() => g.once("dataloaded", arguments.callee), 250);
+      if(e.target.general.entidad[0] === 590107) solicitar();
+      else setTimeout(() => e.target.once("dataloaded", arguments.callee), 250);
    });
 
    poblarSelectores();

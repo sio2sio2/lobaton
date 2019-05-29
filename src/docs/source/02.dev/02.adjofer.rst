@@ -1310,7 +1310,7 @@ Cambiar icono al solicitar centro
       if(e.marker instanceof e.target.Localidad) return;
 
       const tipo  = e.newval === 0?"BolicheIcono":"SolicitudIcono",
-            Icono = g.solicitud[tipo];
+            Icono = e.target.solicitud[tipo];
       
       e.marker.setIcon(new Icono());
    });
