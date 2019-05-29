@@ -265,12 +265,28 @@ const Interfaz = (function() {
          data: {
             especialidad: null,
             interfaz: this,	
-            todas: {}
+            todas: {590: {}, 591: {}}
+         },
+         computed: {
+            sec: function() {
+               return this.todas["590"];
+            },
+            fp: function() {
+               return this.todas["591"];
+            }
          },
          created: function() {
             L.utils.load({
                url: "../../json/especialidades.json",
-               callback: xhr => this.todas = JSON.parse(xhr.responseText),
+               callback: xhr => {
+                  const esp = JSON.parse(xhr.responseText),
+                        todas = {590: {}, 591: {}};
+
+                  for(const cod in esp) {
+                     todas[cod.slice(0, 3)][cod] = esp[cod];
+                  }
+                  this.todas = todas;
+               },
                failback: xhr => {
                   console.log(xhr);
                   throw new Error("No es posible cargar las especialidades disponibles");

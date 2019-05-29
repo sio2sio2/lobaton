@@ -144,7 +144,12 @@
                   <datalist id="especialidades">
                      <select class="custom-select" @change="selEspec">
                         <option disabled selected label="-- Escoja especialidad --">
-                        <option v-for="(codigo) in Object.keys(todas)" :value="codigo">{{todas[codigo]}}
+                        <optgroup label="Cuerpo 590">
+                           <option v-for="(codigo, index) in Object.keys(sec)" :value="codigo" :index="index">{{sec[codigo]}}
+                        </optgroup>
+                        <optgroup label="Cuerpo 591">
+                           <option v-for="(codigo, index) in Object.keys(fp)" :value="codigo" :index="index">{{fp[codigo]}}
+                        </optgroup>
                      <select>
                   </datalist>
                </label>
