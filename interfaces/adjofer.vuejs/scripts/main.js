@@ -298,7 +298,8 @@ const Interfaz = (function() {
                const codigo = e.target.value;
                // El input es válido, sólo si coincode
                // con alguna de las sugerencias.
-               if(Object.keys(this.todas).indexOf(codigo) !== -1) {
+               if(Object.keys(this.sec).indexOf(codigo) !== -1 ||
+                  Object.keys(this.fp).indexOf(codigo) !== -1) {
                   e.target.setCustomValidity("");
 
                   // ¿Para qué vamos a borrar los datos si es la misma especialidad?
