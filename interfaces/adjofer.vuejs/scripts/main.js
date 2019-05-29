@@ -807,8 +807,9 @@ const Interfaz = (function() {
    function initInfo() {
 
       this.g.on("dataloaded", e => {
-         const data = this.g.general;
-         this.info.especialidad = this.selector.todas[data.entidad[0]];
+         const data = this.g.general,
+               codigo = data.entidad[0].toString();
+         this.info.especialidad = this.selector.todas[codigo.slice(0, 3)][codigo];
          this.info.colocacion = data.curso;
          this.info.ofertasec = data.spider.ofertasec;
          this.info.ofertafp = data.spider.ofertafp;
