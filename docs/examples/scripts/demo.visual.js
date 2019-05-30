@@ -69,14 +69,20 @@ window.onload = function() {
       }
    });
 
-   // Usa el icono solicitud con los centros solicitados.
    g.on("requestset", e => {
-      if(e.marker instanceof e.target.Localidad) return;
-
-      const tipo  = e.newval === 0?"BolicheIcono":"SolicitudIcono",
-            Icono = e.target.solicitud[tipo];
-
-      e.marker.setIcon(new Icono());
+      if(e.marker instanceof e.target.Centro) {
+         // Solo si pasa de pedido a no pedido
+         // o viceversa debe cambiarse el icono.
+         if(!!e.newval !== !!e.oldval) {
+            const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono";
+            if(tipo) {
+               const Icono = e.target.solicitud[tipo];
+               e.marker.setIcon(new Icono());
+            }
+            return; // Al cambiar el icono, se redibuja.
+         }
+      }
+      e.marker.refresh();
    });
 
    function solicitar() {
@@ -87,6 +93,10 @@ window.onload = function() {
       g.solicitud.add(21001910);
    }
 
+   g.localidades.addTo(g.map);
+
+   // Sólo hace la solicitud la primera vez
+   // que se cargan los datos de informática.
    g.once("dataloaded", function(e) {
       if(e.target.general.entidad[0] === 590107) solicitar();
       else setTimeout(() => e.target.once("dataloaded", arguments.callee), 250);

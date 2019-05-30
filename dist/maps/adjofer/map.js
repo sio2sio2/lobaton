@@ -263,35 +263,7 @@ const mapAdjOfer = (function(path, opts) {
                         // Para cada centro que creemos hay que añadir a los datos
                         // la propiedad que indica si la marca está o no seleccionada.
                         e.target.changeData({sel: false });
-
-                        const self = this;
-
-                        // y otra que representa su solicitud
-                        // En este caso, el cambio se asocia al evento requestset
-                        Object.defineProperties(e.target.getData(), {
-                           _peticion: {
-                              value: 0,
-                              writable: true,
-                              configurable: false,
-                              enumerable: false
-                           },
-                           peticion: {
-                              get: function() {
-                                 return this._peticion;
-                              },
-                              set: function(value) {
-                                 const oldval = this.peticion;
-                                 this._peticion = value;
-                                 self.fire("requestset", {
-                                    oldval: oldval,
-                                    newval: value,
-                                    marker: e.target
-                                 });
-                              },
-                              enumerable: true,
-                              configurable: false
-                           }
-                        });
+                        Solicitud.definePeticion.call(e.target, this);
                      });
 
 
@@ -785,44 +757,50 @@ const mapAdjOfer = (function(path, opts) {
    }
 
 
-   // Issue #79
+   // Issue #79, #83
    /**
     * Crea la capa con las localidades
     */
    function createLoc() {
 
-      const icono = new L.Icon({
-         iconUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
-         iconRetinaUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
-         iconSize: [25, 41],
-         iconAnchor: [12, 41]
-      });
-
       /**
        * Marca para localidad
        * @memberof MadAdjOfer.prototype
-       * @type {L.Marker}
+       * @type {Marker}
        *
        */
       this.Localidad = L.Marker.extend({
-         options: {
-            icon: icono
-         },
-         getData: function() {
-            return this.feature.properties;
-         },
-         changeData: function(opts) {
-            return Object.assign(this.getData(), opts);
-         }
+       options: {
+          mutable: "feature.properties",
+          filter: this.cluster,
+       }
       });
 
-      this.Localidad.get = function(cod) {
+      this.Localidad.get = cod => {
          if(typeof cod === "string" && cod.endsWith("L")) cod = cod.slice(0, -1);
          for(const loc of this.Localidad.store) {
             if(loc.getData().cod == cod) return loc;
          }
          return null;
       }
+
+      // Filtro indiscriminado: sirve para ocultar de inicio las localidades.
+      this.Localidad.registerF("invisible", {
+         attrs: [],
+         func: function(opts) {
+            return true;
+         }
+      });
+
+      // Como el de centro: filtra las localidades solicitadas.
+      this.Localidad.registerF("solicitado", {
+         attrs: "peticion",
+         func: function(opts) {
+            return !!(opts.inv ^ (this.getData().peticion > 0))
+         }
+      });
+
+      const Icono = catalogo.localidad;
 
       /**
        * Capa para almacenar las localidades.
@@ -831,11 +809,22 @@ const mapAdjOfer = (function(path, opts) {
        *
        */
       this.localidades = L.geoJSON(undefined, {
-         pointToLayer: (f, p) => new this.Localidad(p, { title: f.properties.nom }),
-         onEachFeature: (f, l) => {
-            l.on("click", e => {
-               if(this.options.light) this.fire("requestclick", {marker: e.target});
+         pointToLayer: (f, p) => {
+            const localidad = new this.Localidad(p, {
+               icon: new Icono(),
+               title: f.properties.nom
             });
+            localidad.on("dataset", e => {
+               Solicitud.definePeticion.call(e.target, this);
+            });
+            if(this.options.light) localidad.once("dataset", e => {
+               e.target.on("click", e => {
+                  if(this.options.light && this.mode === "solicitud") {
+                     this.fire("requestclick", {marker: e.target});
+                  }
+               });
+            });
+            return localidad;
          }
       });
 
@@ -844,31 +833,29 @@ const mapAdjOfer = (function(path, opts) {
          return;
       }
 
-      L.utils.load({
-         url: this.options.pathLoc,
-         callback: xhr => {
-            const data = JSON.parse(xhr.responseText);
-            this.localidades.addData(data);
-            this.Localidad.store = this.localidades.getLayers();
-
-            // https://github.com/Leaflet/Leaflet/issues/1324
-            this.map.on("moveend", e => {
-               const mapBounds = this.map.getBounds();
-               for(const loc of this.Localidad.store) {
-                  const visible = mapBounds.contains(loc.getLatLng());
-                  if(loc._icon && !visible) loc.removeFrom(this.localidades);
-                  else if(!loc._icon && visible) loc.addTo(this.localidades);
-               }
-            });
-
-            this.fire("locloaded");
-         },
-         failback: xhr => {
-            console.error("No pueden cargarse las localidades");
+      // https://github.com/Leaflet/Leaflet/issues/1324
+      this.map.on("moveend", e => {
+         const mapBounds = this.map.getBounds();
+         for(const loc of this.Localidad.store) {
+            const visible = mapBounds.contains(loc.getLatLng());
+            if(loc._icon && !visible) loc.removeFrom(this.localidades);
+            else if(!loc._icon && visible) loc.addTo(this.localidades);
          }
       });
+
+      Icono.onready(() => {
+         L.utils.load({
+            url: this.options.pathLoc,
+            callback: xhr => {
+               const data = JSON.parse(xhr.responseText);
+               this.localidades.addData(data);
+               this.fire("locloaded");
+            },
+            failback: xhr => console.error("No pueden cargarse los datos de localidad"),
+         });
+      });
    }
-   // Fin issue #79
+   // Fin issue #79, #83
 
    /**
    * Crea la clase de marca para los centros y le
@@ -1707,6 +1694,9 @@ const mapAdjOfer = (function(path, opts) {
          return updater;
       })();
 
+      const converterLoc = new L.utils.Converter(["peticion"])
+                                       .define("peticion")
+
       return {
          piolin: L.utils.createMutableIconClass("piolin", {
             iconSize: null,
@@ -1758,6 +1748,18 @@ const mapAdjOfer = (function(path, opts) {
             url:  path + "/maps/adjofer/icons/boliche.svg",
             converter: converterBol,
             updater: updaterBoliche,
+         }),
+         localidad: L.utils.createMutableIconClass("localidad", {
+            iconSize: [26, 40],
+            iconAnchor: [13, 39.43],
+            url: path + "/maps/adjofer/icons/localidad.svg",
+            converter: converterLoc,
+            updater: function(o) {
+               if(o.peticion === undefined) return;
+               
+               const color = o.peticion === 0?"#0ae":"#d70"
+               this.querySelector("path").setAttribute("fill", color);
+            }
          }),
       }
    })();
@@ -2623,6 +2625,41 @@ const mapAdjOfer = (function(path, opts) {
 
          this.adjofer.fire("requestchange", {markers: ret});
          return ret;
+      }
+
+      /**
+       * Define el dato petición de una marca, de modo que sale
+       * un evento requestset cuando se modifque el valor.
+       * @this La marca.
+       */
+      Solicitud.definePeticion = function(adjofer) {
+         const self = this;
+         // y otra que representa su solicitud
+         // En este caso, el cambio se asocia al evento requestset
+         Object.defineProperties(this.getData(), {
+            _peticion: {
+               value: 0,
+               writable: true,
+               configurable: false,
+               enumerable: false
+            },
+            peticion: {
+               get: function() {
+                  return this._peticion;
+               },
+               set: function(value) {
+                  const oldval = this.peticion;
+                  this._peticion = value;
+                  adjofer.fire("requestset", {
+                     oldval: oldval,
+                     newval: value,
+                     marker: self
+                  });
+               },
+               enumerable: true,
+               configurable: false
+            }
+         });
       }
 
       return Solicitud;
