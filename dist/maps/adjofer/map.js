@@ -764,16 +764,42 @@ const mapAdjOfer = (function(path, opts) {
    function createLoc() {
 
       /**
+       * Capa para almacenar las localidades.
+       * @memberof MadAdjOfer.prototype
+       * @type {L.GeoJSON}
+       *
+       */
+      this.localidades = L.geoJSON(undefined, {
+         pointToLayer: (f, p) => {
+            const localidad = new this.Localidad(p, {
+               icon: new Icono(),
+               title: f.properties.nom
+            });
+            localidad.on("dataset", e => {
+               Solicitud.definePeticion.call(e.target, this);
+            });
+            if(this.options.light) localidad.once("dataset", e => {
+               e.target.on("click", e => {
+                  if(this.options.light && this.mode === "solicitud") {
+                     this.fire("requestclick", {marker: e.target});
+                  }
+               });
+            });
+            return localidad;
+         }
+      });
+
+      /**
        * Marca para localidad
        * @memberof MadAdjOfer.prototype
        * @type {Marker}
        *
        */
       this.Localidad = L.Marker.extend({
-       options: {
-          mutable: "feature.properties",
-          filter: this.cluster,
-       }
+         options: {
+            mutable: "feature.properties",
+            filter: this.localidades,
+         }
       });
 
       this.Localidad.get = cod => {
@@ -801,32 +827,6 @@ const mapAdjOfer = (function(path, opts) {
       });
 
       const Icono = catalogo.localidad;
-
-      /**
-       * Capa para almacenar las localidades.
-       * @memberof MadAdjOfer.prototype
-       * @type {L.GeoJSON}
-       *
-       */
-      this.localidades = L.geoJSON(undefined, {
-         pointToLayer: (f, p) => {
-            const localidad = new this.Localidad(p, {
-               icon: new Icono(),
-               title: f.properties.nom
-            });
-            localidad.on("dataset", e => {
-               Solicitud.definePeticion.call(e.target, this);
-            });
-            if(this.options.light) localidad.once("dataset", e => {
-               e.target.on("click", e => {
-                  if(this.options.light && this.mode === "solicitud") {
-                     this.fire("requestclick", {marker: e.target});
-                  }
-               });
-            });
-            return localidad;
-         }
-      });
 
       if(!this.options.pathLoc) {
          console.error("No pueden cargarse las localidades");
