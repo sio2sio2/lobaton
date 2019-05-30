@@ -45,6 +45,8 @@ window.onload = function() {
    // A efectos de depuración
    g.cluster.on("layeradd", function(e) {
       const marca = e.layer;
+      if(marca instanceof g.Localidad) return;
+
       marca.on("click", function(e) {
          const icon = e.target.options.icon;
          console.log("DEBUG - ident", e.target.getData().id.nom);
@@ -92,8 +94,6 @@ window.onload = function() {
       g.solicitud.add("11700603C");
       g.solicitud.add(21001910);
    }
-
-   g.localidades.addTo(g.map);
 
    // Sólo hace la solicitud la primera vez
    // que se cargan los datos de informática.

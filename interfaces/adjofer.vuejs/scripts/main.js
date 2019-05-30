@@ -305,7 +305,7 @@ const Interfaz = (function() {
 
                   // ¿Para qué vamos a borrar los datos si es la misma especialidad?
                   if(codigo !== this.especialidad) {
-                     this.interfaz.g.cluster.clearLayers();
+                     this.interfaz.g.cluster.clearCentros();
                      this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
                   }
 

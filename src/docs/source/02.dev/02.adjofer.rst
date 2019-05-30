@@ -548,6 +548,12 @@ Atributos
       centro = g.Centro.get(23001111);
       centro.getData().id.cod // Devuelve 23001111
 
+   El código es posible también expresarlo como una cadena o como la cadena
+   seguida del caracter "*C*" (mayúscula)::
+
+      centro = g.Centro.get("23001111");
+      centro = g.Centro.get("23001111C");
+
 .. js:attribute:: general
 
    Almacena la información general del mapa que ofrece el objeto `GeoJSON`_ de
@@ -1032,8 +1038,8 @@ realizan sobre el mapa:
    seguiran siendo necesarios otros eventos como los asociados a las
    correcciones y filtros o a los eventos de ratón.
 
-Petición de centros
-*******************
+Petición de destinos
+********************
 Para facilitar la creación de un formulario de petición de destinos, el
 :ref:`objeto de manipulación del mapa <crea-mapadjofer>` añade dos **atributos**:
 
@@ -1272,31 +1278,89 @@ el filtro:
 
 Localidades
 ===========
-Para facilitar la petición de localidades el objeto incorpora una capa
-``L.GeoJSON`` de Leaflet_:
-
-.. js:attribute:: localidades
-
-   Capa de tipo ``L.GeoJSON`` que almacena las marcas que representan
-   localidades.
-
-La capa, por defecto, no se añade al mapa. Cada una de las marcas de esta capa
-es una marca ``L.Marker`` normal que añade métodos
-:js:attr:`Marker.getData` y :js:attr:`Marker.changeData`, análogos al
-de la clase de marca que define ``leafext.js``. La definición de este tipo
-simple de marca se facilita a través del atributo:
+Para facilitar la petición de destinos el objeto incorpora también marcas que
+representan localidades:
 
 .. js:attribute:: Localidad
 
-   Tipo de marca para las localidades.
+   Tipo de marca para las localidades. Es de tipo mutable, como las de centro,
+   pero con un diseño más sencillo y cuya única opción de dibujo depende de si
+   la localidad se pidió o no. De modo análogo a :js:attr:`Centro` incorpora un
+   método ``.get(codigo)`` para poder obtener la marca correspondiente a partir
+   de su código, que puede estar en forma de número, de cadena o de cadena que
+   añade el carácter "*L*" (mayúscula). En consecuencia:
 
-.. todo:: Este tipo de marca es muy simple y no soporta filtrado.
+      jerez = g.Localidad.get(110200014);
+      jerez = g.Localidad.get("110200014");
+      jerez = g.Localidad.get("110200014L");
 
-Además, hay definido el evento:
+Estas localidades se cargan en la propia capa :js:attr:`cluster` a partir de un
+archivo GeoJSON_ con el siguiente aspecto:
+
+.. code-block:: json
+
+   {
+      "type": "FeatureCollection",
+      "features": [
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-6.116667, 36.7]
+            },
+            "properties": {
+               "nom": "Jerez de la Frontera",
+               "cod": "110200014"
+            }
+         },
+         {
+            "type": "Feature",
+            "geometry": {
+               "type": "Point",
+               "coordinates": [-5.983333, 37.383333]
+            },
+            "properties": {
+               "nom": "Sevilla",
+               "cod": "410910002"
+            }
+         }
+      ]
+   }
+
+Como se observa, los únicos datos de interés de cada localidad son sus
+coordenadas, su nombre y su código.
+
+Filtros
+-------
+Tiene definidos dos:
+
+**invisible**
+   Filtra todas las localidades indiscriminadamente::
+
+      g.Localidad.filter("invisiable", {});
+
+   Este filtro es el responsable de que no se vea ningún centro al
+   abrir el mapa, ya que está aplicado por defecto, Es obvio que para
+   poder seleccionar localidades al elaborar la lista de petición de destino,
+   habrá de desaplicar este filtro.
+
+**solicitado**
+   Filtro análogo al definido también la :js:attr:`Centro`, por lo que
+   filtra las localidades que hayan sido solicitadas.
+
+Eventos
+-------
 
 **locloaded**
    Se lanza cuando acaban de cargarse las localidades de su archivo *geojson*
-   correspondiente.
+   correspondiente::
+
+      g.on("locloaded", e => {
+         console.log(`Las ${g.Localidad.storel.length} localidades ya están disponibles`);
+      });
+
+Los eventos **requestclick** y **requestset** también son aplicables a
+localidades.
 
 Recetas
 =======

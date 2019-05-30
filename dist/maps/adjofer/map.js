@@ -540,6 +540,13 @@ const mapAdjOfer = (function(path, opts) {
          iconCreateFunction: L.utils.noFilteredIconCluster,
       });
 
+      // Como clearLayers, pero no se carga las localidades.
+      this.cluster.clearCentros = () => {
+         for(const marker of this.cluster.getLayers()) {
+            if(marker instanceof this.Centro) this.cluster.removeLayer(marker);
+         }
+      }
+
       if(this.options.search) this.map.addControl(createSearchBar.call(this));  // Issue #51
 
       // Issue #27
@@ -769,7 +776,7 @@ const mapAdjOfer = (function(path, opts) {
        * @type {L.GeoJSON}
        *
        */
-      this.localidades = L.geoJSON(undefined, {
+      const localidades = L.geoJSON(undefined, {
          pointToLayer: (f, p) => {
             const localidad = new this.Localidad(p, {
                icon: new Icono(),
@@ -798,7 +805,7 @@ const mapAdjOfer = (function(path, opts) {
       this.Localidad = L.Marker.extend({
          options: {
             mutable: "feature.properties",
-            filter: this.localidades,
+            filter: this.cluster,
          }
       });
 
@@ -818,6 +825,9 @@ const mapAdjOfer = (function(path, opts) {
          }
       });
 
+      // Las localidades no se ven.
+      this.Localidad.filter("invisible", {});
+
       // Como el de centro: filtra las localidades solicitadas.
       this.Localidad.registerF("solicitado", {
          attrs: "peticion",
@@ -833,22 +843,13 @@ const mapAdjOfer = (function(path, opts) {
          return;
       }
 
-      // https://github.com/Leaflet/Leaflet/issues/1324
-      this.map.on("moveend", e => {
-         const mapBounds = this.map.getBounds();
-         for(const loc of this.Localidad.store) {
-            const visible = mapBounds.contains(loc.getLatLng());
-            if(loc._icon && !visible) loc.removeFrom(this.localidades);
-            else if(!loc._icon && visible) loc.addTo(this.localidades);
-         }
-      });
-
       Icono.onready(() => {
          L.utils.load({
             url: this.options.pathLoc,
             callback: xhr => {
                const data = JSON.parse(xhr.responseText);
-               this.localidades.addData(data);
+               localidades.addData(data);
+               this.cluster.addLayer(localidades);
                this.fire("locloaded");
             },
             failback: xhr => console.error("No pueden cargarse los datos de localidad"),
