@@ -264,8 +264,9 @@ const Interfaz = (function() {
          el: "#esp",
          data: {
             especialidad: null,
-            interfaz: this,	
-            todas: {590: {}, 591: {}}
+            interfaz: this,
+            todas: {590: {}, 591: {}},
+            iOS: !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
          },
          computed: {
             sec: function() {

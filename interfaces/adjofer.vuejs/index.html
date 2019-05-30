@@ -138,6 +138,19 @@
             </h1>
 
             <article id="esp">
+               <div v-if="iOS">
+               <select class="custom-select" @change="selEspec">
+                  <option disabled selected label="-- Escoja especialidad --">
+                  <optgroup label="Cuerpo 590">
+                     <option v-for="(codigo, index) in Object.keys(sec)" :value="codigo" :index="index">{{sec[codigo]}}
+                  </optgroup>
+                  <optgroup label="Cuerpo 591">
+                     <option v-for="(codigo, index) in Object.keys(fp)" :value="codigo" :index="index">{{fp[codigo]}}
+                  </optgroup>
+               <select>
+               <p>Especialidad cargada: <strong>{{sec[especialidad] || fp[especialidad]}}</strong></p>
+               </div>
+               <div v-else>
                <label>Escriba o seleccione una especialidad
                   <input list="especialidades" class="custom-select datalist-supported" placeholder="Escoja especialidad..."
                          value="" @input="selEspec" autocomplete=off autofocus>
@@ -153,7 +166,8 @@
                      <select>
                   </datalist>
                </label>
-               <p>Especialidad cargada: <strong>{{todas[especialidad]}}</strong></p>
+               <p>Especialidad cargada: <strong>{{sec[especialidad] || fp[especialidad]}}</strong></p>
+               </div>
             </article>
          </div>
 
