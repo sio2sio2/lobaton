@@ -283,7 +283,7 @@
                      <!-- Modalidad: presencial, semi o a distancia -->
                      <span>{{of.mod | traduceModalidad }}. </span>
                      <!-- Turno -->
-                     <span v-if="of.tur">{{of.tur | capitalize }}. </span>
+                     <span v-if="of.tur">{{of.tur | expresaTurno }}. </span>
                      <!-- Número de plazas (FP) -->
                      <span v-if="of.pla">{{of.pla }} plazas. </span>
                      <span v-if="of.aum">({{of.aum }}). </span>

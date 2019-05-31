@@ -413,7 +413,7 @@ const Interfaz = (function() {
                   case "turno":
                      const operaciones = c.excluyentes?this.$parent.$children:[this];
                      for(const a of operaciones) {
-                        const opts = a.checked?{[a.o.campo]: a.o.value}: false,
+                        const opts = a.checked?Object.assign({[a.o.campo]: a.o.value}, a.o.extra): false,
                               nombre = c.nombre,
                               tipo = a.o.tipo;
 
@@ -576,10 +576,14 @@ const Interfaz = (function() {
                   excluyentes: true,
                   opciones: [
                      {
+                        // El filtro en realidad "Conserva las enseñanzas de tarde".
+                        // Así no se eliminan las enseñanzas con ambos turnos, que
+                        // es lo que se espera cuando se aplica este filtro.
                         label: "Elimina enseñanzas de mañana",
                         tipo: "correct",
                         campo: "turno",
-                        value: 1
+                        value: 2,
+                        extra: {inv: true}
                      },
                      {  
                         label: "Elimina centros con enseñanza de tarde",
@@ -993,6 +997,21 @@ const Interfaz = (function() {
                value = value.toString();
                return value.charAt(0).toUpperCase() + value.slice(1)
             },
+            expresaTurno: function(turno) {
+               switch(turno) {
+                  case "matutino":
+                     return "Mañana"
+
+                  case "vespertino":
+                     return "Tarde"
+
+                  case "ambos":
+                     return "Mañana y tarde";
+
+                  default:
+                     return "Turno desconocido";
+               }
+            },
             // La modalidad viene abreviada, por lo que hay que obtener la palabra/s real/es
             traduceModalidad: function (nombreAbreviado) {
                switch (nombreAbreviado) {
@@ -1247,7 +1266,7 @@ const Interfaz = (function() {
                if(f.c.nombre === e.name) {
                   for(i of f.$children) {
                      if(i.o.tipo === "correct") {
-                        if(e.opts.turno == 1) i.checked = on;
+                        if(e.opts.turno == 2 && e.opts.inv) i.checked = on;
                         break;
                      }
                   }
