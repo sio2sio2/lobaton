@@ -7,7 +7,7 @@ window.onload = function() {
       selectEstilo.addEventListener("change", e => g.setIcon(e.target.value));
 
       selectEsp.addEventListener("change", function(e) {
-         g.cluster.clearLayers();
+         g.cluster.clearCentros();
          g.Centro.reset();
          g.setRuta(null);
 

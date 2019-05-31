@@ -359,6 +359,13 @@ Enseñanzas
       A fin de cuentas, esas son las condiciones con las que partipará este
       año.
 
+#. **Me he quedado a medias, pero estoy harto, ¿puedo proseguir en otro momento?**
+
+   Sí, basta con que se asegure de haber marcado en :ref:`ajustes <panel-ajustes>`
+   la opción "*Recordar estado del mapa*". Su valor se conserva entre sesiones (como
+   el valor de resto de las opciones), por lo que debe desmarcarla si quiere que
+   la aplicación deje de guardar el estado.
+
 #. **Mi prioridad es dormir en casa, ¿cómo elimino centros que estén muy lejos?**
 
    Usando :ref:`las isocronas <isocronas>`.
