@@ -843,11 +843,21 @@ const mapAdjOfer = (function(path, opts) {
          return;
       }
 
+
+      // Elimina los municipios de los que no se sabe el código
+      // y la declaración de la provincia de las propiedades
+      function limpiaDatos(data) {
+         data.features = data.features.filter(f => !!f.properties.cod);
+         data.features.forEach(f => delete f.properties.pro);
+      }
+
+
       Icono.onready(() => {
          L.utils.load({
             url: this.options.pathLoc,
             callback: xhr => {
                const data = JSON.parse(xhr.responseText);
+               limpiaDatos(data);
                localidades.addData(data);
                this.cluster.addLayer(localidades);
                this.fire("locloaded");
