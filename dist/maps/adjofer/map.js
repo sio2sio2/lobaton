@@ -860,6 +860,7 @@ const mapAdjOfer = (function(path, opts) {
                limpiaDatos(data);
                localidades.addData(data);
                this.cluster.addLayer(localidades);
+               this.Localidad.invoke("refresh");  // Por alguna extraña razón, a veces se ven
                this.fire("locloaded");
             },
             failback: xhr => console.error("No pueden cargarse los datos de localidad"),
