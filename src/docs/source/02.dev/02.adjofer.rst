@@ -1288,7 +1288,7 @@ representan localidades:
    la localidad se pidió o no. De modo análogo a :js:attr:`Centro` incorpora un
    método ``.get(codigo)`` para poder obtener la marca correspondiente a partir
    de su código, que puede estar en forma de número, de cadena o de cadena que
-   añade el carácter "*L*" (mayúscula). En consecuencia:
+   añade el carácter "*L*" (mayúscula). En consecuencia::
 
       jerez = g.Localidad.get(110200014);
       jerez = g.Localidad.get("110200014");
@@ -1375,12 +1375,12 @@ Cambiar icono al solicitar centro
          // Solo si pasa de pedido a no pedido
          // o viceversa debe cambiarse el icono.
          if(!!e.newval !== !!e.oldval) {
-            const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono";
-            if(tipo) {
-               const Icono = e.target.solicitud[tipo];
-               e.marker.setIcon(new Icono());
-            }
-            return; // Al cambiar el icono, se redibuja (sobra refresh)
+            const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
+                  Icono = e.target.solicitud[tipo];
+
+            e.marker.setIcon(new Icono());
+            // Al cambiar el icono, se redibuja, así que sobra refresh.
+            return;
          }
       }
       e.marker.refresh();

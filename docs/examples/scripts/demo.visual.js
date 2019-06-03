@@ -76,11 +76,10 @@ window.onload = function() {
          // Solo si pasa de pedido a no pedido
          // o viceversa debe cambiarse el icono.
          if(!!e.newval !== !!e.oldval) {
-            const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono";
-            if(tipo) {
-               const Icono = e.target.solicitud[tipo];
-               e.marker.setIcon(new Icono());
-            }
+            const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
+                  Icono = e.target.solicitud[tipo];
+
+            e.marker.setIcon(new Icono());
             return; // Al cambiar el icono, se redibuja.
          }
       }

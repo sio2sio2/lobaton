@@ -1482,18 +1482,18 @@ const mapAdjOfer = (function(path, opts) {
       // Filtra según cantidad de adjudicaciones.
       this.Centro.registerF("adj", {
          attrs: "adj",
-         // opts= {min: 0}
+         // opts= {min: 0, inv: false}
          func: function(opts) {
-             return this.getData().adj.total < opts.min;
+             return !!(opts.inv ^ this.getData().adj.total < opts.min);
          }
       });
 
       // Filtra según número de enseñanzas.
       this.Centro.registerF("oferta", {
          attrs: "oferta",
-         // opts= {min: 0}
+         // opts= {min: 0, inv: false}
          func: function(opts) {
-             return this.getData().oferta.total < opts.min;
+             return !!(opts.inv ^ this.getData().oferta.total < opts.min);
          }
       });
 
