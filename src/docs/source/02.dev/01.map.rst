@@ -520,6 +520,21 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
    de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
    clase "*chupachups*".
 
+Eventos
+-------
+La marca, no el icono, tiene asociado un evento "*iconchange*" que se dispara
+cada vez que un icono cambia de aspecto como consecuencia de un cambio en las
+opciones de dibujo::
+
+   centro.on("iconchange", e => console.log(`Se redibuja ${e.target.getData().name}`));
+
+.. note:: Si la marca de un centro no se encuentra sobre el mapa (p.e. porque
+   queda fuera de sus límites y se elimina como `se propone aquí
+   <https://github.com/Leaflet/Leaflet/issues/1324>`_; o bien porque se usa
+   leaflet.markercluster_ y la marca se oculta dentro de un clster), el evento
+   sólo se desencadenará cuando se reincorpore la marca al mapa y, además,
+   hayan sufrido cambios las opciones de dibujo.
+
 .. _leafext-marca:
 
 Acceso a marcas

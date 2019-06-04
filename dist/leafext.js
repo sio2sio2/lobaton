@@ -843,7 +843,10 @@
          this.options.params = this.options.params || new Options(this.options.converter.run(this._marker.getData()));
 
          // Las opciones de dibujo cambiaron mientras el icono no estaba presente en el mapa.
-         if(!this.options.params.updated) delete this.options.html;
+         if(!this.options.params.updated) {
+            delete this.options.html;
+            this._marker.fire("iconchange", {reason: "draw", opts: this.options.params._updated});  // Issue #86
+         }
 
          if(!this.options.hasOwnProperty("html")) {
             const html = this.options.html.cloneNode(true);
@@ -872,6 +875,7 @@
       refresh: function() {
          if(!this.options.params || this.options.params.updated) return false;
          this.options.updater.call(this._marker.getElement(), this.options.params.modified);
+         this._marker.fire("iconchange", {reason: "change", opts: this.options.params._updated});  // Issue #86
          this.options.params.reset();
 
          // Si se cambia el icono dibujado, el options.html guardado ya no vale.
