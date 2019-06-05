@@ -146,7 +146,7 @@
     */
    L.utils.createMutableIconClass = function(name, options) {
 
-      if(!options.updater) console.warn("Falta opción updater: el icono no será mutable");
+      const mutable = options.updater && options.converter
 
       if(options.css) {
          const link = document.createElement("link");
@@ -159,7 +159,12 @@
 
       options.className = options.className || name;
 
-      return L.DivIcon.extend({options: options});
+      if(mutable) return L.MutableIcon.extend({options: options});
+      else {
+         console.warn("Falta updater o converter: el icono no será mutable");
+         return L.DivIcon.extend({options: options});
+      }
+      
    }
    // Fin issue #2
 
@@ -709,10 +714,9 @@
       return e;
    }
 
-   const DivIconExtend = L.DivIcon.extend
 
    /**
-    * @name Icon
+    * @name L.MutableIcon
     * @extends L.DivIcon
     * @classdesc Extensión de `L.DivIcon <https://leafletjs.com/reference-1.4.0.html#divicon>`_
     * a fin de crear iconos definidos por una plantilla a la que se aplican
@@ -734,7 +738,7 @@
     *    return this;
     * }
     *
-    * const Icon = L.divIcon.extend({
+    * const Icon = L.MutableIcon.extend({
     *    options: {
     *       className: "icon",
     *       iconSize: [25, 34],
@@ -749,26 +753,22 @@
     *
     * const icon = new Icon();
     */
-   L.DivIcon.extend = function(obj) {
-      const Icon = DivIconExtend.call(this, obj);
-      const options = Icon.prototype.options;
-      if(options.updater && options.converter) {
-         // Issue #2
-         if(options.html) options.html = getElement(options.html);
-         else if(!options.url) throw new Error("Falta definir las opciones html o url");
+
+   const MutableIconOpts = {
+      /** @lends L.MutableIcon.prototype */
+      // Issue #2
+      statics: {
+         /** @lends L.MutableIcon */
+
          /**
-          * Informa de si la clase de icono se encuentra lista para utilizarse.
-          * @name Icon.ready
+          * Informa si la clase de icono se encuentra lista para utilizarse.
           * @type {Boolean}
           */
-         Object.defineProperty(Icon, "ready", {
-            get: () => Icon.prototype.options.html,
-            configurable: false,
-            enumerable: false
-         });
+         isready() {
+            return !!this.prototype.options.html;
+         },
          /**
           * Define qué hacer cuando la clase de icono esté lista para usarse.
-          * @memberof Icon
           * @async
           *
           * @param {Function} success  Define la acción que se realizará en caso
@@ -776,14 +776,14 @@
           * @param {Function} fail Define la acción a realizar en caso de que
           * la creación del icono haya fallado.
           */
-         Icon.onready = async function(func_success, func_fail) {
-            if(!this.ready) {
-               new Promise(function(resolve, reject) {
-                  if(Icon.ready) resolve();
+         onready: async function(func_success, func_fail) {
+            if(!this.isready()) {
+               new Promise((resolve, reject) => {
+                  if(this.isready()) resolve();
                   load({
-                     url: Icon.prototype.options.url,
-                     callback: function(xhr) {
-                        Icon.prototype.options.html = getElement(xhr.responseXML);
+                     url: this.prototype.options.url,
+                     callback: xhr => {
+                        this.prototype.options.html = getElement(xhr.responseXML);
                         resolve();
                      },
                      failback: xhr => reject(new Error(xhr.statusText))
@@ -791,51 +791,26 @@
                }).then(func_success, func_fail);
             }
             else func_success();
+         },
+         // Para comprobar que se incluyeron updater y converter
+         extend: function(obj) {
+            const MutableIcon = L.Icon.extend.call(this, obj);
+            const options = MutableIcon.prototype.options;
+            if(options.updater && options.converter) {
+               if(options.html) options.html = getElement(options.html);
+               else if(!options.url) throw new Error("Falta definir las opciones html o url");
+            }
+            else throw new Error("Un icono mutable requiere funciones updater y converter");
+            return MutableIcon;
          }
-         // Fin Issue #2
-         Object.assign(Icon.prototype, IconPrototype);
-      }
-      return Icon;
-   }
-
-   const createDivIcon = L.DivIcon.prototype.createIcon;
-
-   /**
-    * Opciones para la clase :class:`Icon`. A las que reconoce la clase
-    * `L.DivIcon <https://leafletjs.com/reference-1.4.0.html#divicon>`_ de Leaflet
-    * añade algunas más.
-    * @name Icon.prototype.options
-    * @type {Icon.Options}
-    */
-
-   /**
-    * Opciones adicionales para la clase :class:`Icon`.
-    * @typedef {Object} Icon~Options
-    * @property {Options} params Define cuáles son las opciones de dibujo del icono.
-    * El valor de esta opción, sin embargo, se calcula a partir de la información
-    * proporcionada en el objeto :js:class:`L.utils.Converter` por lo que
-    * **no** debe facilitarse.
-    * @property {HTMLElement|String|DocumentFragment|Document} html Plantilla
-    * para el dibujo del icono.
-    * @property {String} url URL donde se escuentra la plantilla para el dibujo. Es
-    * una opción alternativa a la anteior.
-    * @property {Converter} converter  Objeto que define la conversión entre los
-    * datos asociados a la marca y las opciones de dibujo.
-    * @property {Function} updater  Función que actualiza el dibujo usando los nuevos
-    * valores de las opciones de dibujo. Debe construirse de forma que se tenga
-    * en cuenta que se pasarán sólo las opciones que cambiaron desde el último
-    * dibujado y que, por tanto, sólo deben cambiarse los detalles del dibujo que
-    * dependen de las opciones pasadas y dejar inalterados el resto de detalles.
-    * El contexto de la función es el elemento HTML que representa al icono.
-    */
-
-   const IconPrototype = {
+      },
+      // Fin issue #2
       /**
        * Wrapper para el método homónimo de `L.DivIcon
        * <https://leafletjs.com/reference-1.4.0.html#divicon>`_. Su función
        * es preparar el valor ``options.html`` usando la plantilla y 
        * las opciones de dibujo antes de que el método original actúe.
-       * @memberof Icon.prototype
+       * 
        *
        * @returns {HTMLElement}
        */
@@ -856,7 +831,7 @@
             this.options.params.reset();
          }
 
-         const div = createDivIcon.call(this, arguments);
+         const div = L.DivIcon.prototype.createIcon.call(this, arguments);
          // Issue #5
          const filter = this._marker.options.filter;
          if(filter && this._marker.filtered && !filter.hideable) {
@@ -883,6 +858,8 @@
          return true;
       },
    }
+
+   L.MutableIcon = L.DivIcon.extend(MutableIconOpts);
 
    const MarkerExtend = L.Marker.extend;
 
