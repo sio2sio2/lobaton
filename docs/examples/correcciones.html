@@ -11,6 +11,7 @@
            crossorigin=""></script>
    <!-- Extensión para el soporte de iconos mutables -->
    <script src="../../dist/leafext.js"></script>
+   <link rel="stylesheet" href="../../dist/maps/adjofer/icons/chupachups.css">
    <script>
       const datos = {
          "type": "FeatureCollection",
@@ -23,11 +24,9 @@
                },
                "properties": {
                   "name": "Centro 1",
-                  "data": {
-                     "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
-                     "oferta": ["SMR", "DAM", "BACHILLERATO"],
-                     "tipo": "normal"
-                  }
+                  "adj": ["Suprimido", "Concursillo", "Concursillo", "Interino"],
+                  "oferta": ["SMR", "DAM", "BACHILLERATO"],
+                  "tipo": "normal"
                }
 
             },
@@ -39,11 +38,9 @@
                },
                "properties": {
                   "name": "Centro 2",
-                  "data": {
-                     "adj": ["Concursillo", "Expectativa", "Interino"],
-                     "oferta": ["SMR", "ASIR"],
-                     "tipo": "dificil"
-                  }
+                  "adj": ["Concursillo", "Expectativa", "Interino"],
+                  "oferta": ["SMR", "ASIR"],
+                  "tipo": "dificil"
                }
 
             }
@@ -58,7 +55,7 @@
              maxZoom: 18
          }).addTo(map);
 
-         // Y una capa GeoJSON para crear las marcas y conectarles los datos.
+         // Capa GeoJSON para crear las marcas y conectarles los datos.
          const layer =  L.geoJSON(null, {
             pointToLayer: (f, p) => new Centro(p, {
                icon: new Icono(),
@@ -67,15 +64,37 @@
          }).addTo(map);
 
          const Centro = L.MutableMarker.extend({
-            options: {mutable: "feature.properties.data"}
-         });   
+            options: {
+               mutable: "feature.properties",
+               filter: L.utils.grayFilter
+            },
+         });
+
+         // Registramos y aplicamos la corrección por colectivo
+         Centro.register("adjcol", {
+            attr: "adj",
+            func: function(idx, adj, opts) {
+                  return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
+            }
+         })
+               .registerF("adjcol", {
+            attrs: "adj",
+            func: function(opts) {
+               return this.getData().adj.total < opts.min;
+            }
+         });
+
+         //Corregimos y elimanos centros con menos de 3 adjudicaciones.
+         Centro.correct("adjcol", {colectivo: ["Prácticas", "Interino"]})
+               .filter("adjcol", {min: 3});
+         // No es necesario hacer refresh, porque aún no se ha añadido ninguna marca.
 
          layer.addData(datos);
       }
 
       function crearIcono() {
          const converter = new L.utils.Converter(["numadj", "tipo"])
-                              .define("numadj", "adj", a => a.length)
+                              .define("numadj", "adj", a => a.total)
                               .define("tipo");
 
          function updater(o) {
@@ -89,7 +108,7 @@
             iconSize: [25, 34],
             iconAnchor: [12.5, 34],
             html: document.querySelector("template").content,
-            css: "../../dist/maps/adjofer/icons/chupachups.css",
+            css: "icons/chupachups.css",
             converter: converter,
             updater: updater
          });

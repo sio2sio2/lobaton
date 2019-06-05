@@ -858,280 +858,6 @@
       },
    });
 
-   const MarkerExtend = L.Marker.extend;
-
-   /**
-    * Opciones para :js:class:`Marker`. A las generales que permite `L.Marker
-    * <https://leafletjs.com/reference-1.4.0.html#marker>`_ de Leaflet
-    * añade algunas más
-    * @name Marker.prototype.options
-    * @type {Marker.Options}
-    */
-
-   /**
-    * Optiones adicionales de la clase :js:class:`Marker`.
-    * @typedef {Object} Marker~Options
-    * @property {String} opts.mutable  Nombre de la propiedad a la que se conectan los datos de
-    * las marcas. Si es una propiedad anidada puede usarse la notación de punto.
-    * Por ejemplo, ``feature.properties``.
-    * @property {(L.LayerGroup|String|Function)} opts.filter Habilita un :class:`sistema de filtros
-    * <CorrSys>` para la clase de marca. Puede adoptar tres valores distintos:
-    *    
-    * * La capa a la que se agregan las marcas de esta clase. En este caso, el efecto
-    *   del filtro será eliminar del mapa las marcas filtradas.
-    * * Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que
-    *   pertenezcan las marcas filtradas.
-    * * Una función de transformación que se aplicará al elemento HTML que
-    *   representa en el mapa cada marca filtrada. El contexto de esta función será el propio
-    *   elemento HTML.
-    */
-
-   /**
-    * @name Marker
-    * @extends L.Marker
-    * @classdesc  Extiende la clase `L.Marker <https://leafletjs.com/reference-1.4.0.html#marker>`_
-    * a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
-    * Consulte cuáles son las :attr:`Marker#options` opciones que lo habiliten}.
-    * @class
-    * @hideconstructor
-    *
-    * @example
-    *
-    * const Marker = L.Marker.extend({
-    *    options: {
-    *       mutable: "feature.properties",
-    *       filter: L.utils.grayFilter
-    *    }
-    * });
-    *
-    * const marca = new Marker([37.07,-5.98], {icon: new Icon()});
-    */
-   L.Marker.extend = function() {
-      const Marker = MarkerExtend.apply(this, arguments);
-      const options = Marker.prototype.options;
-      if(options.mutable) {
-         options.corr = new CorrSys();
-         Object.assign(Marker.prototype, prototypeExtra);
-         Object.assign(Marker, L.Evented.prototype);  // Issue #54
-         /**
-          * Almacena todas las marcas creadas de este tipo
-          * @name Marker.store
-          * @type {Array.<Marker>}
-          */
-         Object.defineProperty(Marker, "store", {
-            value: [],
-            configurable: false,
-            enumerable: false,
-            writable: false
-         }); 
-         /**
-          * Vacía :attr:`Marker.store` de marcas y marca como desaplicadas las correcciones.
-          * @memberof Marker
-          *
-          * @param {Boolean} deep  Si ``true``, también desaplica los filtros.
-          */
-         Marker.reset = function(deep) { 
-            this.store.length = 0;
-            const corrs = getCorrs.call(this);    // Issue #67
-            this.prototype.options.corr.reset();  // Issue #33
-            // Issue #67
-            for(const c of corrs) {
-               this.fire("uncorrect:*", c);
-               this.fire(`uncorrect:${c.name}`, c);
-            }
-            // Fin issue #67
-            if(deep) {
-               const filters = this.getFilterStatus();  // Issue #67
-               this.prototype.options.filter.reset();  // Issue #40
-               // Issue #67
-               for(const name in filters) {
-                  this.fire("unfilter:*", {name: name, opts: filters[name]});
-                  this.fire(`unfilter:${name}`, {name: name, opts: filters[name]});
-               }
-               // Fin issue #67
-            }
-         }
-         Marker.remove = removeMarker;
-         Marker.invoke = invokeMarker;
-         Marker.register = registerCorrMarker;
-         Marker.correct = doCorrMarker;
-         Marker.uncorrect = undoCorrMarker;
-         Marker.appliedCorrection = appliedCorrectionMarker;  // Issue #58
-         Marker.getCorrectStatus = getCorrectStatusMarker;
-         // Issue #5
-         if(options.filter) options.filter = new FilterSys(options.filter);
-         // No puede definirse en prototypeExtra:
-         // https://stackoverflow.com/questions/40211725/object-assign-getters-and-setters-in-constructor
-         Object.defineProperty(Marker.prototype, "filtered", {
-            get: function() { 
-               if(!this.options.filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
-               return this._filtered.length > 0; 
-            },
-            configurable: false,
-            enumerable: false
-         });
-         Marker.registerF = registerFilterMarker;
-         Marker.filter = filterMarker;
-         Marker.unfilter = unfilterMarker;
-         Marker.setFilterStyle = setFilterStyleMarker;
-         Marker.hasFilter = hasFilterMarker;
-         Marker.getFilterStatus = getFilterStatusMarker;
-         // Fin issue #5
-      }
-      return Marker;
-   }
-
-   /**
-    * Elimina una marca del almacén donde se guardan
-    * todos los objetos marca de una misma clase.
-    * @method Marker.remove
-    *
-    * @param {Marker} marker  La marca que se desea eliminar.
-    *
-    * @returns {Boolean}  El éxito en la eliminación.
-    */
-   function removeMarker(marker) {
-      const idx = this.store.indexOf(marker);
-      if(idx === -1) return false;
-      this.store.splice(idx, 1);
-      return true;
-   }
-
-   /**
-    * Ejecuta un método para todas las marcas almacenadas en store.
-    * @method Marker.invoke
-    *
-    * @param {String} method  Nombre del métodos
-    * @param {...*} param Parámetros que se pasan al método
-    */
-   function invokeMarker(method) {
-      for(const marker of this.store) {
-         const args = Array.prototype.slice.call(arguments, 1);
-         this.prototype[method].apply(marker, args);
-      }
-   }
-
-   /**
-    * Registra una corrección en el sistema de correcciones de la marca.
-    * @method Marker.register
-    *
-    * @param {String} name        Nombre que identifica a la corrección.
-    * @param {Object} obj         Objeto que define la corrección
-    * @param {String} obj.attr    Propiedad sobre el que opera la corrección.
-    * Puede usarse la notación de punto para propiedades anidadas.
-    * @param {Function} obj.func  Función que determina si se hace corrección o no.
-    * Cuando la función corrige el array actúa eliminado valores y para
-    * ello se ejecuta repetidamente sobre todos los elementos del *array*. Usa
-    * como contexto la marca a la que pertenece el objeto
-    * que contiene el *array*, y recibe tres parámetros: el primero es
-    * el índice del elemento que se comprueba, el segundo el array mismo
-    * y el tercero un objeto con las opciones aplicables de corrección.
-    * Debe devolver ``true`` (el elemento debe eliminarse) o
-    * ``false`` (no debe hacerlo). La función también puede añadir
-    * nuevos elementos, en vez de eliminar los existentes. Vea la información
-    * sobre el argumento *add* para saber más sobre ello.
-    * @param {Boolean} obj.add    ``true`` si la corrección añade
-    * elementos al array, y cualquier otro valor asimilable a ``false``
-    * si su intención es eliminar elementos. Si los añade, la función deberá
-    * devolver un *array* con los elementos a añadir y sólo se ejecuta una vez,
-    * por lo que su primer argumento (que representa el índice del elemento) vale
-    * ``null``.
-    *
-    * @example
-    * Centro.register("adjpue", {
-    *                   attr: "adj",
-    *                   func: function(idx, adj, opts) {
-    *                      return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
-    *                   },
-    *                })
-    *       .register("vt+", {
-    *                   attr: "adj",
-    *                   func: function(idx, adj, opts) {
-    *                      const data = this.getData();
-    *                      //Se deberían obtener las vacantes telefónicas de estos datos...
-    *                      return ["Interino", "Interino"];
-    *                   },
-    *                   add: true
-    *                });
-    */
-   function registerCorrMarker() {
-      return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments) && this;
-   }
-
-
-   // Issue #23
-   /**
-    * Aplica una corrección a las marcas de una clase.
-    * @method Marker.correct
-    *
-    * @params {String} name   Nombre de la corrección.
-    * @params {Object} params Opciones de aplicacion de la corrección.
-    * @params {Boolean} auto  Si ``true``, aplica las correcciones
-    * en cadena, si estas se han definino.
-    *
-    * @example
-    * Centro.correct("adjpue", {puesto: ["11590107", "00590059"]})
-    */
-   function doCorrMarker(name, params, auto) {
-      const corr = this.prototype.options.corr;
-      try {
-         // Si la correción ya está aplicada, sólo no se aplica en
-         // caso de que se aplicara con las mismas opciones.
-         if(equals(corr.getOptions(name).params, params)) return false;
-      }
-      catch(err) {  // La corrección no está registrada.
-         return false;
-      }
-
-      corr.initialize(name, params, auto);
-      for(const marker of this.store) marker.apply(name);
-
-      // Issue #54
-      const corrs = getCorrs.call(this, name);
-      for(const c of corrs) {
-         this.fire(`correct:*`, c);
-         this.fire(`correct:${c.name}`, c);
-      }
-      // Fin issue #54
-      return this;
-   }
-
-   /**
-    * Elimina una correccón de las marcas de una clase.
-    * @method Marker.uncorrect
-    *
-    * @params {String} name   Nombre de la corrección.
-    * @params {Array.<String>} prev  Si se encadenan correcciones, las
-    * correcciones previas en la cadena. Este parámetro sólo debe usarlo
-    * internamente la libreria.
-    *
-    * @example
-    * marca.uncorrect("adjpue");
-    */
-   function undoCorrMarker(name) {
-      const corr = this.prototype.options.corr;
-      try {
-         // La corrección no está aplicada.
-         if(!corr.getOptions(name).params) return false;
-      }
-      catch(err) {
-         return false;  // La corrección no está registrada.
-      }
-
-      for(const marker of this.store) marker.unapply(name);
-      // Issue #54
-      const corrs = getCorrs.call(this, name);
-      corr.setParams(name, null);
-      for(const c of corrs) {
-         this.fire(`uncorrect:*`, c);
-         this.fire(`uncorrect:${c.name}`, c);
-      }
-      // Fin issue #54
-
-      return this;
-   }
-   // Fin issue #23
-
 
    // Issue #67
    /**
@@ -1166,181 +892,415 @@
       // corrección, colocamos primero la manual.
       return ret.sort((a,b) => -1*(b.name + Number(b.auto) > a.name + Number(a.auto)));
    }
+   // Fin issue #67
+
 
    /**
-    * Devuelve el estado actual de las correcciones aplicadas sobre las marcas
-    * de un tipo.
-    * @method Marker.getCorrectStatus
-    *
-    * @params {String} name   El nombre de una corrección.
-    *
-    * @returns {Object} Un objeto con dos objetos a su vez. El objeto *manual*, cuyas
-    * claves son los nombres de las correcciones aplicadas manualmente y cuyos valores son
-    * las opciones de corrección; y el objeto *auto* cuyas claves son los nombres de
-    * las correcciones que se han aplicado automáticamente y cuyo valor es un objeto
-    * en que las claves son los nombres de la correcciones que al aplicarse
-    * manualmente la desencadenaron y cuyos valores son las opciones de aplicación
-    * de la corrección automática.
+    * Opciones para :js:class:`MutableMarker`. A las generales que permite `L.Marker
+    * <https://leafletjs.com/reference-1.4.0.html#marker>`_ de Leaflet
+    * añade algunas más
+    * @name Marker.prototype.options
+    * @type {Marker.Options}
     */
-   function getCorrectStatusMarker(name) {
-      const corr = this.prototype.options.corr,
-            ret = {
-               manual: {},
-               auto: {}
+
+   /**
+    * Optiones adicionales de la clase :js:class:`Marker`.
+    * @typedef {Object} Marker~Options
+    * @property {String} opts.mutable  Nombre de la propiedad a la que se conectan los datos de
+    * las marcas. Si es una propiedad anidada puede usarse la notación de punto.
+    * Por ejemplo, ``feature.properties``.
+    * @property {(L.LayerGroup|String|Function)} opts.filter Habilita un :class:`sistema de filtros
+    * <CorrSys>` para la clase de marca. Puede adoptar tres valores distintos:
+    *    
+    * * La capa a la que se agregan las marcas de esta clase. En este caso, el efecto
+    *   del filtro será eliminar del mapa las marcas filtradas.
+    * * Un nombre que se tomara como el nombre de la clase CSS a la que se quiere que
+    *   pertenezcan las marcas filtradas.
+    * * Una función de transformación que se aplicará al elemento HTML que
+    *   representa en el mapa cada marca filtrada. El contexto de esta función será el propio
+    *   elemento HTML.
+    */
+
+   /**
+    * @name L.MutableMarker
+    * @extends L.Marker
+    * @classdesc  Extiende la clase `L.Marker <https://leafletjs.com/reference-1.4.0.html#marker>`_
+    * a fin de permitir que los iconos sean variables y mutables a partir de los datos definidos.
+    * Consulte cuáles son las :attr:`Marker#options` opciones que lo habiliten}.
+    * @class
+    * @hideconstructor
+    *
+    * @example
+    *
+    * const Marker = L.MutableMarker.extend({
+    *    options: {
+    *       mutable: "feature.properties",
+    *       filter: L.utils.grayFilter
+    *    }
+    * });
+    *
+    * const marca = new Marker([37.07,-5.98], {icon: new Icon()});
+    */
+   L.MutableMarker = L.Marker.extend({
+      /** @lends L.MutableMarker.prototype */
+      statics: {
+         /** @lends L.MutableMarker */
+         /**
+          * Almacena todas las marcas creadas de este tipo
+          * @type {Array.<L.MutableMarker>}
+          */
+         store: [],
+         extend: function() {
+            const MutableMarker = L.Marker.extend.apply(this, arguments),
+                  options = MutableMarker.prototype.options;
+
+            if(!options.mutable) throw new Error("La opción 'mutable' es obligatoria");
+
+            Object.assign(MutableMarker, L.Evented.prototype); // Issue #54
+            options.corr = new CorrSys();
+            Object.defineProperty(MutableMarker, "store", {
+               configurable: false,
+               enumerable: false,
+               writable: false
+            });
+
+            // Issue #5
+            if(options.filter) options.filter = new FilterSys(options.filter);
+            Object.defineProperty(MutableMarker.prototype, "filtered", {
+               get: function() { 
+                  if(!this.options.filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+                  return this._filtered.length > 0; 
+               }
+            });
+            // Fin issue #5
+
+            return MutableMarker;
+         },
+         /**
+          * Vacía :js:attr:`L.MutableMarker.store` de marcas y marca como desaplicadas las correcciones.
+          * @param {Boolean} deep  Si ``true``, también desaplica los filtros.
+          */
+         reset: function(deep) { 
+            this.store.length = 0;
+            const corrs = getCorrs.call(this);    // Issue #67
+            this.prototype.options.corr.reset();  // Issue #33
+            // Issue #67
+            for(const c of corrs) {
+               this.fire("uncorrect:*", c);
+               this.fire(`uncorrect:${c.name}`, c);
+            }
+            // Fin issue #67
+            if(deep) {
+               const filters = this.getFilterStatus();  // Issue #67
+               this.prototype.options.filter.reset();  // Issue #40
+               // Issue #67
+               for(const name in filters) {
+                  this.fire("unfilter:*", {name: name, opts: filters[name]});
+                  this.fire(`unfilter:${name}`, {name: name, opts: filters[name]});
+               }
+               // Fin issue #67
+            }
+         },
+         /**
+          * Elimina una marca del almacén donde se guardan
+          * todos los objetos marca de una misma clase.
+          *
+          * @param {Marker} marker  La marca que se desea eliminar.
+          * @returns {Boolean}  El éxito en la eliminación.
+          */
+         remove: function(marker) {
+            const idx = this.store.indexOf(marker);
+            if(idx === -1) return false;
+            this.store.splice(idx, 1);
+            return true;
+         },
+         /**
+          * Ejecuta un método para todas las marcas almacenadas en store.
+          *
+          * @param {String} method  Nombre del métodoo
+          * @param {...*} param Parámetros que se pasan al método
+          */
+         invoke: function (method) {
+            for(const marker of this.store) {
+               const args = Array.prototype.slice.call(arguments, 1);
+               this.prototype[method].apply(marker, args);
+            }
+         },
+         /**
+          * Registra una corrección en el sistema de correcciones de la marca.
+          * @method Marker.register
+          *
+          * @param {String} name        Nombre que identifica a la corrección.
+          * @param {Object} obj         Objeto que define la corrección
+          * @param {String} obj.attr    Propiedad sobre el que opera la corrección.
+          * Puede usarse la notación de punto para propiedades anidadas.
+          * @param {Function} obj.func  Función que determina si se hace corrección o no.
+          * Cuando la función corrige el array actúa eliminado valores y para
+          * ello se ejecuta repetidamente sobre todos los elementos del *array*. Usa
+          * como contexto la marca a la que pertenece el objeto
+          * que contiene el *array*, y recibe tres parámetros: el primero es
+          * el índice del elemento que se comprueba, el segundo el array mismo
+          * y el tercero un objeto con las opciones aplicables de corrección.
+          * Debe devolver ``true`` (el elemento debe eliminarse) o
+          * ``false`` (no debe hacerlo). La función también puede añadir
+          * nuevos elementos, en vez de eliminar los existentes. Vea la información
+          * sobre el argumento *add* para saber más sobre ello.
+          * @param {Boolean} obj.add    ``true`` si la corrección añade
+          * elementos al array, y cualquier otro valor asimilable a ``false``
+          * si su intención es eliminar elementos. Si los añade, la función deberá
+          * devolver un *array* con los elementos a añadir y sólo se ejecuta una vez,
+          * por lo que su primer argumento (que representa el índice del elemento) vale
+          * ``null``.
+          *
+          * @example
+          * Centro.register("adjpue", {
+          *                   attr: "adj",
+          *                   func: function(idx, adj, opts) {
+          *                      return !!(opts.inv ^ (opts.puesto.indexOf(adj[idx].pue) !== -1));
+          *                   },
+          *                })
+          *       .register("vt+", {
+          *                   attr: "adj",
+          *                   func: function(idx, adj, opts) {
+          *                      const data = this.getData();
+          *                      //Se deberían obtener las vacantes telefónicas de estos datos...
+          *                      return ["Interino", "Interino"];
+          *                   },
+          *                   add: true
+          *                });
+          */
+         register: function() {
+            return CorrSys.prototype.register.apply(this.prototype.options.corr, arguments) && this;
+         },
+         // Issue #23
+         /**
+          * Aplica una corrección a las marcas de una clase.
+          * @method Marker.correct
+          *
+          * @params {String} name   Nombre de la corrección.
+          * @params {Object} params Opciones de aplicacion de la corrección.
+          * @params {Boolean} auto  Si ``true``, aplica las correcciones
+          * en cadena, si estas se han definino.
+          *
+          * @example
+          * Centro.correct("adjpue", {puesto: ["11590107", "00590059"]})
+          */
+         correct: function(name, params, auto) {
+            const corr = this.prototype.options.corr;
+            try {
+               // Si la correción ya está aplicada, sólo no se aplica en
+               // caso de que se aplicara con las mismas opciones.
+               if(equals(corr.getOptions(name).params, params)) return false;
+            }
+            catch(err) {  // La corrección no está registrada.
+               return false;
             }
 
-      let corrs = corr.getAppliedCorrections();
-      for(const name in corrs) ret.manual[name] = corrs[name];
+            corr.initialize(name, params, auto);
+            for(const marker of this.store) marker.apply(name);
 
-      for(const name in corr.getCorrections()) {
-         const auto = corr.getAutoParams(name);
-         if(Object.keys(auto).length>0) ret.auto[name] = auto;
-      }
+            // Issue #54
+            const corrs = getCorrs.call(this, name);
+            for(const c of corrs) {
+               this.fire(`correct:*`, c);
+               this.fire(`correct:${c.name}`, c);
+            }
+            // Fin issue #54
+            return this;
+         },
+         /**
+          * Elimina una correccón de las marcas de una clase.
+          * @method Marker.uncorrect
+          *
+          * @params {String} name   Nombre de la corrección.
+          * @params {Array.<String>} prev  Si se encadenan correcciones, las
+          * correcciones previas en la cadena. Este parámetro sólo debe usarlo
+          * internamente la libreria.
+          *
+          * @example
+          * marca.uncorrect("adjpue");
+          */
+         uncorrect: function(name) {
+            const corr = this.prototype.options.corr;
+            try {
+               // La corrección no está aplicada.
+               if(!corr.getOptions(name).params) return false;
+            }
+            catch(err) {
+               return false;  // La corrección no está registrada.
+            }
 
-      return ret;
-   }
+            for(const marker of this.store) marker.unapply(name);
+            // Issue #54
+            const corrs = getCorrs.call(this, name);
+            corr.setParams(name, null);
+            for(const c of corrs) {
+               this.fire(`uncorrect:*`, c);
+               this.fire(`uncorrect:${c.name}`, c);
+            }
+            // Fin issue #54
+            return this;
+         },
+         // Fin issue #23
+         // Issue #58
+         /**
+          * Comprueba si ya se ha aplicado una corrección con unas determinadas opciones
+          * @param {String} name  El nombre de la corrección.
+          * @param {Object} opts  Las nuevas opciones de aplicación.
+          * @param {String} type  El tipo de comprobación que se quiere hacer: si "manual",
+          * sólo se pretende comprobar si las opciones son equivalentes a la que se aplicaran
+          * con anterioridad manualmente; si "auto", si la aplicación manual ya la incluyen
+          * aplicaciones automáticas anteriores de la corrección. Cualquier otro valor prueba
+          * con la manual y las automáticas.
+          */
+         appliedCorrection: function(name, opts, type) {
+            const corr = this.prototype.options.corr;
+            return corr.isApplied(name, opts, type);
+         },
+         // Fin issue #58
+         /**
+          * Devuelve el estado actual de las correcciones aplicadas sobre las marcas
+          * de un tipo.
+          * @method Marker.getCorrectStatus
+          *
+          * @params {String} name   El nombre de una corrección.
+          *
+          * @returns {Object} Un objeto con dos objetos a su vez. El objeto *manual*, cuyas
+          * claves son los nombres de las correcciones aplicadas manualmente y cuyos valores son
+          * las opciones de corrección; y el objeto *auto* cuyas claves son los nombres de
+          * las correcciones que se han aplicado automáticamente y cuyo valor es un objeto
+          * en que las claves son los nombres de la correcciones que al aplicarse
+          * manualmente la desencadenaron y cuyos valores son las opciones de aplicación
+          * de la corrección automática.
+          */
+         getCorrectStatus: function(name) {
+            const corr = this.prototype.options.corr,
+                  ret = {
+                     manual: {},
+                     auto: {}
+                  }
 
-   // Issue #5
-   /**
-    * Registra para una clase de marcas un filtro.
-    * @method Marker.registerF
-    *
-    * @param {String}         name  Nombre del filtro.
-    * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
-    * cuyos valores afectan al filtro.
-    * @param {Function}       func  Función que filtra. Debe devolver
-    * ``true`` (sí filtra) o ``false``.
-    */
-   function registerFilterMarker() {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+            let corrs = corr.getAppliedCorrections();
+            for(const name in corrs) ret.manual[name] = corrs[name];
 
-      return FilterSys.prototype.register.apply(this.prototype.options.filter, arguments) && this;
-   }
+            for(const name in corr.getCorrections()) {
+               const auto = corr.getAutoParams(name);
+               if(Object.keys(auto).length>0) ret.auto[name] = auto;
+            }
+            return ret;
+         },
+         // Issue #5
+         /**
+          * Registra para una clase de marcas un filtro.
+          * @method Marker.registerF
+          *
+          * @param {String}         name  Nombre del filtro.
+          * @param {Array.<String>}  attrs Nombre de las propiedades de los datos
+          * cuyos valores afectan al filtro.
+          * @param {Function}       func  Función que filtra. Debe devolver
+          * ``true`` (sí filtra) o ``false``.
+          */
+         registerF: function() {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-   /**
-    * Habilita un filtro para las marcas de una clase
-    * @method Marker.filter
-    *
-    * @param {string} name    Nombre del filtro.
-    * @param {Object} params  Opciones para el filtrado.
-    */
-   function filterMarker(name, params) {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+            return FilterSys.prototype.register.apply(this.prototype.options.filter, arguments) && this;
+         },
+         /**
+          * Habilita un filtro para las marcas de una clase
+          * @method Marker.filter
+          *
+          * @param {string} name    Nombre del filtro.
+          * @param {Object} params  Opciones para el filtrado.
+          */
+         filter: function(name, params) {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-      // El filtro no existe o ya estaba habilitado con los mismo parámetros.
-      if(!filter.setParams(name, params, true)) return false;
-      for(const marker of this.store) marker.applyF(name);
+            // El filtro no existe o ya estaba habilitado con los mismo parámetros.
+            if(!filter.setParams(name, params, true)) return false;
+            for(const marker of this.store) marker.applyF(name);
 
-      this.fire("filter:*", {name: name, opts: params});  // Issue #54
-      this.fire(`filter:${name}`, {name: name, opts: params});  // Issue #54
-      
-      return this;
-   }
+            this.fire("filter:*", {name: name, opts: params});  // Issue #54
+            this.fire(`filter:${name}`, {name: name, opts: params});  // Issue #54
+            
+            return this;
+         },
+         /**
+          * Deshabilita un filtro para las marcas de una clase
+          * @method Marker.unfilter
+          *
+          * @param {string} name    Nombre del filtro.
+          */
+         unfilter: function(name) {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-   /**
-    * Deshabilita un filtro para las marcas de una clase
-    * @method Marker.unfilter
-    *
-    * @param {string} name    Nombre del filtro.
-    */
-   function unfilterMarker(name) {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+            const params = filter.getParams(name);  // Issue #54
 
-      const params = filter.getParams(name);  // Issue #54
+            if(!filter.disable(name)) return false;  // El filtro no existe o está deshabilitado.
+            for(const marker of this.store) marker.unapplyF(name);
 
-      if(!filter.disable(name)) return false;  // El filtro no existe o está deshabilitado.
-      for(const marker of this.store) marker.unapplyF(name);
+            // #Issue #54
+            this.fire("unfilter:*", {name: name, opts: params});  // Issue #54
+            this.fire(`unfilter:${name}`, {name: name, opts: params});  // Issue #54
+            // Fin #issue 54
 
-      // #Issue #54
-      this.fire("unfilter:*", {name: name, opts: params});  // Issue #54
-      this.fire(`unfilter:${name}`, {name: name, opts: params});  // Issue #54
-      // Fin #issue 54
+            return this;
+         },
+         /**
+          * Cambia el estilo de filtro.
+          * @method Marker.setFilter
+          *
+          * @param {Function|String|L.LayerGroup}  style     Estilo del filtro.
+          * Consulte los valores posibles de la opción :attr:`filter <Marker#options>` para
+          * saber qué valor de estilo suministrar.
+          */
+         setFilterStyle: function(style) {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-      return this;
-   }
+            filter.setStyle(style, this);
+         },
+         /**
+          * Comprueba si ls marcas tienen aplicado un filtro.
+          * @method Marker.hasFilter
+          *
+          * @param {String} name    Nombre del filtro.
+          *
+          * @return {Boolean}
+          */
+         hasFilter: function(name) {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-   /**
-    * Cambia el estilo de filtro.
-    * @method Marker.setFilter
-    *
-    * @param {Function|String|L.LayerGroup}  style     Estilo del filtro.
-    * Consulte los valores posibles de la opción :attr:`filter <Marker#options>` para
-    * saber qué valor de estilo suministrar.
-    */
-   function setFilterStyleMarker(style) {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
+            return filter.getFilters().indexOf(name) !== -1
+         },
+         /**
+          * Devuelve el estado actual de los filtros aplicados sobre las marcas del tipo
+          * @method Marker.getFilterStatus
+          *
+          * @param {String} name  Nombre de filtro. Si se especifica uno, sólo se devuelven
+          * las opciones de aplicación de ese filtro en concreto.
+          *
+          * @returns {Object} Un objeto en que las claves son los nombres de los filtros y
+          * los correspondientes valores sus opciones de aplicación; o bien, si se proporcionó
+          * un nombre de filtro, las opciones de aplicación de ese filtro.
+          */
+         getFilterStatus: function(name) {
+            const filter = this.prototype.options.filter;
+            if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
 
-      filter.setStyle(style, this);
-   }
+            if(name) return filter.getParams(name);
 
-   /**
-    * Comprueba si ls marcas tienen aplicado un filtro.
-    * @method Marker.hasFilter
-    *
-    * @param {String} name    Nombre del filtro.
-    *
-    * @return {Boolean}
-    */
-   function hasFilterMarker(name) {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
-
-      return filter.getFilters().indexOf(name) !== -1
-   }
-
-   /**
-    * Devuelve el estado actual de los filtros aplicados sobre las marcas del tipo
-    * @method Marker.getFilterStatus
-    *
-    * @param {String} name  Nombre de filtro. Si se especifica uno, sólo se devuelven
-    * las opciones de aplicación de ese filtro en concreto.
-    *
-    * @returns {Object} Un objeto en que las claves son los nombres de los filtros y
-    * los correspondientes valores sus opciones de aplicación; o bien, si se proporcionó
-    * un nombre de filtro, las opciones de aplicación de ese filtro.
-    */
-   function getFilterStatusMarker(name) {
-      const filter = this.prototype.options.filter;
-      if(!filter) throw new Error("No se ha definido filtro. ¿Se ha olvidado de incluir la opción filter al crear la clase de marca?");
-
-      if(name) return filter.getParams(name);
-
-      const ret = {};
-      for(const name of filter.getFilters()) {
-         ret[name] =  filter.getParams(name);
-      }
-      return ret;
-   }
-   // Fin issue #5
-
-   // Issue #58
-   /**
-    * Comprueba si ya se ha aplicado una corrección con unas determinadas opciones
-    * @param {String} name  El nombre de la corrección.
-    * @param {Object} opts  Las nuevas opciones de aplicación.
-    * @param {String} type  El tipo de comprobación que se quiere hacer: si "manual",
-    * sólo se pretende comprobar si las opciones son equivalentes a la que se aplicaran
-    * con anterioridad manualmente; si "auto", si la aplicación manual ya la incluyen
-    * aplicaciones automáticas anteriores de la corrección. Cualquier otro valor prueba
-    * con la manual y las automáticas.
-    */
-   function appliedCorrectionMarker(name, opts, type) {
-      const corr = this.prototype.options.corr;
-      return corr.isApplied(name, opts, type);
-   }
-   // Fin issue #58
-
-   const MarkerInitialize = L.Marker.prototype.initialize;
-   const MarkerSetIcon = L.Marker.prototype.setIcon;
-
-   // Métodos modificados o adicionales que tendrán los derivados de Marker que al
-   // crearse con extend incluyan la opción ``mutable=true``.
-   /** @lends Marker.prototype */
-   const prototypeExtra = {
+            const ret = {};
+            for(const name of filter.getFilters()) {
+               ret[name] =  filter.getParams(name);
+            }
+            return ret;
+         }
+         // Fin issue #5
+      },
       /**
        * Informa de si la marca se encuentra en el ``store``
        * del tipo de marca con la que se creó.
@@ -1399,7 +1359,7 @@
        * la nueva marca, y de algunos aspectos menores más.
        */
       initialize: function() {
-         MarkerInitialize.apply(this, arguments);
+         L.Marker.prototype.initialize.apply(this, arguments);
          this.constructor.store.push(this);
          if(this.options.icon) this.options.icon._marker = this;
          // Issue #22
@@ -1458,7 +1418,7 @@
        */
       setIcon: function(icon) {
          icon._marker = this;
-         MarkerSetIcon.apply(this, arguments);
+         L.Marker.prototype.setIcon.apply(this, arguments);
       },
       /**
        * Prepara los datos recién conectado a la marca. Es un método interno
@@ -1639,7 +1599,7 @@
          return idx !== 1;
       }
       // Fin issue #5
-   }
+   });
 
 
    const CorrSys = (function() {

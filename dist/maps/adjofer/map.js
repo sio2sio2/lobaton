@@ -800,9 +800,8 @@ const mapAdjOfer = (function(path, opts) {
        * Marca para localidad
        * @memberof MadAdjOfer.prototype
        * @type {Marker}
-       *
        */
-      this.Localidad = L.Marker.extend({
+      this.Localidad = L.MutableMarker.extend({
          options: {
             mutable: "feature.properties",
             filter: this.cluster,
@@ -881,7 +880,7 @@ const mapAdjOfer = (function(path, opts) {
       * @memberof MapAdjOfer.prototype
       * @type {Marker}
       */
-      this.Centro = L.Marker.extend({
+      this.Centro = L.MutableMarker.extend({
        options: {
           mutable: "feature.properties",
           filter: this.cluster,
