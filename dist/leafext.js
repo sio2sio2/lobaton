@@ -753,8 +753,7 @@
     *
     * const icon = new Icon();
     */
-
-   const MutableIconOpts = {
+   L.MutableIcon = L.DivIcon.extend({
       /** @lends L.MutableIcon.prototype */
       // Issue #2
       statics: {
@@ -776,7 +775,7 @@
           * @param {Function} fail Define la acción a realizar en caso de que
           * la creación del icono haya fallado.
           */
-         onready: async function(func_success, func_fail) {
+         onready: function(func_success, func_fail) {
             if(!this.isready()) {
                new Promise((resolve, reject) => {
                   if(this.isready()) resolve();
@@ -857,9 +856,7 @@
          delete this.options.html;
          return true;
       },
-   }
-
-   L.MutableIcon = L.DivIcon.extend(MutableIconOpts);
+   });
 
    const MarkerExtend = L.Marker.extend;
 
