@@ -79,7 +79,7 @@ window.onload = function() {
             const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
                   Icono = e.target.solicitud[tipo];
 
-            e.marker.setIcon(new Icono());
+            Icono.onready(() => e.marker.setIcon(new Icono()));
             return; // Al cambiar el icono, se redibuja.
          }
       }

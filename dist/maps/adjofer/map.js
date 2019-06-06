@@ -2354,11 +2354,6 @@ const mapAdjOfer = (function(path, opts) {
             }
          });
 
-         // TODO: Esto es espantoso. Habría que cambiar
-         // el modo en que se crean los iconos.
-         this.SolicitudIcono.onready(() => true);
-         this.BolicheIcono.onready(() => true);
-
          // Define un filtro para eliminar centros seleccionados
          adjofer.Centro.registerF("solicitado", {
             attrs: "peticion",

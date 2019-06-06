@@ -1378,7 +1378,7 @@ Cambiar icono al solicitar centro
             const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
                   Icono = e.target.solicitud[tipo];
 
-            e.marker.setIcon(new Icono());
+            Icono.onready(() => e.marker.setIcon(new Icono()));
             // Al cambiar el icono, se redibuja, así que sobra refresh.
             return;
          }

@@ -159,7 +159,9 @@
 
       options.className = options.className || name;
 
-      if(mutable) return L.MutableIcon.extend({options: options});
+      // Además de devolver el icono, lo precargamos en caso
+      // de que hubiera que ir a buscarlo en uin fichero externo
+      if(mutable) return L.MutableIcon.extend({options: options}).onready(() => true);
       else {
          console.warn("Falta updater o converter: el icono no será mutable");
          return L.DivIcon.extend({options: options});
@@ -777,19 +779,33 @@
           */
          onready: function(func_success, func_fail) {
             if(!this.isready()) {
-               new Promise((resolve, reject) => {
-                  if(this.isready()) resolve();
+               if(this._onprocess) {  // Ya está pedido el fichero, así que esperamos.
+                  const id = setInterval(() => {
+                     if(this.isready()) {
+                        clearInterval(id);
+                        delete this._onprocess;
+                        func_success();
+                     }
+                  }, 20);
+               }
+               else {
+                  this._onprocess = true;
                   load({
                      url: this.prototype.options.url,
                      callback: xhr => {
                         this.prototype.options.html = getElement(xhr.responseXML);
-                        resolve();
+                        delete this._onprocess;
+                        func_success();
                      },
-                     failback: xhr => reject(new Error(xhr.statusText))
+                     failback: xhr => {
+                        delete this._onprocess;
+                        func_fail(xhr.statusText);
+                     }
                   });
-               }).then(func_success, func_fail);
+               }
             }
             else func_success();
+            return this;
          },
          // Para comprobar que se incluyeron updater y converter
          extend: function(obj) {
