@@ -481,11 +481,11 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
             <article>
-               <input autocomplete="off" class="form-control" name="centro" @input="sugerir" placeholder="Escriba el nombre...">
+               <input autocomplete="off" class="form-control" name="centro" @input="sugerir" placeholder="Escriba centro o localidad...">
                <ul class="list-group">
-                  <li class="list-group-item" v-for="c in candidatos"><data :value="c.getData().id.cod" @click="seleccionar">
-                     <span>{{String(c.getData().id.cp).padStart(5, "0").substring(0, 2)}}</span>
-                     <span>{{c.getData().id.nom}}</span>
+                  <li class="list-group-item" v-for="c in candidatos"><data :value="c.getData().cod || c.getData().id.cod" @click="seleccionar">
+                     <span>{{c | obtProvincia}}</span>
+                     <span>{{c.getData().nom || c.getData().id.nom}}</span>
                   </data> </li>
                </ul>
             </article>

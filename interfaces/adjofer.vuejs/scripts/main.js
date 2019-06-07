@@ -350,9 +350,16 @@ const Interfaz = (function() {
                // Búsqueda difusa (require fuse.js)
                return new Fuse(
                   this.g.cluster.getLayers(), {
-                     keys: [this.pathData + ".id.nom"],
-                     minMatchCharLength: 2,
+                     keys: [this.pathData + ".id.nom", this.pathData + ".nom"],
+                     minMatchCharLength: 3,
                }).search(this.patron);
+            }
+         },
+         filters: {
+            obtProvincia: (marca) => {
+               const data = marca.getData(),
+                     codigo = data.cod || data.id.cod.toString().padStart(5, "0");
+               return codigo.substring(0,2);
             }
          },
          methods: {
@@ -362,11 +369,12 @@ const Interfaz = (function() {
                this.patron = e.target.value;
             },
             seleccionar: function(e) {
-               const codigo = e.currentTarget.value;
+               const codigo = e.currentTarget.value,
+                     marca = this.g.Centro.get(codigo) || this.g.Localidad.get(codigo);
                this.$el.querySelector("input").value = "";
                this.patron = "";
-               this.g.seleccionado = this.g.Centro.get(codigo);
-               this.g.map.setView(this.g.seleccionado.getLatLng(),
+               if(marca instanceof this.g.Centro) this.g.seleccionado = marca;
+               this.g.map.setView(marca.getLatLng(),
                                   this.g.cluster.options.disableClusteringAtZoom);
             }
          }

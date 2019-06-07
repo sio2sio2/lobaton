@@ -961,11 +961,6 @@
       /** @lends L.MutableMarker.prototype */
       statics: {
          /** @lends L.MutableMarker */
-         /**
-          * Almacena todas las marcas creadas de este tipo
-          * @type {Array.<L.MutableMarker>}
-          */
-         store: [],
          extend: function() {
             const MutableMarker = L.Marker.extend.apply(this, arguments),
                   options = MutableMarker.prototype.options;
@@ -974,7 +969,12 @@
 
             Object.assign(MutableMarker, L.Evented.prototype); // Issue #54
             options.corr = new CorrSys();
+            /**
+             * Almacena todas las marcas creadas de este tipo
+             * @type {Array.<L.MutableMarker>}
+             */
             Object.defineProperty(MutableMarker, "store", {
+               value: [],
                configurable: false,
                enumerable: false,
                writable: false
