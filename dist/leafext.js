@@ -865,7 +865,7 @@
       refresh: function() {
          if(!this.options.params || this.options.params.updated) return false;
          this.options.updater.call(this._marker.getElement(), this.options.params.modified);
-         this._marker.fire("iconchange", {reason: "change", opts: this.options.params._updated});  // Issue #86
+         this._marker.fire("iconchange", {reason: "redraw", opts: this.options.params._updated});  // Issue #86
          this.options.params.reset();
 
          // Si se cambia el icono dibujado, el options.html guardado ya no vale.

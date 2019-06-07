@@ -1,5 +1,7 @@
 .. highlight:: js
 
+.. _adjofer:
+
 *******************************
 Mapa de oferta y adjudicaciones
 *******************************

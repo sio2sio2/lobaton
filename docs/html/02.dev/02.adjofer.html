@@ -174,7 +174,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="mapa-de-oferta-y-adjudicaciones">
-<h1>3.2. Mapa de oferta y adjudicaciones<a class="headerlink" href="#mapa-de-oferta-y-adjudicaciones" title="Enlazar permanentemente con este título">¶</a></h1>
+<span id="adjofer"></span><h1>3.2. Mapa de oferta y adjudicaciones<a class="headerlink" href="#mapa-de-oferta-y-adjudicaciones" title="Enlazar permanentemente con este título">¶</a></h1>
 <p>La aplicación utiliza <code class="file docutils literal notranslate"><span class="pre">leafext.js</span></code> para desarrollar un objeto que
 implemente un mapa de adjudicaciones provisionales y oferta educativa. Tal
 desarrollo se encuentra dentro del directorio <code class="file docutils literal notranslate"><span class="pre">dist/adjofer/maps</span></code> y el
@@ -1657,7 +1657,7 @@ localidades.</p>
          <span class="kr">const</span> <span class="nx">tipo</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">newval</span> <span class="o">===</span> <span class="mi">0</span><span class="o">?</span><span class="s2">&quot;BolicheIcono&quot;</span><span class="o">:</span><span class="s2">&quot;SolicitudIcono&quot;</span><span class="p">,</span>
                <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">[</span><span class="nx">tipo</span><span class="p">];</span>
 
-         <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">());</span>
+         <span class="nx">Icono</span><span class="p">.</span><span class="nx">onready</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">()));</span>
          <span class="c1">// Al cambiar el icono, se redibuja, así que sobra refresh.</span>
          <span class="k">return</span><span class="p">;</span>
       <span class="p">}</span>
