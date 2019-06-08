@@ -253,6 +253,13 @@ const Interfaz = (function() {
             writable: false,
             configurable: false,
             enumerable: true
+         },
+         // Listado de solicitudes
+         solicitudes: {
+            value: initSolicitudes.call(this),
+            writable: false,
+            configurable: false,
+            enumerable: true
          }
       });
 
@@ -1115,6 +1122,90 @@ const Interfaz = (function() {
          }
       });
 
+   }
+
+   // Inicializa el panel de solicitudes
+   function initSolicitudes() {
+
+      //TODO borrar esto de aquí
+      this.g.mode="solicitud";
+      this.g.Localidad.unfilter("invisible");
+      this.g.Localidad.invoke("refresh");
+
+      var draggable = window.vuedraggable;
+
+      this.g.on("requestclick", e => {
+         console.log(e.marker.getData())
+         if (e.marker instanceof this.g.Localidad) {
+            this.g.solicitud.add(e.marker.getData().cod + "L");
+         }
+         else if (e.marker instanceof this.g.Centro) {
+            this.g.solicitud.add(e.marker.getData().id.cod + "C");
+         }
+
+         console.debug(this.g.solicitud.store)
+         //bla = self.g.solicitud.list;
+         //listado.splice(0, listado.length, ...this.g.solicitud.list)
+         //console.log(listado);
+
+      });
+
+      const ListaSolicitudes = {
+         name: 'Solicitudes',
+         template: `
+            <div class="peticiones">
+               <draggable
+                        :list="list"
+                        class="list-group"
+                        ghost-class="ghost"
+                        @start="dragging = true"
+                        @end="dragging = false"
+               >
+                        <div
+                           class="list-group-item"
+                           v-for="element in list"
+                           :key="typeof element.getData().cod !== 'undefined'?element.getData().cod:element.getData().id.cod"
+                           v-html="typeof element.getData().cod !== 'undefined'? nombreLocalidad(element.getData()) : nombreCentro(element.getData())"
+                        >
+                           
+                        </div>
+                        
+               </draggable>
+            </div>
+         `,
+         components: {
+            draggable
+         },
+         methods:{
+            add: function() {
+               //this.list.push({ name: "Juan " + id, id: id++ });
+            },
+            replace: function() {
+               //this.list = [{ name: "Edgard", id: id++ }];
+            },
+            nombreLocalidad(localidad) {
+               return localidad.peticion + " - " + "<span><i class=\"fa fa-building\"></i></span> " + localidad.nom + " (" + localidad.cod + ")"
+            },
+            nombreCentro(centro) {
+               return centro.peticion + " - " + "<span><i class=\"fa fa-graduation-cap\"></i></span> " + centro.id.nom + " (" + centro.id.cod + ")"
+            }
+          },
+          data() {
+            return {
+               enabled: true,
+               list: this.$parent.g.solicitud.store,
+               dragging: false
+            };
+         }
+      };
+
+      const app = new Vue({
+         el: '#peticiones',
+         data: {
+            g: this.g
+         },
+         render: h => h(ListaSolicitudes)
+      });
    }
 
    // Vuelva sobre el aspecto de la interfaz el estado inicial del mapa
