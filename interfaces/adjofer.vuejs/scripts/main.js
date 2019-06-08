@@ -307,13 +307,12 @@ const Interfaz = (function() {
                   if(codigo !== this.especialidad) {
                      this.interfaz.g.cluster.clearCentros();
                      this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
+                     this.interfaz.g.Centro.reset();
+                     this.interfaz.g.seleccionado = null;
+                     this.interfaz.g.setRuta(null);
                   }
 
                   this.cambiarSidebar(codigo);
-
-                  this.interfaz.g.Centro.reset();
-                  this.interfaz.g.seleccionado = null;
-                  this.interfaz.g.setRuta(null);
                   e.target.value = "";
 
                }
