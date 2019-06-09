@@ -1127,15 +1127,20 @@ const Interfaz = (function() {
    // Inicializa el panel de solicitudes
    function initSolicitudes() {
 
-      //TODO borrar esto de aquí
-      this.g.mode="solicitud";
-      this.g.Localidad.unfilter("invisible");
-      this.g.Localidad.invoke("refresh");
-
       var draggable = window.vuedraggable;
 
+      this.g.on("modeset", e => {
+         if(e.newval === "solicitud") {
+            this.g.Localidad.unfilter("invisible");
+            this.g.Localidad.invoke("refresh");
+         }
+         else{
+            this.g.Localidad.filter("invisible", {});
+            this.g.Localidad.invoke("refresh");
+         }
+      });
+
       this.g.on("requestclick", e => {
-         console.log(e.marker.getData())
          if (e.marker instanceof this.g.Localidad) {
             this.g.solicitud.add(e.marker.getData().cod + "L");
          }
@@ -1143,32 +1148,80 @@ const Interfaz = (function() {
             this.g.solicitud.add(e.marker.getData().id.cod + "C");
          }
 
-         console.debug(this.g.solicitud.store)
-         //bla = self.g.solicitud.list;
-         //listado.splice(0, listado.length, ...this.g.solicitud.list)
-         //console.log(listado);
-
+         //Actualizamos el listado con las posiciones del array original.
+         //Es muy importante no cambiarlo (es decir, no asignar un array nuevo)
+         //pues en dicho caso se perderá la "conexión" con la lista
+         updateListado();
       });
+
+      this.g.on("requestset", e => {
+         if(e.marker instanceof this.g.Centro) {
+            // Solo si pasa de pedido a no pedido
+            // o viceversa debe cambiarse el icono.
+            if(!!e.newval !== !!e.oldval) {
+               const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
+                     Icono = e.target.solicitud[tipo];
+      
+               Icono.onready(() => e.marker.setIcon(new Icono()));
+               // Al cambiar el icono, se redibuja, así que sobra refresh.
+               return;
+            }
+         }
+         e.marker.refresh();
+      });
+
+      function getNombreCentroLocalidad(element) {
+         const data = element.getData()
+         return typeof data.nom !== 'undefined' ? data.nom : data.id.nom;
+      }
+
+      function getCodigoCentroLocalidad(element) {
+         const data = element.getData()
+         return typeof data.cod !== 'undefined' ? data.cod : data.id.cod;
+      }
+   
+      function clonaSolicitudes() {
+         let listado = []
+         this.interfaz.g.solicitud.store.map(function(element){
+            listado.push({
+               cod: getCodigoCentroLocalidad(element),
+               peticion: element.getData().peticion,
+               tipo: typeof element.getData().cod !== 'undefined'? 'L' : 'C',
+               name: getNombreCentroLocalidad(element)
+            })
+         })
+         return listado;
+      }
+
+      function updateListado() {
+         app.listado.splice(0, app.listado.length, ...clonaSolicitudes())
+      }
 
       const ListaSolicitudes = {
          name: 'Solicitudes',
          template: `
             <div class="peticiones">
                <draggable
+                        tag="ul"
                         :list="list"
                         class="list-group"
                         ghost-class="ghost"
                         @start="dragging = true"
                         @end="dragging = false"
+                        @sort="ordena"
                >
-                        <div
+                        
+
+                        <li
                            class="list-group-item"
-                           v-for="element in list"
-                           :key="typeof element.getData().cod !== 'undefined'?element.getData().cod:element.getData().id.cod"
-                           v-html="typeof element.getData().cod !== 'undefined'? nombreLocalidad(element.getData()) : nombreCentro(element.getData())"
+                           v-for="(element, idx) in list"
+                           :key="element.cod"
                         >
-                           
-                        </div>
+                           {{ element.peticion }} - 
+                           <span><i v-bind:class="[element.tipo === 'C' ? 'fa-graduation-cap' : 'fa-building', 'fa']"></i></span> 
+                           {{ element.name }} ({{ element.cod }})
+                           <i class="fa fa-times close" @click="removeAt(idx)"></i>
+                        </li>
                         
                </draggable>
             </div>
@@ -1177,23 +1230,24 @@ const Interfaz = (function() {
             draggable
          },
          methods:{
-            add: function() {
-               //this.list.push({ name: "Juan " + id, id: id++ });
+            removeAt: function(index) {
+               this.$parent.g.solicitud.delete(index + 1, 1)
+               updateListado()
             },
-            replace: function() {
-               //this.list = [{ name: "Edgard", id: id++ }];
-            },
-            nombreLocalidad(localidad) {
-               return localidad.peticion + " - " + "<span><i class=\"fa fa-building\"></i></span> " + localidad.nom + " (" + localidad.cod + ")"
-            },
-            nombreCentro(centro) {
-               return centro.peticion + " - " + "<span><i class=\"fa fa-graduation-cap\"></i></span> " + centro.id.nom + " (" + centro.id.cod + ")"
+            ordena(e) {
+               if(e.oldIndex < e.newIndex) {
+                  this.$parent.g.solicitud.move(e.oldIndex + 1, e.newIndex + 2, 1)
+               }
+               else{
+                  this.$parent.g.solicitud.move(e.oldIndex + 1, e.newIndex + 1, 1)
+               }
+               updateListado()
             }
           },
           data() {
             return {
                enabled: true,
-               list: this.$parent.g.solicitud.store,
+               list: this.$parent.listado,
                dragging: false
             };
          }
@@ -1202,9 +1256,95 @@ const Interfaz = (function() {
       const app = new Vue({
          el: '#peticiones',
          data: {
-            g: this.g
+            g: this.g,
+            listado: clonaSolicitudes()
          },
          render: h => h(ListaSolicitudes)
+      });
+
+      Vue.component("ajuste", {
+         props: ["a"],
+         template: "#ajuste",
+         data: function() {
+            return {
+               checked: this.a.tipo === "visual"?this.$parent.options[this.a.opt]:false,
+               disabled: false
+            }
+         },
+         watch: {
+            checked: function() {
+               // Sólo actualizamos las opciones de interfaz visuales,
+               // las relativas a filtros y correcciones deben conservar
+               // sus valores iniciales.
+               if(this.a.tipo === "visual") this.$parent.options[this.a.opt] = this.checked;
+            }
+         },
+         computed: {
+            id: function() {
+               return this.a.tipo !== "visual"?this.a.tipo:
+                                               `${this.a.tipo}:${this.a.opt}`
+            }
+         },
+         methods: {
+            // Qué acción se desencadena al cambiar el ajuste.
+            ajustar: function(e) {
+               //this.$parent.options[this.a.opt] = this.checked;
+
+               if(this.a.accion) {
+                  this.a.accion(this.a.opt, this.checked);
+                  return;
+               }
+
+               if(this.a.tipo === "visual") return;
+               
+               // Vamos a usar la variable tipo para aplicar el filtro sobre los centros o las localidades
+               if(typeof this.a.value.tipo !== "undefined"){
+                  const [accion, nombre] = this.a.tipo.split(":"),
+                  Localidad = this.$parent.g.Localidad,
+                     res = this.checked?Localidad[accion](nombre, this.a.value || {})
+                                       :Localidad[`un${accion}`](nombre);
+                     if(res) Localidad.invoke("refresh");
+               }
+               else{
+                  const [accion, nombre] = this.a.tipo.split(":"),
+                     Centro = this.$parent.g.Centro,
+                     res = this.checked?Centro[accion](nombre, this.a.value || {})
+                                       :Centro[`un${accion}`](nombre);
+                     if(res) Centro.invoke("refresh");
+               }
+
+               
+            }
+         }
+      });
+
+      return new Vue({
+         el: "#solicitud :nth-child(2)",
+         data: {
+            g: this.g,
+            options: this.options,
+            ajustes: [
+               {
+                  desc: "Ocultar centros ya seleccionados",
+                  opt: "filter:solicitado",
+                  tipo: "filter:solicitado",
+                  value: {}
+               },
+               {
+                  desc: "Activar el modo solicitud",
+                  opt: "modo",
+                  tipo: "visual",
+                  accion: (name, value) => {
+                     if(value){
+                        this.g.mode = "solicitud";
+                     }
+                     else {
+                        this.g.mode = "normal"
+                     }
+                  }
+               }
+            ]
+         }
       });
    }
 
