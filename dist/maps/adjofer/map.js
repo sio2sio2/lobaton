@@ -1785,7 +1785,7 @@ const mapAdjOfer = (function(path, opts) {
             },
             ors = Object.assign({}, defaults, adjofer.options.ors);
 
-      if(ors.chunkProgress === true) ors.chunkProgress = progressBar;
+      if(ors.chunkProgress === true) ors.chunkProgress = adjofer.progressBar;
       if(ors.loading === undefined) ors.loading = adjofer.options.loading;
       if(ors.loading === true) ors.loading = ajaxGif;
       if(ors.rutaPopup === true) ors.rutaPopup = crearPopup;
@@ -2713,7 +2713,7 @@ const mapAdjOfer = (function(path, opts) {
    }
 
 
-   function progressBar(n, total, lapso) {
+   MapAdjOfer.prototype.progressBar = function(n, total, lapso) {
       const map = L.DomUtil.get("map"),
             progress = L.DomUtil.get("leaflet-progress") || 
                        L.DomUtil.create("progress", "leaflet-message leaflet-control", map);

@@ -598,12 +598,24 @@ marcas?
    .. warning:: Advierta que todas esas marcas pueden no encontrarse en el mapa.
       Por ejemplo, una que se haya filtrado.
 
-.. js:method:: MutableMarker.invoke(metodo, arg1, arg2, ...)
+.. js:method:: MutableMarker.invoke(metodo, progress, arg1, arg2, ...)
 
    Permite aplicar un método de instancia a todas las marcas incluidas en :js:attr:`MutableMarker.store` 
    Por ejemplo::
 
-      Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+      Centro.invoke("on", null, "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+   El segundo parámetro es una función que permite informar del progreso de la acción, en los
+   casos en que esta se demore mucho. La función recibe tres argumentos: la posición
+   de la marca de la que se ejcuta el método en el array :js:attr:`MutableMarker.store`,
+   el total de marcas y el tiempo trascurrido en milisegundos desde que se comenzó a ejecutar
+   ``.invoke()``. Lo que se hace internamente es lanzar sucesivamente durante 200ms el método
+   para cada marca y al cumplirse este intervalo, ejecutar la función ``progress`` y
+   suspender durante 50ms la ejecución. Esto permite informar al usuario de cuál es el progreso
+   y desbloquear la interfaz. Durante el primer segundo, se producen suspensiones, pero no
+   se ejecuta *progress*. Si se prevé que la acción no será muy penosa, pueden evitarse las
+   suspensiones y ejecutar de corrido el método sobre todas las márcanas dando
+   a progress el valor ``null``.
 
 .. js:method:: MutableMarker.getData()
 

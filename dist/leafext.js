@@ -1032,15 +1032,51 @@
          },
          /**
           * Ejecuta un método para todas las marcas almacenadas en store.
+          * Si se proporciona una función progress, entonces la ejecución se interrumpe
+          * cada 200ms, durante 50ms a fin de que no sienta el usuario bloqueda la interfaz.
+          * Además esa función permite conocer dibujar el progreso (por ejemplo, mediante barra).
           *
           * @param {String} method  Nombre del métodoo
+          * @param {Function} progress Función que dibuja el progreso de la opración. Recibe
+          * 	como argumentos, el ordinal de la operación, el total de operaciones y el tiempo
+          * 	que lkleva ejecutámndose el invoque.
           * @param {...*} param Parámetros que se pasan al método
           */
-         invoke: function (method) {
-            for(const marker of this.store) {
-               const args = Array.prototype.slice.call(arguments, 1);
-               this.prototype[method].apply(marker, args);
+         invoke: function (method, progress) {
+            const args = Array.prototype.slice.call(arguments, 2);
+            if(!progress) {
+               for(const marker of this.store) {
+                  this.prototype[method].apply(marker, args);
+               }
+               return;
             }
+
+            const started = (new Date()).getTime(),
+                  total = this.store.length,
+                  noprogress = 1000,  // Para menos de 1 segundo, no se muestra nada.
+                  check = 150,     // Cada 150 marcas que comprueba si se hace la suspensión.
+                  interval = 200,  // Tiempo de ejecución.
+                  delay = 50;      // Tiempo de suspensión de la ejecución.
+            let   i = 0;
+
+            const process = () => {
+               const start = (new Date()).getTime();
+               console.log("DEBUG", i, total, start - started);
+               for(; i<total; i++) {
+                  if((i+1)%check === 0) {
+                     const lapso = (new Date()).getTime() - start;
+                     if(lapso > interval) break;
+                  }
+                  this.prototype[method].apply(this.store[i], args);
+               }
+
+               const lapsoTotal = (new Date()).getTime() - started;
+               if(lapsoTotal > noprogress) progress(n, total, lapsoTotal);
+               if(i < total) setTimeout(process, delay);
+            }
+
+            process();
+
          },
          /**
           * Registra una corrección en el sistema de correcciones de la marca.
@@ -2558,7 +2594,7 @@
          // Si el estilo anterior ocultaba las marcas y el nuevo no lo hace,
          // las marcas filtradas deben añadirse a la capa y ésta debe pasarse
          // a refresh como parámetro.
-         markerClass.invoke("refresh", exhideable && !this.hideable && old);
+         markerClass.invoke("refresh", null, exhideable && !this.hideable && old);
       }
 
       // Issue #40
