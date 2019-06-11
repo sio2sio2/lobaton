@@ -1051,6 +1051,7 @@
                return;
             }
 
+            // Issue #90
             const started = (new Date()).getTime(),
                   total = this.store.length,
                   noprogress = 1000,  // Para menos de 1 segundo, no se muestra nada.
@@ -1069,13 +1070,15 @@
                   this.prototype[method].apply(this.store[i], args);
                }
 
-               const lapsoTotal = (new Date()).getTime() - started;
-               if(lapsoTotal > noprogress) progress(i, total, lapsoTotal);
+               if(progress !== true) {
+                  const lapsoTotal = (new Date()).getTime() - started;
+                  if(lapsoTotal > noprogress) progress(i, total, lapsoTotal);
+               }
                if(i < total) setTimeout(process, delay);
             }
 
             process();
-
+            // Fin issue #90
          },
          /**
           * Registra una corrección en el sistema de correcciones de la marca.
