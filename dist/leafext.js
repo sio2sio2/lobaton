@@ -1061,7 +1061,6 @@
 
             const process = () => {
                const start = (new Date()).getTime();
-               console.log("DEBUG", i, total, start - started);
                for(; i<total; i++) {
                   if((i+1)%check === 0) {
                      const lapso = (new Date()).getTime() - start;
