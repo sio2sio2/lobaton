@@ -1071,7 +1071,7 @@
                }
 
                const lapsoTotal = (new Date()).getTime() - started;
-               if(lapsoTotal > noprogress) progress(n, total, lapsoTotal);
+               if(lapsoTotal > noprogress) progress(i, total, lapsoTotal);
                if(i < total) setTimeout(process, delay);
             }
 
