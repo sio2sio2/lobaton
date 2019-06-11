@@ -964,7 +964,7 @@ const mapAdjOfer = (function(path, opts) {
             this.once("isochroneset", e => {
                const area = this.getIsocronas(true)[lejos.idx];
                this.ors.isocronas.dibujarAreaMaciza(area);
-               this.Centro.filter("lejos", {area: area});
+               this.Centro.filter("lejos", {area: area, idx: lejos.idx});
                this.Centro.invoke("refresh");
             });
          }

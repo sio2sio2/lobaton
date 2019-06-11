@@ -2,7 +2,7 @@ const Interfaz = (function() {
 
    // Opciones predeterminadas al arrancar la interfaz.
    const defaults = {
-      "filter:oferta": true,    // Filtrar centros sin oferta.
+      "filter:oferta": false,   // Filtrar centros sin oferta.
       "filter:adj": false,      // Filtrar centros sin adjudicaciones.
       "correct:vt+": false,     // Incluir vacantes telefónicas.
       "correct:cgt": false,     // Incluir correcciones por CGT.
