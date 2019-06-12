@@ -1173,10 +1173,12 @@ const Interfaz = (function() {
 
       // Una vez aplicados todos los cambios iniciales, definimos
       // el disparador para que vaya apuntando en local los cambios de estado.
+      // TODO: Esto quizás se pueda pasar a un sitio más adecuando, haciendo uso de statusset
       this.g.on("statuschange", e => {
          if(localStorage && this.options.recordar) localStorage.setItem("status", this.status);
       });
 
+      this.g.fire("statusset", {status: !!status});
       // Guardamos el estado final de la inicialización.
       this.g.fire("statuschange");
    }

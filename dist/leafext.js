@@ -1480,8 +1480,7 @@
        * @private
        */
       _prepare: function() {  // Convierte Arrays en Correctables.
-         //TODO:: Usar getData();
-         const data = getProperty(this, this.options.mutable);
+         const data = this.getData();
          if(data === undefined) return false;  // La marca no posee los datos.
          this.options.corr.prepare(data);
          return true;
@@ -1896,7 +1895,6 @@
             return this._count;
          }
 
-         // TODO: ¿Cómo narices se incluye esto en la documentación.
          /**
           * Iterador que genera un objeto Value para cada elemento del array
           * a fin de que se pueda saber si el valor está o no filtrado.

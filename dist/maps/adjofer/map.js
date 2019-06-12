@@ -195,7 +195,10 @@ const mapAdjOfer = (function(path, opts) {
             this.tileLayer.addTo(this.map);
             this.cluster.addTo(this.map);
 
-            if(options.autostatus && options.status) this.setStatus();  // Issue #57
+            if(options.autostatus && options.status) {
+               this.setStatus();  // Issue #57
+               this.fire("statusset", {status: true});
+            }
          });
       },
 
@@ -452,24 +455,33 @@ const mapAdjOfer = (function(path, opts) {
          if(e.oldval !== e.newval) this.fire("statuschange", {attr: "des"});
       })
 
-      this.Centro.on("filter:*", e => {
-         const filter = this.Centro.prototype.options.filter;
+      // Anota en el estado un filtro
+      function filterStatus(Marker, e) {
+         const filter = this[Marker].prototype.options.filter;
          this.status.fil = this.status.fil || {};
+         this.status.fil[Marker] = this.status.fil[Marker] || {};
 
-         this.status.fil[e.name] = filter.getParams(e.name);
-         if(e.name === "lejos") {
+         this.status.fil[Marker][e.name] = filter.getParams(e.name);
+         if(Marker === "Centro" && e.name === "lejos") {
             // Nos cargamos el área que puede volver
             // a hallarse y ocupa muchísimo espacio.
-            this.status.fil.lejos = {idx: this.status.fil.lejos.idx};
+            delete this.status.fil[Marker].lejos.area;
          }
-         this.fire("statuschange", {attr: `fil.${e.name}`});
-      });
+         this.fire("statuschange", {attr: `fil.${Marker}.${e.name}`});
+      }
 
-      this.Centro.on("unfilter:*", e => {
-         delete this.status.fil[e.name];
+      // Desanota en el estado un filtro.
+      function unfilterStatus(Marker, e) {
+         delete this.status.fil[Marker][e.name];
+         if(Object.keys(this.status.fil[Marker]).length === 0) delete this.status.fil[Marker];
          if(Object.keys(this.status.fil).length === 0) delete this.status.fil;
-         this.fire("statuschange", {attr: `fil.${e.name}`});
-      });
+         this.fire("statuschange", {attr: `fil.${Marker}.${e.name}`});
+      }
+
+      this.Centro.on("filter:*", filterStatus.bind(this, "Centro"));
+      this.Centro.on("unfilter:*", unfilterStatus.bind(this, "Centro"));
+      this.Localidad.on("filter:*", filterStatus.bind(this, "Localidad"));
+      this.Localidad.on("unfilter:*", unfilterStatus.bind(this, "Localidad"));
 
       this.Centro.on("correct:*", e => {
          if(e.auto || e.name === "extinta") return;  // Sólo se apuntan las manuales.
@@ -821,8 +833,11 @@ const mapAdjOfer = (function(path, opts) {
          }
       });
 
-      // Las localidades no se ven.
-      this.Localidad.filter("invisible", {});
+      
+      // Las localidades, por defecto, no se ven.
+      this.on("statusset", e => {
+         if(!e.status) this.Localidad.filter("invisible", {});
+      });
 
       // Como el de centro: filtra las localidades solicitadas.
       this.Localidad.registerF("solicitado", {
@@ -916,12 +931,15 @@ const mapAdjOfer = (function(path, opts) {
 
       // Los filtros pueden aplicarse antes de obtener datos.
       if(status.fil) {
-         if(status.fil.lejos) {  // Pero este lo dejamos para después.
-            lejos = status.fil.lejos;
-            delete status.fil.lejos;
+         // Pero este lo dejamos para después.
+         if(status.fil.Centro && status.fil.Centro.lejos) {
+            lejos = status.fil.Centro.lejos;
+            delete status.fil.Centro.lejos;
          }
-         for(const name in status.fil) {
-            this.Centro.filter(name, status.fil[name]);
+         for(const Marker in status.fil) {
+            for(const name in status.fil[Marker]) {
+               this[Marker].filter(name, status.fil[Marker][name]);
+            }
          }
       }
 
@@ -1262,7 +1280,7 @@ const mapAdjOfer = (function(path, opts) {
                   esc: [0, 0, 0],
                   pue: puesto,
                   pet: null,
-                  // TODO:: ¿Qué narices es esto?
+                  // TODO:: ¿Qué narices es esto?A Posiblemente CGT.
                   per: false,
                   ubi: false
                });
