@@ -1224,40 +1224,61 @@ const Interfaz = (function() {
          app.listado.splice(0, app.listado.length, ...clonaSolicitudes())
       }
 
+      function clearAllSolicitudes() {
+         // Borramos los elementos del array de store
+         this.interfaz.g.solicitud.delete(1);
+         updateListado();
+      }
+
       const ListaSolicitudes = {
          name: 'Solicitudes',
          template: `
-            <div class="peticiones" v-if="list.length > 0">
-               <draggable
-                        tag="ul"
-                        :list="list"
-                        class="list-group"
-                        ghost-class="ghost"
-                        @start="dragging = true"
-                        @end="dragging = false"
-                        @sort="ordena"
-               >
-                        
+            <div>
+               <div class="peticiones" v-if="list.length > 0">
+                  <draggable
+                           tag="ul"
+                           :list="list"
+                           class="list-group"
+                           ghost-class="ghost"
+                           @start="dragging = true"
+                           @end="dragging = false"
+                           @sort="ordena"
+                  >
+                           
 
-                        <li
-                           class="list-group-item"
-                           v-for="(element, idx) in list"
-                           :key="element.cod"
-                        >
-                           {{ element.peticion }} - 
-                           <span><i v-bind:class="[element.tipo === 'C' ? 'fa-graduation-cap' : 'fa-building', 'fa']"></i></span> 
-                           {{ element.name }} ({{ element.cod }})
-                           <i class="fa fa-times close" @click="removeAt(idx)"></i>
-                        </li>
-                        
-               </draggable>
+                           <li
+                              class="list-group-item"
+                              v-for="(element, idx) in list"
+                              :key="element.cod"
+                           >
+                              {{ element.peticion }} - 
+                              <span><i v-bind:class="[element.tipo === 'C' ? 'fa-graduation-cap' : 'fa-building', 'fa']"></i></span> 
+                              {{ element.name }} ({{ element.cod }})
+                              <i class="fa fa-times close" @click="removeAt(idx)"></i>
+                           </li>
+                           
+                  </draggable>
+                  <br/>
+                  <div class="form-group">
+                     <button type="button" class="btn btn-primary" @click="csvExport()">Exportar a CSV</button>
+                  </div>
+               </div>
+               <div v-else>
+                  <span><i class="fa fa-info-circle"></i></span>
+                  <span>Activa el modo solicitud y selecciona centros o localidades para crear tu lista</span>
+               </div>
                <br/>
-               <button type="button" class="btn btn-primary" @click="csvExport()">Exportar a CSV</button>
+               <div class="form-row">
+                  <div class="col">
+                     <label for="exampleFormControlFile1">Importar archivo CSV</label>
+                     <input type="file" class="form-control-file" id="solicitudesCSVFile">
+                  </div>
+                  <div class="col">
+                     <button type="button" class="btn btn-primary" @click="csvImport()">Importar CSV</button>
+                  </div>
+               </div>
             </div>
-            <div v-else>
-            <span><i class="fa fa-info-circle"></i></span>
-            <span>Activa el modo solicitud y selecciona centros o localidades para crear tu lista</span>
-            </div>
+            
          `,
          components: {
             draggable
@@ -1296,7 +1317,32 @@ const Interfaz = (function() {
                document.body.removeChild(link);
             },
             csvImport() {
-                              
+               // Si hay elementos seleccionados, damos la opción a no destruirlos
+               if(this.$parent.listado.length > 0) 
+                  if (!confirm("¿Está seguro? Esto eliminará los centros que tenga seleccionados ahora mismo"))
+                     return;
+
+               const fichero = document.getElementById("solicitudesCSVFile")
+               if(fichero.value === ""){
+                  fichero.classList.add('is-invalid');
+               }
+               else {
+                  fichero.classList.remove('is-invalid');
+               }
+
+               // Utilizaremos Papaparse para parsear el fichero CSV
+               Papa.parse(fichero.files[0], {
+                  complete: function (lista) {
+                     // Primero vaciamos el array original, por si ya hubiese datos
+                     clearAllSolicitudes();
+                     lista.data.forEach(function(element, index){
+                        if (index > 0)
+                           app.g.solicitud.add(element[0]); // el código está en la posición 0
+                     });
+                     updateListado();
+                  }
+               });
+               
             }
           },
           data() {
