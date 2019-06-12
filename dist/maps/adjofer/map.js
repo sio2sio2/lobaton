@@ -1782,6 +1782,14 @@ const mapAdjOfer = (function(path, opts) {
             converter: converterLoc,
             updater: function(o) {
                if(o.peticion === undefined) return;
+               const text = this.querySelector("text"),
+                     textInDefs = this.querySelector("defs").querySelector("text");
+
+               text.textContent = o.peticion;
+               if(o.peticion > 0) {
+                  if(textInDefs) this.querySelector("defs").parentNode.appendChild(text);
+               }
+               else if(!textInDefs) this.querySelector("defs").appendChild(text);
                
                const color = o.peticion === 0?"#0ae":"#d70"
                this.querySelector("path").setAttribute("fill", color);
@@ -2387,14 +2395,15 @@ const mapAdjOfer = (function(path, opts) {
             if(!e.target.status.list) return;
             for(let i=0; i<e.target.status.list.length; i++) {
                const cod = e.target.status.list[i];
-               if(cod instanceof L.Marker) continue;
+               if(cod instanceof L.MutableMarker) continue;
 
                const tipo = cod.endsWith("L")?"Localidad":"Centro",
                      entidad = e.target[tipo].get(cod);
 
                if(entidad) {
                   this.store[i] = entidad;
-                  entidad.changeData({peticion: i});
+                  entidad.changeData({peticion: i+1});
+                  e.target.fire("requestset", {marker: entidad, oldval: 0, newval: i+1});
                }
                else this.store[i] = cod;
             }
