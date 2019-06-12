@@ -1267,6 +1267,12 @@ acción, puede consultarse el atributo <code class="docutils literal notranslate
 </div>
 </dd>
 </dl>
+<dl class="docutils" id="adjofer-event-statusset">
+<dt><strong>statusset</strong></dt>
+<dd>Se desencadena al acabar de aplicar el estado inicial del mapa. El evento
+dispone del atributo <code class="docutils literal notranslate"><span class="pre">status</span></code> para saber si se aplicó una configuración
+guardada.</dd>
+</dl>
 <div class="admonition note">
 <p class="first admonition-title">Nota</p>
 <p class="last">Se enumeran exclusivamente los nuevos tipos de eventos que introduce
@@ -1650,6 +1656,7 @@ localidades.</p>
 <div class="section" id="cambiar-icono-al-solicitar-centro">
 <h4>3.2.10.5.1. Cambiar icono al solicitar centro<a class="headerlink" href="#cambiar-icono-al-solicitar-centro" title="Enlazar permanentemente con este título">¶</a></h4>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;requestset&quot;</span><span class="p">,</span> <span class="nx">e</span> <span class="p">=&gt;</span> <span class="p">{</span>
+   <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
    <span class="k">if</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">marker</span> <span class="k">instanceof</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">Centro</span><span class="p">)</span> <span class="p">{</span>
       <span class="c1">// Solo si pasa de pedido a no pedido</span>
       <span class="c1">// o viceversa debe cambiarse el icono.</span>
@@ -1658,11 +1665,8 @@ localidades.</p>
                <span class="nx">Icono</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">solicitud</span><span class="p">[</span><span class="nx">tipo</span><span class="p">];</span>
 
          <span class="nx">Icono</span><span class="p">.</span><span class="nx">onready</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">setIcon</span><span class="p">(</span><span class="k">new</span> <span class="nx">Icono</span><span class="p">()));</span>
-         <span class="c1">// Al cambiar el icono, se redibuja, así que sobra refresh.</span>
-         <span class="k">return</span><span class="p">;</span>
       <span class="p">}</span>
    <span class="p">}</span>
-   <span class="nx">e</span><span class="p">.</span><span class="nx">marker</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
 <span class="p">});</span>
 </pre></div>
 </div>
@@ -1670,6 +1674,13 @@ localidades.</p>
 <div class="section" id="ocultar-centros-filtrados">
 <h4>3.2.10.5.2. Ocultar centros filtrados<a class="headerlink" href="#ocultar-centros-filtrados" title="Enlazar permanentemente con este título">¶</a></h4>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="s2">&quot;solicitado&quot;</span><span class="p">,</span> <span class="p">{});</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mostrar-localidades-sin-bloquear-la-interfaz">
+<h4>3.2.10.5.3. Mostrar localidades sin bloquear la interfaz<a class="headerlink" href="#mostrar-localidades-sin-bloquear-la-interfaz" title="Enlazar permanentemente con este título">¶</a></h4>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">unfilter</span><span class="p">(</span><span class="s2">&quot;invisible&quot;</span><span class="p">);</span>
+<span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s2">&quot;refresh&quot;</span><span class="p">,</span> <span class="nx">g</span><span class="p">.</span><span class="nx">progressBar</span><span class="p">);</span>
 </pre></div>
 </div>
 <p class="rubric">Notas al pie</p>

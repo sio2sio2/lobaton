@@ -1400,6 +1400,14 @@ Ocultar centros filtrados
 
    g.Centro.filter("solicitado", {});
 
+Mostrar localidades sin bloquear la interfaz
+--------------------------------------------
+
+::
+
+   g.Centro.unfilter("invisible");
+   g.Centro.invoke("refresh", g.progressBar);
+
 
 .. rubric:: Notas al pie
 
