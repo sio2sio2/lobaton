@@ -195,7 +195,10 @@ const mapAdjOfer = (function(path, opts) {
             this.tileLayer.addTo(this.map);
             this.cluster.addTo(this.map);
 
-            if(options.autostatus && options.status) this.setStatus();  // Issue #57
+            if(options.autostatus && options.status) {
+               this.setStatus();  // Issue #57
+               this.fire("statusset", {status: true});
+            }
          });
       },
 
@@ -262,8 +265,7 @@ const mapAdjOfer = (function(path, opts) {
                      centro.on("dataset", e => {
                         // Para cada centro que creemos hay que añadir a los datos
                         // la propiedad que indica si la marca está o no seleccionada.
-                        e.target.changeData({sel: false });
-                        Solicitud.definePeticion.call(e.target, this);
+                        e.target.changeData({sel: false, peticion: 0});
                      });
 
 
@@ -453,24 +455,33 @@ const mapAdjOfer = (function(path, opts) {
          if(e.oldval !== e.newval) this.fire("statuschange", {attr: "des"});
       })
 
-      this.Centro.on("filter:*", e => {
-         const filter = this.Centro.prototype.options.filter;
+      // Anota en el estado un filtro
+      function filterStatus(Marker, e) {
+         const filter = this[Marker].prototype.options.filter;
          this.status.fil = this.status.fil || {};
+         this.status.fil[Marker] = this.status.fil[Marker] || {};
 
-         this.status.fil[e.name] = filter.getParams(e.name);
-         if(e.name === "lejos") {
+         this.status.fil[Marker][e.name] = filter.getParams(e.name);
+         if(Marker === "Centro" && e.name === "lejos") {
             // Nos cargamos el área que puede volver
             // a hallarse y ocupa muchísimo espacio.
-            this.status.fil.lejos = {idx: this.status.fil.lejos.idx};
+            delete this.status.fil[Marker].lejos.area;
          }
-         this.fire("statuschange", {attr: `fil.${e.name}`});
-      });
+         this.fire("statuschange", {attr: `fil.${Marker}.${e.name}`});
+      }
 
-      this.Centro.on("unfilter:*", e => {
-         delete this.status.fil[e.name];
+      // Desanota en el estado un filtro.
+      function unfilterStatus(Marker, e) {
+         delete this.status.fil[Marker][e.name];
+         if(Object.keys(this.status.fil[Marker]).length === 0) delete this.status.fil[Marker];
          if(Object.keys(this.status.fil).length === 0) delete this.status.fil;
-         this.fire("statuschange", {attr: `fil.${e.name}`});
-      });
+         this.fire("statuschange", {attr: `fil.${Marker}.${e.name}`});
+      }
+
+      this.Centro.on("filter:*", filterStatus.bind(this, "Centro"));
+      this.Centro.on("unfilter:*", unfilterStatus.bind(this, "Centro"));
+      this.Localidad.on("filter:*", filterStatus.bind(this, "Localidad"));
+      this.Localidad.on("unfilter:*", unfilterStatus.bind(this, "Localidad"));
 
       this.Centro.on("correct:*", e => {
          if(e.auto || e.name === "extinta") return;  // Sólo se apuntan las manuales.
@@ -782,9 +793,7 @@ const mapAdjOfer = (function(path, opts) {
                icon: new Icono(),
                title: f.properties.nom
             });
-            localidad.on("dataset", e => {
-               Solicitud.definePeticion.call(e.target, this);
-            });
+            localidad.on("dataset", e => e.target.changeData({peticion: 0}));
             if(this.options.light) localidad.once("dataset", e => {
                e.target.on("click", e => {
                   if(this.options.light && this.mode === "solicitud") {
@@ -800,9 +809,8 @@ const mapAdjOfer = (function(path, opts) {
        * Marca para localidad
        * @memberof MadAdjOfer.prototype
        * @type {Marker}
-       *
        */
-      this.Localidad = L.Marker.extend({
+      this.Localidad = L.MutableMarker.extend({
          options: {
             mutable: "feature.properties",
             filter: this.cluster,
@@ -825,8 +833,11 @@ const mapAdjOfer = (function(path, opts) {
          }
       });
 
-      // Las localidades no se ven.
-      this.Localidad.filter("invisible", {});
+      
+      // Las localidades, por defecto, no se ven.
+      this.on("statusset", e => {
+         if(!e.status) this.Localidad.filter("invisible", {});
+      });
 
       // Como el de centro: filtra las localidades solicitadas.
       this.Localidad.registerF("solicitado", {
@@ -881,7 +892,7 @@ const mapAdjOfer = (function(path, opts) {
       * @memberof MapAdjOfer.prototype
       * @type {Marker}
       */
-      this.Centro = L.Marker.extend({
+      this.Centro = L.MutableMarker.extend({
        options: {
           mutable: "feature.properties",
           filter: this.cluster,
@@ -920,12 +931,15 @@ const mapAdjOfer = (function(path, opts) {
 
       // Los filtros pueden aplicarse antes de obtener datos.
       if(status.fil) {
-         if(status.fil.lejos) {  // Pero este lo dejamos para después.
-            lejos = status.fil.lejos;
-            delete status.fil.lejos;
+         // Pero este lo dejamos para después.
+         if(status.fil.Centro && status.fil.Centro.lejos) {
+            lejos = status.fil.Centro.lejos;
+            delete status.fil.Centro.lejos;
          }
-         for(const name in status.fil) {
-            this.Centro.filter(name, status.fil[name]);
+         for(const Marker in status.fil) {
+            for(const name in status.fil[Marker]) {
+               this[Marker].filter(name, status.fil[Marker][name]);
+            }
          }
       }
 
@@ -965,7 +979,7 @@ const mapAdjOfer = (function(path, opts) {
             this.once("isochroneset", e => {
                const area = this.getIsocronas(true)[lejos.idx];
                this.ors.isocronas.dibujarAreaMaciza(area);
-               this.Centro.filter("lejos", {area: area});
+               this.Centro.filter("lejos", {area: area, idx: lejos.idx});
                this.Centro.invoke("refresh");
             });
          }
@@ -1266,7 +1280,7 @@ const mapAdjOfer = (function(path, opts) {
                   esc: [0, 0, 0],
                   pue: puesto,
                   pet: null,
-                  // TODO:: ¿Qué narices es esto?
+                  // TODO:: ¿Qué narices es esto?A Posiblemente CGT.
                   per: false,
                   ubi: false
                });
@@ -1786,7 +1800,7 @@ const mapAdjOfer = (function(path, opts) {
             },
             ors = Object.assign({}, defaults, adjofer.options.ors);
 
-      if(ors.chunkProgress === true) ors.chunkProgress = progressBar;
+      if(ors.chunkProgress === true) ors.chunkProgress = adjofer.progressBar;
       if(ors.loading === undefined) ors.loading = adjofer.options.loading;
       if(ors.loading === true) ors.loading = ajaxGif;
       if(ors.rutaPopup === true) ors.rutaPopup = crearPopup;
@@ -2355,11 +2369,6 @@ const mapAdjOfer = (function(path, opts) {
             }
          });
 
-         // TODO: Esto es espantoso. Habría que cambiar
-         // el modo en que se crean los iconos.
-         this.SolicitudIcono.onready(() => true);
-         this.BolicheIcono.onready(() => true);
-
          // Define un filtro para eliminar centros seleccionados
          adjofer.Centro.registerF("solicitado", {
             attrs: "peticion",
@@ -2532,6 +2541,11 @@ const mapAdjOfer = (function(path, opts) {
 
          this.store.push(centro);
          centro.changeData({peticion: this.store.length});
+         this.adjofer.fire("requestset", {
+            marker: centro,
+            oldval: 0,
+            newval: this.store.length
+         });
          this.adjofer.fire("requestchange", {markers: [centro]});
          return centro;
       }
@@ -2540,8 +2554,14 @@ const mapAdjOfer = (function(path, opts) {
       function actualiza(pos1, pos2) {
          pos2 = pos2 || this.store.length;
          for(let i=pos1 - 1; i < pos2; i++) {
-            const centro = this.store[i];
+            const centro = this.store[i],
+                  pos = centro.getData().peticion;
             if(centro.changeData) centro.changeData({peticion: i+1});
+            this.adjofer.fire("requestset", {
+               marker: centro,
+               oldval: pos,
+               newval: i+1
+            });
          }
          return this.store.slice(pos1 - 1, pos2);
       }
@@ -2561,7 +2581,13 @@ const mapAdjOfer = (function(path, opts) {
          if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
          const eliminados = this.store.splice(pos-1, cuantos);
          for(const centro of eliminados) {
+            const pos = centro.getData().peticion;
             if(centro.changeData) centro.changeData({peticion: 0});
+            this.adjofer.fire("requestset", {
+               marker: centro,
+               oldval: pos,
+               newval: 0
+            });
          }
          const actualizados = actualiza.call(this, pos),
                ret = eliminados.concat(actualizados);
@@ -2582,7 +2608,6 @@ const mapAdjOfer = (function(path, opts) {
          const pos = this.getPosition(centro),
                ret = pos > 0?this.delete(pos, 1):[];
 
-         if(ret.length > 0) this.adjofer.fire("requestchange", {markers: ret});
          return ret;
       }
 
@@ -2639,41 +2664,6 @@ const mapAdjOfer = (function(path, opts) {
          return ret;
       }
 
-      /**
-       * Define el dato petición de una marca, de modo que sale
-       * un evento requestset cuando se modifque el valor.
-       * @this La marca.
-       */
-      Solicitud.definePeticion = function(adjofer) {
-         const self = this;
-         // y otra que representa su solicitud
-         // En este caso, el cambio se asocia al evento requestset
-         Object.defineProperties(this.getData(), {
-            _peticion: {
-               value: 0,
-               writable: true,
-               configurable: false,
-               enumerable: false
-            },
-            peticion: {
-               get: function() {
-                  return this._peticion;
-               },
-               set: function(value) {
-                  const oldval = this.peticion;
-                  this._peticion = value;
-                  adjofer.fire("requestset", {
-                     oldval: oldval,
-                     newval: value,
-                     marker: self
-                  });
-               },
-               enumerable: true,
-               configurable: false
-            }
-         });
-      }
-
       return Solicitud;
    })();
    // Fin issue #79
@@ -2719,7 +2709,7 @@ const mapAdjOfer = (function(path, opts) {
    }
 
 
-   function progressBar(n, total, lapso) {
+   MapAdjOfer.prototype.progressBar = function(n, total, lapso) {
       const map = L.DomUtil.get("map"),
             progress = L.DomUtil.get("leaflet-progress") || 
                        L.DomUtil.create("progress", "leaflet-message leaflet-control", map);

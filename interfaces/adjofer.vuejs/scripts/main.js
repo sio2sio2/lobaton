@@ -2,7 +2,7 @@ const Interfaz = (function() {
 
    // Opciones predeterminadas al arrancar la interfaz.
    const defaults = {
-      "filter:oferta": true,    // Filtrar centros sin oferta.
+      "filter:oferta": false,   // Filtrar centros sin oferta.
       "filter:adj": false,      // Filtrar centros sin adjudicaciones.
       "correct:vt+": false,     // Incluir vacantes telefónicas.
       "correct:cgt": false,     // Incluir correcciones por CGT.
@@ -315,13 +315,12 @@ const Interfaz = (function() {
                   if(codigo !== this.especialidad) {
                      this.interfaz.g.cluster.clearCentros();
                      this.interfaz.g.agregarCentros(`../../json/${codigo}.json`);
+                     this.interfaz.g.Centro.reset();
+                     this.interfaz.g.seleccionado = null;
+                     this.interfaz.g.setRuta(null);
                   }
 
                   this.cambiarSidebar(codigo);
-
-                  this.interfaz.g.Centro.reset();
-                  this.interfaz.g.seleccionado = null;
-                  this.interfaz.g.setRuta(null);
                   e.target.value = "";
 
                }
@@ -358,9 +357,16 @@ const Interfaz = (function() {
                // Búsqueda difusa (require fuse.js)
                return new Fuse(
                   this.g.cluster.getLayers(), {
-                     keys: [this.pathData + ".id.nom"],
-                     minMatchCharLength: 2,
+                     keys: [this.pathData + ".id.nom", this.pathData + ".nom"],
+                     minMatchCharLength: 3,
                }).search(this.patron);
+            }
+         },
+         filters: {
+            obtProvincia: (marca) => {
+               const data = marca.getData(),
+                     codigo = data.cod || data.id.cod.toString().padStart(5, "0");
+               return codigo.substring(0,2);
             }
          },
          methods: {
@@ -370,11 +376,12 @@ const Interfaz = (function() {
                this.patron = e.target.value;
             },
             seleccionar: function(e) {
-               const codigo = e.currentTarget.value;
+               const codigo = e.currentTarget.value,
+                     marca = this.g.Centro.get(codigo) || this.g.Localidad.get(codigo);
                this.$el.querySelector("input").value = "";
                this.patron = "";
-               this.g.seleccionado = this.g.Centro.get(codigo);
-               this.g.map.setView(this.g.seleccionado.getLatLng(),
+               if(marca instanceof this.g.Centro) this.g.seleccionado = marca;
+               this.g.map.setView(marca.getLatLng(),
                                   this.g.cluster.options.disableClusteringAtZoom);
             }
          }
@@ -1450,10 +1457,12 @@ const Interfaz = (function() {
 
       // Una vez aplicados todos los cambios iniciales, definimos
       // el disparador para que vaya apuntando en local los cambios de estado.
+      // TODO: Esto quizás se pueda pasar a un sitio más adecuando, haciendo uso de statusset
       this.g.on("statuschange", e => {
          if(localStorage && this.options.recordar) localStorage.setItem("status", this.status);
       });
 
+      this.g.fire("statusset", {status: !!status});
       // Guardamos el estado final de la inicialización.
       this.g.fire("statuschange");
    }

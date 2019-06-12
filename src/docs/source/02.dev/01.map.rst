@@ -8,19 +8,25 @@ las ventajas de la librería :file:`leafext.js` para construir mapas.
 De hecho, el *mapa de adjudicaciones y oferta educativa* es una aplicación
 particular de su uso basada en tres niveles:
 
-- :file:`leafext.js` en el nivel más bajo y absolutamente genérico.
-- :file:`adjofer/maps/adjofer/map.js` para definir en concreto cuáles son los
-  iconos, cómo se dibujan a partir de los datos y cómo varían en función de las
-  correcciones y filtros que se apliquen sobre tales datos. Su implementación
-  es independiente de cuál sea la herramienta que se use para construir la
-  interfaz visual.
-- :file:`interfaz/adofer.vuejs/scripts/main.js` que implementa una interfaz
-  atractiva haciendo uso de los dos niveles anteriores.
+- :file:`leafext.js` en un nivel más bajo y absolutamente genérico.
+- :file:`adjofer/maps/adjofer/map.js` para definir en concreto ila naturaleza
+  de mapa, cuáles son los iconos, cómo se dibujan a partir de los datos y
+  cómo varían en función de las correcciones y filtros que se apliquen sobre
+  tales datos. Su implementación es independiente de cuál sea la herramienta que
+  se use para construir la interfaz visual.
 
-Trataremos aquí cómo crear el segundo nivel usando las herramientas que nos
+- :file:`interfaz/adofer.vuejs/scripts/main.js` que implementa una interfaz
+  atractiva haciendo uso de los dos niveles anteriores. Es el encargado de la
+  barra lateral.
+
+Trataremos aquí cómo crear un segundo nivel usando las herramientas que nos
 brinda el primero, aunque para los ejemplos prácticos tendremos que introducir
 algún aspecto propio del tercero, ya que el mapa se tendrá que ver de alguna
 forma.
+
+Más adelante, describiremos cómo usar :ref:`el segundo nivel implementado para
+el mapa de adjudaciones <adjofer>` para construir una interfaz visual (tercer
+nivel).
 
 Conceptos previos
 *****************
@@ -28,8 +34,8 @@ Partimos de la necesidad de representar sobre un mapa una serie de entidades
 cada una de las cuales tiene asociado un conjunto de datos. Para ello, podemos
 usar Leaflet_ y colocar una marca por entidad, pero el uso de esta librería (u
 otra equivalente) se limitará a permitirnos asignar un icono cuyo aspecto será
-independiente de los valores concretos de los datos. Nuestra intención, no
-obstanmte, es ligar el aspecto del icono a los datos
+independiente de los valores concretos de los datos. Nuestra intención, sin
+embargo, es ligar el aspecto del icono a los datos
 
 En principio, distinguiremos estos conceptos.
 
@@ -41,14 +47,18 @@ En principio, distinguiremos estos conceptos.
 **Marca**
    Es la plasmación de la entidad (y sus datos) sobre el mapa.
 
-**Clase** (o **Estilo**) de marca.
+**Clase** (o **tipo**) de marca.
    Todas las marcas que representen un mismo tipo de entidad pertenecen a una
    misma clase de marca. Cada clase tiene, además, asociados un *sistema de
    correcciones* y un *sistema de filtros*.
 
 **Sistema de correcciones**
    Sistema que permite registrar, aplicar y revertir correcciones aplicables
-   a los datos.
+   a los datos de la marca que constituyan una serie. Por ejemplo, en un centro
+   educativo, su oferta de enseñanzas es la lista de enseñanzas que se imparten
+   en él. Al usuario pueden interesarle unas enseñanzas, pero no otras, así que
+   su intención puede ser eliminar temporalmente esas enseñanzas que considera
+   irrelevantes a los efectos de su búsqueda.
 
 **Sistema de filtros**
    Sistema que permite fijar criterios para hacer desaparecer (o volver a
@@ -63,12 +73,12 @@ un mapa:
 
 #. Se quiere que los iconos que representan datos de un mismo tipo de entidad no
    sean exactamente iguales, sino que partiendo de una plantilla sufran
-   alteraciones en función de loes valores de sus datos.  Por ejemplo, que el
+   alteraciones en función de loes valores de sus datos. Por ejemplo, que el
    color dependa de lo grande que sea la magnitud del valor correspondiente.
 
 #. Los datos puede sufrir correcciones por la interacción del usuario, lo cual
    por supuesto podrá tener reflejo en el aspecto del icono, si éste dependía de
-   los datos que cuyo valor ha cambiado.
+   los datos cuyo valor ha cambiado.
 
 #. Parte de los iconos pueden filtrarse y desaparecer, como consecuencia de las
    decisiones del usuario.
@@ -100,7 +110,7 @@ Datos
 La idea es que disponemos de un conjunto de datos, que describen un conjunto de
 entidades localizables en un mapa. Por ejemplo, la entidades pueden ser centros
 educativos, de cada uno de lo cuales se conoce su situación geográfica y una
-serie de características de interes. Nuestra intención es convertir cada
+serie de características de interés. Nuestra intención es convertir cada
 entidad en una marca dentro del mapa. Consideremos que el formato de los datos
 es GeoJSON_:
 
@@ -138,14 +148,13 @@ es GeoJSON_:
       ]
    }
 
-.. note:: No es requisito que los datos tengan este formato, pero es un
-   estándar y Leaflet_ dispone de `un tipo de capa
+.. note:: No es requisito que los datos tengan este formato, pero es un estándar
+   y Leaflet_ dispone de `un tipo de capa
    <https://leafletjs.com/reference-1.4.0.html#geojson>`_ que es capaz de
-   interpretarlos directamente generando una marca y conectando los datos
-   a ella a través de la propiedad ``feature``. En cualquier caso, es posible
-   tratar un formato cualquiera de datos, creando nosotros mismos la marca
-   y asociándole sus datos a través de una propiedad.
-
+   interpretarlos directamente generando una marca y conectándole los datos a
+   través del atributo ``feature``. En cualquier caso, es posible utilizar un
+   formato cualquiera de datos, si creamos nosotros mismos la marca y le
+   asociamos sus datos a través de un atributo cualquiera.
 
 Requerimientos
 --------------
@@ -182,6 +191,8 @@ incrustar el mapa. Típicamente:
 
    <div id="map"></div>
 
+.. _leafext-carga:
+    
 Carga básica
 ============
 Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
@@ -201,7 +212,7 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
       })
    }).addTo(map);
 
-   const Centro = L.Marker.extend({
+   const Centro = L.MutableMarker.extend({
       options: {mutable: "feature.properties"}
    });   
 
@@ -219,60 +230,28 @@ Para cargar el mapa y los datos podemos distinguir cuatro tareas distintas::
    sea GeoJSON_, podríamos usar simplemente `L.LayerGroup
    <https://leafletjs.com/reference-1.4.0.html#layergroup>`_ o `L.FeatureGroup
    <https://leafletjs.com/reference-1.4.0.html#featuregroup>`_, aunque
-   tendríamos que ligar manualmente los datos la marca.
+   tendríamos que ligar manualmente los datos a la marca.
 
    .. seealso:: Vea cómo :ref:`tratar datos que no tengan formato GeoJSON
       <dev-map-no-geojson>`.
 
-#. La creación de la marca apropiada que requiere obligatoriamente la inclusión
-   de la opción ``mutable``, cuyo valor debe ser la propiedad de la marca donde
-   se guardarán los datos asociados a la marca. Dado que usamos como origen de
-   los datos un objeto GeoJSON_ y los añadimos al mapa mediante una capa
-   `L.GeoJSON`_ , éstos aparecerán dentro de ``feature.properties``, así que es
-   ahí donde indicamos que se deben buscar los datos. Resumiendo:
-
-   * Al pasar la opción ``mutable`` la marca añadirá los métodos y propiedades
-     precisos para tratar la mutabilidad de los iconos. Si no se pasa tal opción,
-     la marca será un `L.Marker
-     <https://leafletjs.com/reference-1.4.0.html#marker>`_ común y corriente de
-     LeafLet_.
-
-   * El valor de de la propiedad se tomará como los datos asociados a la marca
-     y de hecho, tal valor será el que devuelva el método de marca
-     :js:meth:`Marker.getData`.
-
-     .. warning:: Si en algún momento requiere consultar los datos y estos
-        han sufrido alguna corrección, tenga presente que :ref:`las propiedades
-        que sean *arrays* susceptibles de corrección deben consultarse de un
-        modo particular <dev-map-correctable>`.
-
-   * Si no usa el formato GeoJSON_ y crear la amrca y añade artesanalmente los
-     datos, asegúrese de colocar los datos en la propiedad que ha señalado con
-     ``mutable``.
-
-.. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
-   también, es imprescindible usar la extensión `L.MarkerClusterGroup
-   <https://github.com/Leaflet/Leaflet.markercluster>`_ para agrupar las
-   marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
-   que aumentamos la escala. Consulte :ref:`el uso de esta capa de clusters más
-   adelante <dev-map-cluster>`.
-
+#. La creación de la marca apropiada que trataremos más adelante. 
+   
 .. _crear-icono:
 
-Definición del icono
-====================
+Icono
+=====
 La definición del icono es la parte más engorrosa de toda la programación, en la medida
 en que al ser un icono cuyo aspecto cambia según los datos particulares
 asociados a cada marca o según las correcciones que el usuario imponga a estos
 datos, hay que definir cuáles son las reglas de cambio. En un icono normal,
 además de propiedades adicionales como el tamaño o el punto de anclaje, la propiedad
 fundamental es aquella que define cuál es el icono: ``iconUrl`` para iconos que
-se definen como imágenes, y ``html`` para iconos `L.DivIcon
-<https://leafletjs.com/reference-1.4.0.html#divicon>`_. Para nuestros iconos
+se definen como imágenes, y ``html`` para iconos L.DivIcon_. Para nuestros iconos
 diversos y mutables, en cambio, hay que definir también cómo los datos se traducen
 en detalles visuales del icono.
 
-En nuestra explicación usemos este sencillo, parecido a un *Chupa Chups*:
+Para ilustrar la explicación usemos este sencillo, parecido a un *Chupa Chups*:
 
 .. image:: files/chupachups.png
 
@@ -280,9 +259,15 @@ El icono tiene dos detalles que depende de los datos asociados: el número que
 representa el número de adjudicaciones; y el fondo del círculo que es un color
 que depende del tipo de centro.
 
-Ingredientes
-------------
-Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icono son las siguientes:
+Definición
+----------
+Para la definición de iconos, en principio, se ha manipulado la clase L.DivIcon_
+para que mediante opciones adicionales acepte una plantilla para generar iconos
+más que un elemento |HTML| que defina el aspecto invariante del icono.
+
+.. js:autoclass:: MutableIcon
+
+Las opciones que debemos proporcionar en la creación de un tipo\ [#]_ de icono son las siguientes:
 
 ``html`` (o bien, ``url``)
    Define la plantilla que se usará para crear el icono. Sobre esa plantilla se
@@ -322,6 +307,11 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
       arrow.className = "arrow";
       html.appendChild(arrow);
       content.appendChild("span");
+
+   .. warning:: Tenga presente que, cuando se proporciona una |URL|, el elemento
+      |HTML| no está inmediatamente disponible y, en consecuencia no podemos
+      utlizar inmediatamente el construtcor resultante para empezar a crear
+      iconos. Trataremos más adelante qué hacer en estos casos.
 
 .. _dev-map-css:
 
@@ -416,7 +406,7 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          converter.define("numadj", "adj", a => a.length);
 
-      qye significa: para obtener ``nmumadj`` (primer argumento) debemos
+      qye significa: para obtener ``numadj`` (primer argumento) debemos
       basarnos en el valor de ``adj`` (segundo argumento) y obtener la longitud
       de su valor (que es el significado de la función que se ha usado en tercer
       lugar).
@@ -466,10 +456,10 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
 
          converter.define("tipo", "mod.tipo");
          
-   .. warning:: Si se desean aplicar correcciones sobre los datos, los valores
-      de las propiedaes que son arrays susceptibles de sufrir correcciones,
-      deben consultarse teniéndolo en cuenta. Vea más adelante :ref:`cómo
-      hacerlo <dev-map-correctable>`.
+   .. warning:: Si se desean aplicar correcciones, los valores de los atributos
+      de los datos que son arrays susceptibles de sufrir correcciones, deben
+      consultarse teniéndolo en cuenta. Vea más adelante :ref:`cómo hacerlo
+      <dev-map-correctable>`.
 
 
 ``updater``
@@ -495,12 +485,16 @@ Las opciones que debemos proporcionar en la creación de un estilo\ [#]_ de icon
       opción significa que su valor no ha cambiado y, en consecuencia, ese
       aspecto del dibujo debe permanecer igual.
 
-Definición
-----------
-Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
+Aunque puede definirse directamente el constructor es conveniente hacerlo a
+través de la función:
+
+.. js:autofunction:: L.utils.createMutableIconClass
+
+Por ello, la función ``crearIcono()`` que introdujimos antes podemos definirla
+así::
 
    function crearIcono() {
-      // Definiciones de html, css, converter, updater, fast.
+      // Definiciones de html, css, converter, updater
 
       return L.utils.createMutableIconClass("chupachups", {
          iconSize: [25, 34],
@@ -520,58 +514,176 @@ Con todos los ingredientes anteriores, podemos definir un estilo para el icono::
    de ahí que en el |CSS| que definía la forma del icono, se hubiera usado la
    clase "*chupachups*".
 
-Eventos
--------
-La marca, no el icono, tiene asociado un evento "*iconchange*" que se dispara
-cada vez que un icono cambia de aspecto como consecuencia de un cambio en las
-opciones de dibujo::
 
-   centro.on("iconchange", e => console.log(`Se redibuja ${e.target.getData().name}`));
+Si regresa a consultar las opciones que deben suministrase para construir un
+iconoi, comprobará que para definir cuál es el elemento  |HTML| que define el
+icono debe proporcionarse *html* o *url*. La primera lo proporciona
+inmediatamente, pero la segunda exige una `petición AJAX`_ que provocará que el
+icono no esté plenamente operativo hasta que no se complete esta. En
+consecuencia el :ref:`código básico propuesto <leafext-carga>` podría fallar si
+en el momento de añadir los datos a la capa, no se ha completado la descarga del
+archivo que contiene la definición del icono. No lo hace en nuestro ejemplo,
+porque hemos usado la opción *html*. Para controlarlo, se disponen dos métodos
+aplicables directamente sobre el construcor (o sea, métodos de clase y no
+instancia):
 
-.. note:: Si la marca de un centro no se encuentra sobre el mapa (p.e. porque
-   queda fuera de sus límites y se elimina como `se propone aquí
-   <https://github.com/Leaflet/Leaflet/issues/1324>`_; o bien porque se usa
-   leaflet.markercluster_ y la marca se oculta dentro de un clster), el evento
-   sólo se desencadenará cuando se reincorpore la marca al mapa y, además,
-   hayan sufrido cambios las opciones de dibujo.
+.. js:method:: Icon.isready()
+
+   Devuelve ``true`` si el icono es plenamente operativo. Por ejemplo::
+
+      const Icono = crearIcono();
+      Icono.isready();  // Devolverá false si para definir el icono se uso la opción url.
+
+.. js:method:: Icon.onready(func_success, func_fail)
+
+   Ejecuta la función suministrada como primer argumento cuando el constructor
+   esté listo o la segunda, si falla su su creación (p.e. porque no se puede
+   descargar el archivo dónde está definido el |HTML|)::
+
+      const Icono = crearIcono()
+      Icono.onready(() => {
+         console.log("¿Está listo ya el icono?", Icono.isready()); // true.
+         const icono = new Icono();
+         // etc...
+      });
+
+CAMBIAR ESTO...
+
+.. js:autoclass:: L.utils.Converter
+   :members:
+
+... HASTA AQUÍ
 
 .. _leafext-marca:
 
-Acceso a marcas
-===============
-La inserción de los datos en la capa, genera para cada uno de ellos la marca que
-definimos en el método ``.pointToLayer()``. Ahora bien, ¿qué mecanismos tenemos
-para acceder a estas marcas?
+Marcas
+======
+:file:`leafext.js` define el constructor ``L.MutableMarker`` que permite definir
+marcas con iconos mutables y a cuyo datos asociados se le pueden aplicar
+correcciones y filtros como se verá más adelante.
 
-- La clase ``Centro`` dispone de un atributo :js:attr:`store <Marker.store>`, que es un *array*
-  compuesto por todas las marcas que se han creado de esa clase::
+.. js:class:: MutableMarker
+
+   Marca que soporta iconos mutables y permite realizar correcciones y filtros
+   sobre los datos asociados a ella.
+
+Su definición requiere obligatoriamente incluir la opción ``mutable``, cuyo
+valor debe ser el atributo de la marca donde se guardarán los datos asociados.
+Dado que usamos como origen de los datos un objeto GeoJSON_ y los añadimos al
+mapa mediante una capa `L.GeoJSON`_ , éstos aparecerán dentro de
+``feature.properties``, de ahí que hayamos definido ``Centro`` así::
+
+   const Centro = L.MutableMarker.extend({
+      options: {mutable: "feature.properties"}
+   });   
+
+En cualquier caso, si no usa el formato GeoJSON_,  y, en vez de ello, crea la
+marca y añade artesanalmente los datos, asegúrese de colocar los datos en la
+propiedad que ha señalado con ``mutable``.
+
+Acceso
+------
+En el :ref:`ejemplo de carga <leafext-carga>` la inserción de los datos en la
+capa, genera para cada uno de ellos la marca que definimos en el método
+``.pointToLayer()``. Ahora bien, ¿qué mecanismos tenemos para acceder a estas
+marcas?
+
+.. js:attribute:: MutableMarker.store
+
+   Es un atributo del constructor (o sea de clase) que almacena en un *array*
+   todas las marcas que se han definido con él::
 
       for(const c in Centro.store) console.log("Hola, soy una marca de centro", c);
 
-.. note:: ``Centro`` es el constructor de una marca de centro, en
-   consecuencia, dada una marca llamada ``centro``::
+   .. warning:: Advierta que todas esas marcas pueden no encontrarse en el mapa.
+      Por ejemplo, una que se haya filtrado.
 
-      centro.constructor === Centro
+.. js:method:: MutableMarker.invoke(metodo, progress, arg1, arg2, ...)
 
-- Podemos acceder a las marcas a través de eventos, exactamente como a cualquier
-  marca de Leaflet_::
+   Permite aplicar un método de instancia a todas las marcas incluidas en :js:attr:`MutableMarker.store` 
+   Por ejemplo::
+
+      Centro.invoke("on", null, "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
+
+   El segundo parámetro es una función que permite informar del progreso de la acción, en los
+   casos en que esta se demore mucho. La función recibe tres argumentos: la posición
+   de la marca de la que se ejcuta el método en el array :js:attr:`MutableMarker.store`,
+   el total de marcas y el tiempo trascurrido en milisegundos desde que se comenzó a ejecutar
+   ``.invoke()``. Lo que se hace internamente es durante 200ms lanzar sucesivamente el método
+   para cada marca y al cumplirse este tiempo, ejecutar la función ``progress`` y
+   suspender durante 50ms la ejecución. Esto permite informar al usuario de cuál es el progreso
+   y desbloquear la interfaz. Durante el primer segundo, se producen suspensiones, pero no
+   se ejecuta *progress*. Si se prevé que la acción no será muy penosa, pueden evitarse las
+   suspensiones y ejecutar de corrido el método sobre todas las márcanas dando
+   a progress el valor ``null``. Si se desean realizar las interrupciones, para evitar el bloqueo,
+   pero no se quiere mostrar progreso alguna, puede usarse el valor ``true``.
+
+.. js:method:: MutableMarker.getData()
+
+   Devuelve los datos asociados a la marca tomándolos del atributo que se
+   definió a través de la opción *mutable*.
+
+.. warning:: Si en algún momento requiere consultar los datos y estos
+  han sufrido alguna corrección, tenga presente que :ref:`las propiedades
+  que sean *arrays* susceptibles de corrección deben consultarse de un
+  modo particular <dev-map-correctable>`.
+
+.. seealso:: Cuando los datos son numerosos y, en consecuencia, las marcas
+   también, es imprescindible usar la extensión `L.MarkerClusterGroup
+   <https://github.com/Leaflet/Leaflet.markercluster>`_ para agrupar las
+   marcas cercanas en una sola y que la marca conjunta vaya disgregándose a medida
+   que aumentamos la escala. Consulte :ref:`el uso de esta capa de clusters más
+   adelante <dev-map-cluster>`.
+
+.. js:method:: MutableMarker.changeData(obj)
+
+   Método de instancia que permite modificar directamente los datos de una marca
+   concreta::
+
+      centro.changeData({tipo: "dificil"}):
+
+.. js:method:: MutableMarker.refresh()
+
+   Método de instancia que actualiza el aspecto del icono en caso de que sea
+   necesario, esto es, porque desde la última vez que se refrescó se produjeron
+   cambios en las opciones de dibujo::
+
+      centro.refresh()
+
+Eventos
+-------
+Además de las eventos definidos por el propio Leaflet_, como "click"::
 
      centro.on("click", e => console.log("Soy la marca que acabas de pulsar", e.target));
 
-  Las marcas mutables, además, tienen definido un tipo "*dataset*" que se desencadena cuando
-  se asocian los datos a la marca.
+:js:class:`MutableMarker` tiene definidos otros tipos de eventos:
 
-- Como atajo, cuando se quiere aplicar un método a todas las marcas de la clase,
-  puede usar el método de clase :js:meth:`Marker.invoke`::
+**dataset**
+   Evento que se desencadena en el momento de asociar los datos a la marca::
 
-   Centro.invoke("on", "click", e => console.log("Soy la marca que acabas de pulsar", e.target));
-   Centro.invoke("on", "dataset", e => console.log("Justamente ahora me acaba de asociar unos datos"));
+      Centro.invoke("on", null, "dataset", e => console.log("Justamente ahora me acaba de asociar unos datos"));
 
-- Tenga presente que cuando añade una marca a una capa cuya clase derive de
-  L.FeatureGroup_, como L.GeoJSON_ o L.MarkerClusterGroup_, se dispara el evento
-  *layeradd*::
+**iconchange**
+   Evento que se dispara cada vez que un icono cambia de aspecto como
+   consecuencia de un cambio en las opciones de dibujo::
 
-      layer.on("layeradd", e => console.log("Acabo de ser añadida", e.target);
+      centro.on("iconchange", e => console.log(`Se redibuja ${e.target.getData().name}`));
+
+   El evento presenta dos atributos relevantes: *opts* que contiene la lista de
+   opciones de dibujo que cambiaron entre un dibujado y el siguiente; y *reason*
+   que define la razón por la que se redibuja el icono. Puede tener dos valores:
+
+      * "*redraw*", el icono ya dibujado, se redibuja porque se forzó su dibujo
+        a través del método :js:meth:`MutableMarker.refresh` y había opciones
+        que habían cambiado desde el últimko *refresco*.
+
+      * "*draw*", el icono se dibuja porque antes no lo estaba por alguna razón
+        (p.e. se encontraba filtrado) y durante el tiempo en que estuvo filtrado
+        cambiaron las opciones de dibujo, por lo que el aspecto del icono no es el
+        mismo que el que tenía éste cuando desapareció del mapa.
+
+.. note:: Hay otros eventos más relacionados con las correcciones y los filtros.
+   que se ctarán a su debido tiempo.
 
 .. _dev-map-ejmin:
 
@@ -583,7 +695,7 @@ realizar :ref:`el primer punto con que expusimos la utilidad <dev-map-util>` de
 la librería:
 
 * Consulte `en línea el resultado del ejemplo
-  <https://sio2sio2.github.io/lobaton/docs/examples/demo.minima.html>`_.
+  <https://sio2sio2.github.io/lobaton/docs/examples/minimo.html>`_.
 
 .. _leafext-corr:
 
@@ -596,7 +708,7 @@ todas las adjudicaciones que sean de un colectivo determinado*". Si el colectivo
 fuese el de *interinos*, es claro que las adjudicaciones pasarían de **4** a
 **3** y de **3** a **2**.
 
-.. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atrbutos
+.. note:: Las correcciones pueden aplicarse, exclusivamente, sobre atributos
    cuyo valor sea un *array*.
 
 Hay dos tipos diferentes de correcciones:
@@ -606,29 +718,41 @@ a. Las correcciones que eliminan elementos del *array*. como es el caso de la
 
 #. Las correcciones que añaden elementos al *array*.
 
+Es importante, además, tener presente que las correcciones se aplican a un tipo
+de marca (p.e. la marca ``Centro``) y que, en consecuencia, todas las marcas de
+este tipo se verán afectadas por la correcciones. En un mismo mapa pueden
+convivir varios tipos distintos de marcas y cada uno de ellos tendrá un sistema
+de corrrecciones diferente.
+
 Definición
 ----------
 Para definir los criterios de corrección es preciso registrar cada criterio
-sobre la clase de la marca::
+sobre el constructor de la marca con el método de clase:
 
-   Centro.register("adjcol", {
-      attr: "adj",
-      // opts = {colectivo: ["Interino"]}
-      func: function(idx, adj, opts) {
-         return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
-      }
-   });
+.. js:method:: MutableMarker.register(nombre, attr, fn)
 
-.. note:: Una corrección sólo puede aplicarse a una única propiedad.
+   Método del constructor que registra en el tipo de marca una corrección sobre
+   el atributo "*attr*" con nombre "*nombre*" según la función "*fn*". Por
+   ejemplo::
 
-El código crea un corrección de nombre "*adjcol*" que se aplica sobre la
-propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
-elementos, se ejecutará la función suministrada por ``func`` para cada uno de
-los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
-eliminará el elemento y cuando devuelva ``false``, se conservará. Tal como está
-escrita la función, se desecharán las adjudicaciones a colectivos que se
-encuentren en la lista suministrada a través de las opciones. Además se incluye
-un atributo *inv* para poder invertir el significado.
+      Centro.register("adjcol", {
+         attr: "adj",
+         // opts = {colectivo: ["Interino"]}
+         func: function(idx, adj, opts) {
+            return !!(opts.inv ^ (opts.colectivo.indexOf(adj[idx]) !== -1));
+         }
+      });
+
+   El código crea un corrección de nombre "*adjcol*" que se aplica sobre la
+   propiedad de los datos ``adj``. Como es una corrección que pretende eliminar
+   elementos, se ejecutará la función suministrada por ``fn`` para cada uno de
+   los elementos del *array* ``adj``, de manera que cuando devuelva ``true`` se
+   eliminará el elemento y cuando devuelva ``false``, se conservará. Tal como está
+   escrita la función, se desecharán las adjudicaciones a colectivos que se
+   encuentren en la lista suministrada a través de las opciones. Además se incluye
+   un atributo *inv* para poder invertir el sentido de la corrección.
+
+   .. note:: Una corrección sólo puede aplicarse a una única propiedad.
 
 La función usa como contexto la marca sobre la que opera la corrección
 y tiene tres argumentos:
@@ -669,24 +793,34 @@ Como ``idx`` no tiene sentido en este caso, tomará el valor de *null*::
 Aplicación
 ----------
 El registro de una corrección no provoca ningún cambio en los datos: sólo la
-define. Para llevar a efecto la corrección es necesario aplicar la corrección::
+define. Para llevar a efecto la corrección es necesario aplicar la corrección
+mediante el método de clase:
 
-   Centro.ccrrect("adjcol", {colectivo: ["Prácticas", "Interino"]});
+.. js:method:: MutableMarker.correct(nombre, opts, encadenamiento)
 
-que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
-todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
-los elementos que no representan adjudicaciones a personal en prácticas o
-interino.
+   Método del constructor que aplica una corrección proporcionando las opciones
+   para su aplicación::
 
-.. warning:: La aplicación de la corrección no altera automáticamente el aspecto
-   de las marcas. Para hacerlo, debe aplicarse el método :js:class:`Marker.refresh` sobre
-   las marcas::
+      Centro.ccrrect("adjcol", {colectivo: ["Prácticas", "Interino"]});
 
-      Centro.invoke("refresh");
+   que sutirá efecto en todas las marcas de la clase ``Centro``. En este caso, en
+   todas estas márcas  se *eliminará* del array de adjudicaciones (o sea, ``adj``),
+   los elementos que no representan adjudicaciones a personal en prácticas o
+   interino.
 
-.. note:: Si con posterioridad a la aplicación, se crea una nueva marca de tipo
-   ``Centro``, las correcciones aplicadas a la clase, se aplicarán sobre a la marca
-   en cuanto se conecten a ella los datos.
+   ..seealso:: Para la explicación del significado del argumento
+     *encadenamiento*, consulte más adelante el :ref:`epígrafe dedicado al
+     encadenamiento <leafext-corr-enc>`.`
+
+   .. warning:: La aplicación de la corrección no altera automáticamente el aspecto
+      de las marcas. Para hacerlo, debe aplicarse el método
+      :js:meth:`MutableMarker.refresh` sobre las marcas::
+
+         Centro.invoke("refresh");
+
+   .. note:: Si con posterioridad a la aplicación, se crea una nueva marca de tipo
+      ``Centro``, las correcciones aplicadas a la clase, se aplicarán sobre a la marca
+      en cuanto se conecten a ella los datos.
 
 .. _dev-map-correctable:
 
@@ -694,7 +828,7 @@ Se ha afirmado alegremente que se eliminan elementos del *array*, pero no es
 cierto, puesto que si se eliminaran sin más no podría revertirse la corrección.
 En realidad, todos los elementos siguen ahí, e incluso pueden haber aparecido
 nuevos si hubo correcciones que los añadieron. Para consultar un *array* con
-correcciones debe tenerse en cuenta lo siguiente
+correcciones debe tenerse en cuenta lo siguiente:
 
 ``.length``
    Devuelve la cantidad total de elementos: los preexistentes y los añadidos,
@@ -702,23 +836,6 @@ correcciones debe tenerse en cuenta lo siguiente
    *array* elemento por elemento (`.forEach()`_, `.map()`_, etc.) actúan de
    esta forma. En consecuenta, recorrerán todos los elementos, pero no se podrá
    conocer de ellos si está eliminado o no.
-
-``for .. of``
-   Devuelve también todos los elementos, eliminados o no, pero cada elemento no
-   es el elemento original, sino un nuevo objeto que se caracteriza por lo
-   siguiente:
-
-   * Si el elemento original era un objeto, devuelve un objeto con las mismas
-     propiedades al que se ha añadido otra llamada ``filters`` que es un *array*
-     con los nombres de las correcciones que filtran el valor. EN consecuencia,
-     un ``filters`` vacío supone que el valor no se ha filtrado.
-
-   * Si el elemento original no era un objeto, sino un tipo primitivo, se
-     devuelve un objeto en cuyo atributo ``value`` se almacena el valor
-     original del elemento. También dispone del atributo ``filters``.
-
-   En ambos casos se dispone de un método ``isPrimitive`` para saber si el
-   elemento original era o no un objeto en su origen.
 
 ``.total``
    Devuelve el número total de elementos, descontados los eliminados. Por tanto,
@@ -729,16 +846,57 @@ correcciones debe tenerse en cuenta lo siguiente
                               .define("numadj", "adj", a => a.total)
                               .define("tipo");
 
+``for .. of``
+   Devuelve también todos los elementos, eliminados o no, pero cada elemento no
+   es el elemento original, sino un nuevo objeto que se caracteriza por lo
+   siguiente:
+
+   * Si el elemento original era un objeto, devuelve un objeto con las mismas
+     propiedades al que se ha añadido otra llamada ``filters`` que es un *array*
+     con los nombres de las correcciones que filtran el valor. En consecuencia,
+     un ``filters`` vacío supone que el valor no se ha filtrado.
+
+   * Si el elemento original no era un objeto, sino un tipo primitivo, se
+     devuelve un objeto en cuyo atributo ``value`` se almacena el valor
+     original del elemento. También dispone del atributo ``filters``.
+
+   En ambos casos se dispone de un método ``isPrimitive`` para saber si el
+   elemento original era o no un objeto en su origen.
+
+   .. note:: Nótese que esta construcción actúa así, porque se ha alterado el
+      interador del *array* corregible. En consecuencia, si nuestra propiedad
+      se llama ``adj``::
+
+         Array.from(centro.getData().adj)
+
+      devolverá un array con los elementos descritos al tratar esta
+      construcción.
+
 Reversión
 ---------
-Para revertir una corrección, basta con pasar su nombre::
+Para revertir una corrección, basta con usar:
 
-   Centro.uncorrect("adjcol");
+.. js:method:: MutableMarker.uncorrect(nombre)
 
-.. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
-   tanto,  si quiere trasladar el cambio al aspecto de los iconos::
+   Método del constructor que revierte la corrección de nombre suministrado a
+   todas las marcas del tipo::
 
-      Centro.invoke("refresh");
+      Centro.uncorrect("adjcol");
+
+   .. warning:: Tampoco en este caso se refresca el aspecto de las marcas. Por
+      tanto,  si quiere trasladar el cambio al aspecto de los iconos::
+
+         Centro.invoke("refresh");
+
+Además, existe
+
+.. js:method:: MutableMarker.reset(deep)
+
+   Método del constructor que desaplica todas las correcciones y vacía
+   :js:attr:`MutableMarker.store`. Si se proprociona ``deep`` con valor
+   ``true`` desaplica también los filtros.
+
+.. _leafext-corr-enc:
 
 Encadenamiento
 --------------
@@ -810,8 +968,8 @@ O sea:
   ``chain``. El encadenamiento sólo define que podrá lanzarse automáticamente
   la corrección *of*.
 * El atributo ``autochain`` permite definir si queremos que el encadenamiento
-  se lleve a cabo al aplicar la corrección (``true``) o si esta decisión se
-  se pospone hasta ese momento.
+  se lleve a cabo automáticamente al aplicar la corrección (``true``) o si
+  debemos especificarlo al aplicar la corrección.
 * Se debe definir una función que transforme las opciones de *adjcol* en
   opciones de *of*. El contexto de esta función es el tipo de marca (``Centro``
   en el ejemplo).
@@ -827,56 +985,65 @@ en este caso se llevara a cabo el encadenamiento, a pesar de haber indicado
 ``false`` antes.
 
 .. note:: Internamiente no se aplica una corrección *of*, sino un corrección
-   "*adjcol of*", por lo que podemos aplicar de forma independiente una
-   corrección *of*::
+   "*adjcol of*", por lo que podemos aplicar de forma independiente  y manual
+   una corrección *of*::
 
       Centro.correct("of", {ens: ["SMR"]})
 
 Si se desea conocer para una corrección qué otras correcciones la han aplicado
-automáticamente y con qué opciones, puede usarse el método
-:js:meth:`Marker.getAutoCorrect`::
+automáticamente y con qué opciones, puede usarse el método:
 
-   Centro.getAutoCorrect("of");  // {adjcol: {ens: ["DAM"]}}
+.. js:method:: MutableMarker.getAutoCorrect(nombre)
+
+   Devuelve las correcciones manuales que han desencadenado automáticamente la
+   corrección de nombre suministrado::
+
+      Centro.getAutoCorrect("of");  // {adjcol: {ens: ["DAM"]}}
 
 Comprobación de su estado
 -------------------------
 Para conocer cuál el estado de aplicación de las correcciones sobre las marcas,
-la clase provee dos métodos de clase. El primero es
-:js:meth:`Marker.getCorrectStatus`::
+la clase provee dos métodos del constructor:
 
-   const aplicadas = Centro.getCorrectStatus()
+.. js:method:: MutableMarker.getCorrectStatus
 
-que devuelve dos objetos: ``aplicadas.manual`` donde se desglosan las
-correcciones que se aplicaron manualmente; y ``aplicadas.auto`` donde se
-desglosan las correcciones que se aplicaron automáticamente como consecuencia de
-algún encadenamiento. En el primer objeto, las claves son los nombres de las
-correcciones y los valores, sus opciones de aplicación. El segundo objeto es
-algo más complejo, porque una misma corrección ha podido aplicarse varias
-veces automáticamente. En este caso las claves son, de nuevo, los nombres de las
-correcciones, pero los valores son a su vez un objeto en que las claves son los
-nombres de las correcciones aplicadas manualmente que provocaron la
-aplicación automática y los valores las opciones de aplicación automática. Por
-ejemplo, este estado::
+   Devuelve el estado de las correcciones en forma de objeto con dos atributos:
+   ``aplicadas.manual`` donde se desglosan las
+   correcciones que se aplicaron manualmente; y ``aplicadas.auto`` donde se
+   desglosan las correcciones que se aplicaron automáticamente como consecuencia de
+   algún encadenamiento. El primer atributo es un objeto en el que las claves
+   son los nombres de las correcciones y los valores, sus opciones de
+   aplicación. El segundo objeto es algo más complejo, porque una misma
+   corrección ha podido aplicarse varias veces automáticamente. En este caso, las
+   claves son, de nuevo, los nombres de las correcciones, pero los valores son a
+   su vez un objeto en que las claves son los nombres de las correcciones
+   aplicadas manualmente que provocaron la aplicación automática y los valores
+   las opciones de aplicación automática. Por ejemplo::
 
-   manual: {
-      bilingue: {bil: ["Inglés"], inv: true}}
-   }
-   auto: {
-      adjpue: {
-         bilingue: {puesto: [ "00590107", "DU590107"]}
+      const aplicadas = Centro.getCorrectStatus()
+
+
+   que si provoca que el valor de *aplicadas* fuera::
+
+      manual: {
+         bilingue: {bil: ["Inglés"], inv: true}}
       }
-   }
+      auto: {
+         adjpue: {
+            bilingue: {puesto: [ "00590107", "DU590107"]}
+         }
+      }
 
-significa que se aplicó manualmente una corrección llamada *bilingue* con las
-opciones expresadas. Además, hay aplicada automáticamente una corrección llamada
-*adjpue*, consecuencia de la aplicación manual de *bilingue* y cuyas opciones de
-aplicación son las indicadas. Obsérvese que estas opciones son opciones de
-aplicación de *adjpue*, no de la aplicación manual de bilingüe.
+   significa que se aplicó manualmente una corrección llamada *bilingue* con las
+   opciones expresadas. Además, hay aplicada automáticamente una corrección llamada
+   *adjpue*, consecuencia de la aplicación manual de *bilingue* y cuyas opciones de
+   aplicación son las indicadas. Obsérvese que estas opciones son opciones de
+   aplicación de *adjpue*, no de la aplicación automática de bilingüe.
 
 El segundo método útil para conocer las correcciones aplicadas está más
 relacionado con saber si aplicar una corrección con unas determinads opciones de
 aplicación, tendrá efecto en el mapa o será inútil porque el estado actual ya
-supone directa o indirectamente la aplicación de esa corrección.  Hay al menos
+supone directa o indirectamente la aplicación de esa corrección. Hay al menos
 dos escenarios en los que esto es útil:
 
 #. Si se han aplicado correcciones por alguna razón (p.e. porque al abrir el
@@ -889,97 +1056,103 @@ dos escenarios en los que esto es útil:
    De nuevo, esto puede afectar a la interfaz visual, si ésta permitía la
    aplicación manual de *B*:
 
-Para llevar a cabo esto, existe el método de clase
-js:meth:`Marker.appliedCorrections`::
+Para llevar a cabo esto, existe el método del constructor:
 
-   Centro.appliedCorrections("adjcol", {colectivos: ["Interino"]}, "auto");
 
-El método admite tres argumentos: el nombre del filtro, las opciones de
-aplicación y el tipo de comprobación que se desea realizar:
+.. js:method:: MutableMarker.appliedCorrections
 
-   * *auto*, sólo comprueba si la aplicación requerida (*adjcol* con la
-     opción referido) ya está incluida en alguna de las aplicaciones
-     automáticas; y, por tanto, es inútil. Tiene utilidad para resolver el
-     segundo escenario.
+   Permite saber si la aplicación de una corrección es irrelevante, porque
+   ya existen otras que aplicadas que provacan ese efecto::
 
-   * *manual*, sólo comprueba si la aplicación requerida ya está incluida
-     en la aplicación manual que se haya hecho anteriormente (si es que se ha
-     hecho). Tine utilidad para resolver el primer escenario.
+      Centro.appliedCorrections("adjcol", {colectivos: ["Interino"]}, "auto");
 
-   * Cualquier otro valor comprueba tanto en la aplicación manual como en las
-     automáticas.
+   El método admite tres argumentos: el nombre del filtro, las opciones de
+   aplicación y el tipo de comprobación que se desea realizar:
 
-Ahora bien, dado que cada corrección tiene una idiosincrasia propia, para que
-sea posible comparar opciones de aplicación y determinar si unas implican otras,
-es necesario que al registrar la corrección se indique cuál es el algoritmo.
-Por tanto:
+      * *auto*, sólo comprueba si la aplicación requerida (*adjcol* con la
+        opción referido) ya está incluida en alguna de las aplicaciones
+        automáticas; y, por tanto, es inútil. Tiene utilidad para resolver el
+        segundo escenario.
 
-.. code-block:: js
-   :emphasize-lines: 11-17
+      * *manual*, sólo comprueba si la aplicación requerida ya está incluida
+        en la aplicación manual que se haya hecho anteriormente (si es que se ha
+        hecho). Tine utilidad para resolver el primer escenario.
 
-   // Desecha las enseñanzas que se facilitan.
-   Centro.register("of", {
-      attr: "oferta",
-      // opts = {ens: ["DAM"] }
-      func: function(idx, oferta, opts) {
-         return opts.ens.indexOf(oferta[i]) !== -1;
-      },
-      // Si las opciones contienen al menos todas las enseñanzas
-      // que tienen las nuevas, entonces la aplicación actual es más
-      // restrictiva.
-      apply: function(opts, newopts) {
-         for(const ens of newopts.ens) {
-            // Hay una enseñanza en las nuevas opciones que no está en las actuales.
-            if(opts.ens.indexOf(ens) === -1) return false;
+      * Cualquier otro valor comprueba tanto en la aplicación manual como en las
+        automáticas.
+
+   Ahora bien, dado que cada corrección tiene una idiosincrasia propia, para que
+   sea posible comparar opciones de aplicación y determinar si unas implican otras,
+   es necesario que al registrar la corrección se indique cuál es el algoritmo.
+   Por tanto:
+
+   .. code-block:: js
+      :emphasize-lines: 11-17
+
+      // Desecha las enseñanzas que se facilitan.
+      Centro.register("of", {
+         attr: "oferta",
+         // opts = {ens: ["DAM"] }
+         func: function(idx, oferta, opts) {
+            return opts.ens.indexOf(oferta[i]) !== -1;
+         },
+         // Si las opciones contienen al menos todas las enseñanzas
+         // que tienen las nuevas, entonces la aplicación actual es más
+         // restrictiva.
+         apply: function(opts, newopts) {
+            for(const ens of newopts.ens) {
+               // Hay una enseñanza en las nuevas opciones que no está en las actuales.
+               if(opts.ens.indexOf(ens) === -1) return false;
+            }
+            return true;
          }
-         return true;
-      }
-   });
+      });
 
-La función compara las opciones actuales (*opts*) con las nuevas opciones
-(*newopts*) y devuelve ``true`` si la aplicación de las nuevas opciones no
-provocase ningún cambio en caso de poder aplicar la corrección sin desaplicar la
-aplicación actual.
+   La función compara las opciones actuales (*opts*) con las nuevas opciones
+   (*newopts*) y devuelve ``true`` si la aplicación de las nuevas opciones no
+   provocase ningún cambio en caso de poder aplicar la corrección sin desaplicar la
+   aplicación actual.
 
-.. note:: En caso de que no se facilite ninguna función, la comparación se
-   limitará a ver si las opciones de aplicación son iguales.
+   .. note:: En caso de que no se facilite ninguna función, la comparación se
+      limitará a ver si las opciones de aplicación son iguales.
 
 .. _leafext-event-corr:
 
 Eventos
 -------
-La aplicación y eliminación de correcciones tiene asociados eventos. Este, por
-ejemplo, se lanzaría cada vez que se aplica una corrección "*adjcol*"::
+La aplicación y eliminación de correcciones sobre el tipo de marca tiene
+asociados eventos.
 
-   Centro.on("correct:adjcol", e => {
-      const modo = e.auto?"automáticamente":"manualmente";
-      console.log(`Ha aplicado ${modo} una corrección ${e.name}:`, e.opts);
-   }); 
+**correct:nombre**
+   Evento aplicable sobre el constructor de la marca que se desencadena
+   cuando se aplica la corrección indicada con *nombre*::
 
-El objeto evento tiene los siguientes atributos relevantes:
+      Centro.on("correct:adjcol", e => {
+         const modo = e.auto?"automáticamente":"manualmente";
+         console.log(`Ha aplicado ${modo} una corrección ${e.name}:`, e.opts);
+      }); 
 
-``target``
-   Contiene. como se espera, el nombre del evento ("*correct:adjcol*" en el ejemplo).
+   El evento tiene los siguientes atributos relevantes (además de ``target``
+   y ``type``, claro está):
 
-``name``
-   Contiene el nombre de la corrección.
+   ``name``
+      Contiene el nombre de la corrección.
 
-``auto``
-   Booleano que informa de si la corrección se aplicó manualmente (``false``) o fue
-   consecuencia de un encadenamiento (``true``).
+   ``auto``
+      Booleano que informa de si la corrección se aplicó manualmente (``false``) o fue
+      consecuencia de un encadenamiento (``true``).
 
-``opts``
-   Opciones con las que se aplicó la corrección.
+   ``opts``
+      Opciones con las que se aplicó la corrección.
 
-También es posible usar "*correct:\**" para que el evento esté asociado a
-cualquier tipo de corrección.
+**uncorrect:nombre**
+   Evento análogo al anterior que se desencadena al eliminar la corrección
+   especificada con *nombre*.
+   
+.. note:: Es posible usar "*correct:\**" y "*uncorrect:\**" para que el evento
+   esté asociado a cualquier tipo de corrección.
 
-Análogamente, pueden usarse los eventos "*uncorrect:\**" o
-"*uncorrect:adjcol*", para atrapar el momento en que se desaplica una
-corrección.
-
-.. warning:: Observe que el evento se asocia al tipo de marca, no a las marcas
-   individuales.
+.. **
 
 .. _leafext-filtro:
 
@@ -989,14 +1162,14 @@ El :dfn:`sistema de filtros` posibilita eliminar entidades que cumplan con los
 criterios que establezcamos. Para habilitar el sistema de filtros es necesario
 añadir la opción ``filter`` al crear la clase de marca::
 
-   const Centro = L.Marker.extend({
+   const Centro = L.MutableMarker.extend({
       options: {
          mutable: "feature.properties",
          filter: layer
       }
    });   
 
-En principio, le daremos como valor a ``fitler`` la capa en la que se insertarán
+En principio, le daremos como valor a ``filter`` la capa en la que se insertarán
 las marcas (que habíamos llamado ``layer``), aunque pueden facilitarse otros
 valores (véase :ref:`estilos de filtros <dev-map-style-filter>`). Obrando así,
 el efecto del filtrado es que desaparecerán totalmente del mapa las marcas
@@ -1005,89 +1178,144 @@ filtradas.
 Definición
 ----------
 De manera análoga a como se obra con las correcciones, antes de poder aplicar
-filtros es necesario registrarlos. Este sería el filtro para filtrar cectros
-que tengan menos de un número mínimo de adjudicaciones::
+filtros es necesario registrarlos:
 
-   Centro.registerF("adjmin", {
-      attrs: "adj",
-      func: function(opts) {
-         return this.getData().adj.total < opts.min;
-      }
-   });
+.. js:method:: MutableMarker.registerF(nombre, attrs, func)
 
-Para el registro del filtro es necesario un nombre (*adj* en el código de
-ejemplo) y un objeto con dos propiedades:
+   Método del constructor que define un filtro para las marcas definidas con
+   él. Por ejemplo, este filtro sirve para filtrar centros que tengan menos
+   de un número mínimo de adjudicaciones::
 
-``attrs``
-   Es la lista de propiedades de los datos involucradas en el cálculo. Debe ser
-   un *array*, pero si es una propiedad sola, podemos ahorramos el *array* y
-   escribir directamente el nombre de la propiedad.
+      Centro.registerF("adjmin", {
+         attrs: "adj",
+         func: function(opts) {
+            return this.getData().adj.total < opts.min;
+         }
+      });
 
-``func``
-   Función que define si el centro se filtra (devuelve ``true``) o no (devuelve
-   ``false``). Su contexto es la propia marca que se desea comprobar.
+   Para el registro del filtro es necesario un nombre (*adjmin* en el código de
+   ejemplo) y un objeto con dos propiedades:
+
+   ``attrs``
+      Es la lista de propiedades de los datos involucradas en el cálculo. Debe ser
+      un *array*, pero si es una propiedad sola, podemos ahorramos el *array* y
+      escribir directamente el nombre de la propiedad.
+
+   ``func``
+      Función que define si el centro se filtra (devuelve ``true``) o no (devuelve
+      ``false``). Su contexto es la propia marca que se desea comprobar.
 
 Aplicación
 ----------
 Para aplicar un filtro registrado, basta con pasar su nombre y cuáles son las
-opciones de filtro. En el caso de ejemplo, si quisiéramos eliminar los centros
-sin adjudicaciones, deberíamos aplicar el filtro "*adj*" del siguiente modo::
+opciones de filtro, de forma análoga a como se hace con las correcciones.
 
-   Centro.filter("adjmin", {min: 1});
+.. js:method:: MutableMarker.filter(nombre, opts)
 
-La aplicación del filtro afecta a las marcas que en ese momento se hayan creado,
-afectará a las futuras y se recalculará cada vez que se aplique una corrección
-que modifique alguna de las propiedades que listamos en ``attrs``. Ahora bien,
-como en el caso de las correcciones, los cambios sólo se trasladarán al dibujo
-cuando refresquemos las marcas::
+   Método del constructor que aplica a todas las marcas de su tipo el filtro de
+   *nombre* indicado con las opciones de filtro indicadas. Por ejemplo, si
+   quisiéramos eliminar los centros sin adjudicaciones, deberíamos aplicar el
+   filtro "*adjmin*" del siguiente modo::
 
-   Centro.invoke("refresh");
+      Centro.filter("adjmin", {min: 1});
+
+   La aplicación del filtro afecta a las marcas que en ese momento se hayan creado,
+   afectará a las futuras y se recalculará cada vez que se aplique una corrección
+   que modifique alguna de las propiedades que listamos en ``attrs``. Ahora bien,
+   como en el caso de las correcciones, los cambios sólo se trasladarán al dibujo
+   cuando refresquemos las marcas::
+
+      Centro.invoke("refresh");
 
 Reversión
 ---------
-Para eliminar un filtro, basto con su nombre::
+Para eliminar un filtro:
 
-   Centro.unfilter("adjmin");
+.. js:method:: MutableMarker.unfilter(nombre)
 
-aunque deberemos refrescar para trasladar el efecto del filtro al dibujo.
+   Método del constructor que desplica el filtro de *nombre* reseñado a las
+   marcas de su tipo::
+
+      Centro.unfilter("adjmin");
+
+   Obviamente, deberemos refrescar para trasladar el efecto de la acción al
+   dibujo.
 
 Comprobación de su estado
 -------------------------
 La marca dispone de dos métodos para hacer comprobaciones sobre los filtros
 aplicados:
 
-* js:meth:`Marker.hasFilter` que informa de si se ha aplicado el filtro::
+.. js:method:: MutableMarker.hasFilter()
 
-      Centro.hasFilter("adjcol");
+   Método del constructor que informa de si se ha aplicado el filtro::
 
-* js:meth:`Marker.getFilterStatus` que devuelve un objeto en las claves
-  son los nombres de los filtros aplicados y los valores las opciones
-  correspondientes de aplicación.
+      Centro.hasFilter("adjcol");  // Devuelve true o false.
+
+.. js:method:: MutableMarker.getFilterStatus()
+
+   Métoodo del constructor qe devuelve un objeto cuyas  claves son los nombres
+   de los filtros aplicados; y cuyos valores, las opciones correspondientes de
+   aplicación::
+
+      Centro.getFilterStatus();
 
 .. _leafext-event-filter:
 
 Eventos
 -------
-De manera simétrica a como hay definidos :ref:`eventos para la aplicación y
+De manera análoga a como hay definidos :ref:`eventos para la aplicación y
 remoción de correcciones <leafext-event-corr>` también se definen para
-la aplicación y remoción de correcciones, usando la misma sintaxis::
+la aplicación y remoción de correcciones, usando la misma sintaxis.
 
-   Centro.on("filter:adj", e => {
-      console.log(`Ha aplicado el filtro ${e.name}:`, e.opts);
-   }); 
+**filter:nombre**
+   Evento del constructor que se desencadena al aplicar el filtro de nombre
+   reseñado::
 
-La única salvedad en que en este caso, no existe el atributo ``auto``, ya que
-no tiene sentido.
+      Centro.on("filter:adjmin", e => {
+         console.log(`Ha aplicado el filtro ${e.name}:`, e.opts);
+      }); 
 
-Además, las marcas individuales definen los eventos *filtered* y *unfiltered*
-que se desencadenan cuando la marca cambia de no filtrada a filtrada y de
-filtrada o no filtrada respectivamente. En este segundo caso, el objeto evento
-añade dos atributos reveladores: ``name`` que indica el filtro que provoca el
-cambio y ``opts`` que contiene las opciones de filtro::
+   El evento dispone de los mismos atributos que en el caso de las correcciones,
+   con la salvedad de ``auto``, que no tiene sentido en este caso.
 
-   centro.on("filtered", e => {
-      console.log(`Me acaba de filtrar el filtro '${e.name}' por culpa de:`, e.opts);
-   });
+**unfilter:nombre**
+   Evento del constructor que se desencadena al desaplicar el filtro de nombre
+   reseñado::
+
+      Centro.on("unfilter:adjmin", e => {
+         console.log(`Ha desaplicado el filtro ${e.name}:`, e.opts);
+      }):
+
+.. note:: Puede usar *filter:\** y *unfilter:\** si quiere definir acciones
+   que se desencadenen con la aplicación o desaplicación de cualquier filtro.
+
+.. **
+
+Además de estos estos eventos aplicables sobre el constructor, las marcas
+individuales definen los eventos *filtered* y *unfiltered* que se desencadenan
+cuando la marca cambia de no filtrada a filtrada y de filtrada o no filtrada
+respectivamente.
+
+**filtered**
+   Evento asociado a cada marca individual que se desencadena al pasar un centro
+   de no estar filtrado a estarlo::
+
+      centro.on("filtered", e => {
+         console.log(`Me acaba de filtrar el filtro '${e.name}' por culpa de:`, e.opts);
+      });
+
+   El evento añade dos atributos:
+
+   ``name``
+      Contiene el nombre del filtro que provoca el cambio.
+
+   ``opts``
+      Contiene las opciones de filtro.
+
+**unfiltered**
+   Evento asociado a cada marca individual que se desencadena al pasar un centro
+   de estar filtrado a no estarlo. 
 
 .. _dev-map-style-filter:
 
@@ -1102,14 +1330,14 @@ ello podemos usar dos valores alternativos para la opción:
 * Un nombre, que hará que el elemento |HTML| que representa la marca
   filtrada se incluya en la clase |CSS| de tal nombre::
 
-   const Centro = L.Marker.extend({
+   const Centro = L.MUtableMarker.extend({
       options: {
          mutable: "feature.properties",
          filter: "filtrado"
       }
    });   
 
-  Y en el |CSS|::
+  Sin dentro del |CSS|, incluimos esta definición::
 
    .filtrado {
       filter: grayscale(100%);
@@ -1120,7 +1348,7 @@ ello podemos usar dos valores alternativos para la opción:
 * Una función que toma como contexto el elemento |HTML| y lo modifica a
   voluntad::
 
-   const Centro = L.Marker.extend({
+   const Centro = L.MutableMarker.extend({
       options: {
          mutable: "feature.properties",
          filter: function(filtered) {
@@ -1134,16 +1362,22 @@ ello podemos usar dos valores alternativos para la opción:
  efecto, la librería ya tiene definida una función que puede usarse
  directamente::
 
-   const Centro = L.Marker.extend({
+   const Centro = L.MutableMarker.extend({
       options: {
          mutable: "feature.properties",
          filter: L.utils.grayFilter
       }
    });   
    
-Una vez definida la clase, es posible modificar el estilo posteriormente::
+Una vez definida la clase, es posible modificar el estilo posteriormente
 
-   Centro.setFilterStyle(layer);  // Volvemos a ocultar los centros filtrados.
+.. js:method:: MutableMarker.setFilterStyle(estilo)
+
+   Método del constructor que permite modificar el estilo de filtrado para los
+   iconos de marca de su tipo. El argumento *estilo* puede tomar los valores
+   descritos para la opción *filter* que se pasa al definir el constructor::
+
+      Centro.setFilterStyle(layer);  // Volvemos a ocultar los centros al filtrarlos.
 
 En este caso, a diferencia de cuando se aplican filtros y correcciones, el
 redibujado de marca se hace automáticamente.
@@ -1162,11 +1396,20 @@ redibujado de marca se hace automáticamente.
 .. rubric:: Ejemplo de aplicación
 
 * Consulte `en línea la variante del ejemplo anterior que añade una
-  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/demo.corr.html>`_
+  corrección y un filtro <https://sio2sio2.github.io/lobaton/docs/examples/correcciones.html>`_
+
+Utilidades
+==========
+
+.. js:autofunction:: L.utils.noFilteredIconCluster
+
+.. js:autofunction:: L.utils.grayFilter
+
+.. js:autofunction:: L.utils.load
 
 Variantes
 *********
-Planteamos bajo este epígrafe algunas variantes intersantes sobre el uso ya
+Planteamos bajo este epígrafe algunas variantes interesantes sobre el uso ya
 ilustrado.
 
 .. _dev-map-cluster:
@@ -1182,9 +1425,10 @@ los datos::
 
    const layer = L.markerClusterGroup({
       showCoverageOnHover: false,
-      // Al llegar a nivel 14 de zoom se ven todas las marcas.
-      disableClusteringAtZoom: 14,
+      // Al llegar a nivel 13 de zoom se ven todas las marcas.
+      disableClusteringAtZoom: 13,
       spiderfyOnMaxZoom: false
+      iconFunctionCreate: L.utils.noFilteredIconCluster
    }).addTo(map);
 
    // Obsérvese que no la añadimos al mapa.
@@ -1231,8 +1475,7 @@ capa final, según las van creando la intermedia::
 
 La ventaja de este código sobre el anterior es que cada vez que creamos y
 añadimos de modo efectivo una marca al mapa (o sea a la capa
-L.MarkerClusterGroup_)
-podemos lanzar un disparador con::
+L.MarkerClusterGroup_) podemos lanzar un disparador con::
 
    layer.on("layeradd", e => console.log(`Creado y añadido el centro ${e.layer,getData().name}`));
 
@@ -1401,63 +1644,13 @@ Y añadir algo de *javascript* a las soluciones anteriores::
 
    interm.clearLayers();
 
-|API|
-*****
-
-Iconos
-======
-
-.. js:autofunction:: L.utils.createMutableIconClass
-
-.. js:autoclass:: Icon
-   :members: ready, onready, options, Options
-
-.. js:autoclass:: L.utils.Converter
-   :members:
-
-Marcas
-======
-
-.. js:autoclass:: Marker
-   :members: store, reset, register, correct, uncorrect, getCorrectStatus, appliedCorrections, registerF, filter, unfilter, hasFilter, getFilterStatus, invoke, refresh, changeData, getData, options, Options
-
-Correcciones
-============
-
-.. js:autoclass:: CorrSys
-
-   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
-      detalles de su implementación recurra a los comentarios incluidos en el
-      código fuente.
-
-.. js:autoclass:: Correctable
-   :members: total, walk, CorrValue
-
-Filtros
-=======
-
-.. js:autoclass:: FilterSys
-
-   .. note:: Al construir mapas, esta clase no debería usarse directamente. Para
-      detalles de su implementación recurra a los comentarios incluidos en el
-      código fuente.
-
-Otras utilidades
-================
-
-.. js:autofunction:: L.utils.noFilteredIconCluster
-
-.. js:autofunction:: L.utils.grayFilter
-
-.. js:autofunction:: L.utils.load
-
 .. |API| replace:: :abbr:`API (Application Programming Interface)`
 
 
 .. rubric:: Notas al pie
 
-.. [#] O sea, una clase de icono a partir de la cual se crearán los iconos
-   particulares de cada marca.
+.. [#] O sea, una clase de icono que se utilizará en todas las marcas de un
+   mismo tipo.
 .. [#] Estamos reproduciendo la definición anterior, pero en este caso debemos
    añadir un contenedor ``<div>`` extra.
 .. [#] El por qué se usa la clase "*.chupachups*" en este trozo de |CSS| se
@@ -1483,3 +1676,5 @@ Otras utilidades
 .. _L.GeoJSON: https://leafletjs.com/reference-1.4.0.html#geojson
 .. _.map(): https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/map
 .. _.forEach(): https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/forEach
+.. _L.DivIcon: https://leafletjs.com/reference-1.5.0.html#divicon
+.. _petición AJAX: https://developer.mozilla.org/es/docs/Web/Guide/AJAX
