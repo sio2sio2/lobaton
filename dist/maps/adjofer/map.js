@@ -2554,14 +2554,17 @@ const mapAdjOfer = (function(path, opts) {
       function actualiza(pos1, pos2) {
          pos2 = pos2 || this.store.length;
          for(let i=pos1 - 1; i < pos2; i++) {
-            const centro = this.store[i],
-                  pos = centro.getData().peticion;
-            if(centro.changeData) centro.changeData({peticion: i+1});
-            this.adjofer.fire("requestset", {
-               marker: centro,
-               oldval: pos,
-               newval: i+1
-            });
+            const centro = this.store[i];
+
+            if(centro instanceof L.MutableMarker) {
+               const pos = centro.getData().peticion;
+               centro.changeData({peticion: i+1});
+               this.adjofer.fire("requestset", {
+                  marker: centro,
+                  oldval: pos,
+                  newval: i+1
+               });
+            }
          }
          return this.store.slice(pos1 - 1, pos2);
       }
@@ -2581,8 +2584,10 @@ const mapAdjOfer = (function(path, opts) {
          if(cuantos === undefined || cuantos > restantes) cuantos = restantes;
          const eliminados = this.store.splice(pos-1, cuantos);
          for(const centro of eliminados) {
+            if(!(centro instanceof L.MutableMarker)) continue;
+
             const pos = centro.getData().peticion;
-            if(centro.changeData) centro.changeData({peticion: 0});
+            centro.changeData({peticion: 0});
             this.adjofer.fire("requestset", {
                marker: centro,
                oldval: pos,
