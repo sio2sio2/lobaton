@@ -1141,6 +1141,10 @@ const Interfaz = (function() {
          
       });
 
+      this.g.on("dataloaded", e=> {
+         updateListado();
+      });
+
       this.g.on("requestclick", e => {
          if (e.marker instanceof this.g.Localidad) {
             if(this.g.solicitud.getPosition(e.marker.getData().cod) === 0){
@@ -1168,19 +1172,17 @@ const Interfaz = (function() {
       });
 
       this.g.on("requestset", e => {
+         e.marker.refresh();
          if(e.marker instanceof this.g.Centro) {
             // Solo si pasa de pedido a no pedido
             // o viceversa debe cambiarse el icono.
             if(!!e.newval !== !!e.oldval) {
                const tipo = e.newval === 0?"BolicheIcono":"SolicitudIcono",
                      Icono = e.target.solicitud[tipo];
-      
+
                Icono.onready(() => e.marker.setIcon(new Icono()));
-               // Al cambiar el icono, se redibuja, así que sobra refresh.
-               return;
             }
          }
-         e.marker.refresh();
       });
 
       function getNombreCentroLocalidad(element) {
@@ -1195,13 +1197,25 @@ const Interfaz = (function() {
    
       function clonaSolicitudes() {
          let listado = []
-         this.interfaz.g.solicitud.store.map(function(element){
-            listado.push({
-               cod: getCodigoCentroLocalidad(element),
-               peticion: element.getData().peticion,
-               tipo: typeof element.getData().cod !== 'undefined'? 'L' : 'C',
-               name: getNombreCentroLocalidad(element)
-            })
+         this.interfaz.g.solicitud.store.map(function(element, index){
+            // Hay que comprobar que el elemento sea un objeto, pues si es un centro y el usuario cambia de especialidad
+            // lo que habrá en realidad es un código plano
+            if(typeof element === "object"){
+               listado.push({
+                  cod: getCodigoCentroLocalidad(element),
+                  peticion: element.getData().peticion,
+                  tipo: typeof element.getData().cod !== 'undefined'? 'L' : 'C',
+                  name: getNombreCentroLocalidad(element)
+               })
+            }
+            else if(typeof element === "string"){
+               listado.push({
+                  cod: element,
+                  peticion: index + 1, // Es la única forma que tenemos de saber la posición, mediante el índice que ocupa en el array
+                  tipo: 'C', // Sólo los centros presentan este problema
+                  name: "Centro ajeno a la especialidad"
+               })
+            }
          })
          return listado;
       }
@@ -1393,13 +1407,11 @@ const Interfaz = (function() {
                      // Si la opción ocultarLocalidades está desmarcada, las mostramos
                      if(!value){
                         this.g.Localidad.unfilter("invisible");
-                        //interfaz.g.Localidad.invoke("refresh", interfaz.g.progressBar);
-                        console.log(interfaz.g.progressBar);
                         this.g.Localidad.invoke("refresh", this.g.progressBar);
                      }
                      else {
                         this.g.Localidad.filter("invisible", {});
-                        this.g.Localidad.invoke("refresh");
+                        this.g.Localidad.invoke("refresh", this.g.progressBar);
                      }
                   }
                }
