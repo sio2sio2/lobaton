@@ -1782,6 +1782,14 @@ const mapAdjOfer = (function(path, opts) {
             converter: converterLoc,
             updater: function(o) {
                if(o.peticion === undefined) return;
+               const text = this.querySelector("text"),
+                     textInDefs = this.querySelector("defs").querySelector("text");
+
+               text.textContent = o.peticion;
+               if(o.peticion > 0) {
+                  if(textInDefs) this.querySelector("defs").parentNode.appendChild(text);
+               }
+               else if(!textInDefs) this.querySelector("defs").appendChild(text);
                
                const color = o.peticion === 0?"#0ae":"#d70"
                this.querySelector("path").setAttribute("fill", color);
