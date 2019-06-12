@@ -12,7 +12,8 @@ const Interfaz = (function() {
    const defaults_v = {
       ocultarBorrado: false,  // Oculta enseñanzas y adj. borradas.
       recordar: false,        // Recuerda entre sesiones el estado del mapa.
-      mostrarFiltrados: false // Si true, muestra en gris los centros filtrados.
+      mostrarFiltrados: false, // Si true, muestra en gris los centros filtrados.
+      ocultarLocalidades: true
    }
 
    function Interfaz(opts) {
@@ -1130,22 +1131,27 @@ const Interfaz = (function() {
       var draggable = window.vuedraggable;
 
       this.g.on("modeset", e => {
-         if(e.newval === "solicitud") {
-            this.g.Localidad.unfilter("invisible");
-            this.g.Localidad.invoke("refresh");
-         }
-         else{
-            this.g.Localidad.filter("invisible", {});
-            this.g.Localidad.invoke("refresh");
-         }
+         
       });
 
       this.g.on("requestclick", e => {
          if (e.marker instanceof this.g.Localidad) {
-            this.g.solicitud.add(e.marker.getData().cod + "L");
+            if(this.g.solicitud.getPosition(e.marker.getData().cod) === 0){
+               //Si no estaba en la lista, se añade. Recordar que para la lista de solicitud, la primera posición es 1 y no 0
+               this.g.solicitud.add(e.marker.getData().cod + "L");
+            }
+            else {
+               this.g.solicitud.remove(e.marker.getData().cod + "L");
+            }
          }
          else if (e.marker instanceof this.g.Centro) {
-            this.g.solicitud.add(e.marker.getData().id.cod + "C");
+            if(this.g.solicitud.getPosition(e.marker.getData().id.cod) === 0){
+               //IDEM que para localidades
+               this.g.solicitud.add(e.marker.getData().id.cod + "C");
+            }
+            else {
+               this.g.solicitud.remove(e.marker.getData().id.cod + "C");
+            }
          }
 
          //Actualizamos el listado con las posiciones del array original.
@@ -1200,7 +1206,7 @@ const Interfaz = (function() {
       const ListaSolicitudes = {
          name: 'Solicitudes',
          template: `
-            <div class="peticiones">
+            <div class="peticiones" v-if="list.length > 0">
                <draggable
                         tag="ul"
                         :list="list"
@@ -1224,6 +1230,12 @@ const Interfaz = (function() {
                         </li>
                         
                </draggable>
+               <br/>
+               <button type="button" class="btn btn-primary" @click="csvExport()">Exportar a CSV</button>
+            </div>
+            <div v-else>
+            <span><i class="fa fa-info-circle"></i></span>
+            <span>Activa el modo solicitud y selecciona centros o localidades para crear tu lista</span>
             </div>
          `,
          components: {
@@ -1242,6 +1254,28 @@ const Interfaz = (function() {
                   this.$parent.g.solicitud.move(e.oldIndex + 1, e.newIndex + 1, 1)
                }
                updateListado()
+            },
+            // Funcionalidad para exportar la lista a un fichero CSV
+            csvExport() {
+               let csvContent = "data:text/csv;charset=utf-8,";
+               csvContent += [
+                 Object.keys(this.$parent.listado[0]).join(";"),
+                 ...this.$parent.listado.map(item => Object.values(item).join(";"))
+               ]
+                 .join("\n")
+                 .replace(/(^\[)|(\]$)/gm, "");
+         
+               const data = encodeURI(csvContent);
+               const link = document.createElement("a");
+               link.setAttribute("href", data);
+               link.setAttribute("download", "solicitudes.csv");
+               link.style.display = 'none';
+               document.body.appendChild(link);
+               link.click();
+               document.body.removeChild(link);
+            },
+            csvImport() {
+                              
             }
           },
           data() {
@@ -1296,16 +1330,17 @@ const Interfaz = (function() {
                }
 
                if(this.a.tipo === "visual") return;
-               
-               // Vamos a usar la variable tipo para aplicar el filtro sobre los centros o las localidades
-               if(typeof this.a.value.tipo !== "undefined"){
+
+               // Vamos a usar la variable tipo para aplicar el filtro sobre los centros o las localidades (o ambos - both B)
+               if(typeof this.a.value.tipo !== "undefined" && (this.a.value.tipo === 'L' || this.a.value.tipo === 'B')){
                   const [accion, nombre] = this.a.tipo.split(":"),
                   Localidad = this.$parent.g.Localidad,
                      res = this.checked?Localidad[accion](nombre, this.a.value || {})
                                        :Localidad[`un${accion}`](nombre);
                      if(res) Localidad.invoke("refresh");
                }
-               else{
+
+               if(typeof this.a.value.tipo === "undefined" || (this.a.value.tipo === 'C' || this.a.value.tipo === 'B')){
                   const [accion, nombre] = this.a.tipo.split(":"),
                      Centro = this.$parent.g.Centro,
                      res = this.checked?Centro[accion](nombre, this.a.value || {})
@@ -1318,18 +1353,12 @@ const Interfaz = (function() {
          }
       });
 
-      return new Vue({
+      const solApp = new Vue({
          el: "#solicitud :nth-child(2)",
          data: {
             g: this.g,
             options: this.options,
             ajustes: [
-               {
-                  desc: "Ocultar centros ya seleccionados",
-                  opt: "filter:solicitado",
-                  tipo: "filter:solicitado",
-                  value: {}
-               },
                {
                   desc: "Activar el modo solicitud",
                   opt: "modo",
@@ -1340,6 +1369,30 @@ const Interfaz = (function() {
                      }
                      else {
                         this.g.mode = "normal"
+                     }
+                  }
+               },
+               {
+                  desc: "Ocultar centros ya seleccionados",
+                  opt: "filter:solicitado",
+                  tipo: "filter:solicitado",
+                  value: {tipo: 'B'}
+               },
+               {
+                  desc: "Ocultar localidades",
+                  opt: "ocultarLocalidades",
+                  tipo: "visual",
+                  accion: (name, value) => {
+                     // Si la opción ocultarLocalidades está desmarcada, las mostramos
+                     if(!value){
+                        this.g.Localidad.unfilter("invisible");
+                        //interfaz.g.Localidad.invoke("refresh", interfaz.g.progressBar);
+                        console.log(interfaz.g.progressBar);
+                        this.g.Localidad.invoke("refresh", this.g.progressBar);
+                     }
+                     else {
+                        this.g.Localidad.filter("invisible", {});
+                        this.g.Localidad.invoke("refresh");
                      }
                   }
                }
