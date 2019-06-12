@@ -1503,8 +1503,31 @@
        * @return {Object} El resultado de haber realizado la fusión.
        */
       changeData: function(data) {
+         const ret = Object.assign(this.getData(), data);
+
+         // Bug #92
+         const filter = this.options.filter,
+               attrs = Object.keys(data);
+
+         if(filter) {
+            // Aplicamos los filtros que pueden verse afectados
+            // por el cambio, o sea aquellos que dependen de alguno
+            // de los datos que han cambiado.
+            for(const name of filter.getFilters()) {
+               let depends = false;
+               for(const x of filter[name].prop.depends) {
+                  if(attrs.indexOf(x) !== -1) {
+                     depends = true;
+                     break
+                  }
+               }
+               if(depends) this.applyF(name);
+            }
+         }
+         // Fin bug #92.
+
          this._updateIcon(data);
-         return Object.assign(this.getData(), data);
+         return ret;
       },
       // Fin issue #33
       /**

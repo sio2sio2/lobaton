@@ -1035,6 +1035,13 @@ realizan sobre el mapa:
 
       g.on("statuschange", e => console.log(`El culpable soy yo, ${e.attr}`));
 
+.. _adjofer-event-statusset:
+
+**statusset**
+   Se desencadena al acabar de aplicar el estado inicial del mapa. El evento
+   dispone del atributo ``status`` para saber si se aplicó una configuración
+   guardada.
+
 .. note:: Se enumeran exclusivamente los nuevos tipos de eventos que introduce
    el objeto ``MapAdjOfer``. Es obvio que para la creación de la interfaz visual
    seguiran siendo necesarios otros eventos como los asociados a las
@@ -1373,6 +1380,7 @@ Cambiar icono al solicitar centro
 ::
 
    g.on("requestset", e => {
+      e.marker.refresh();
       if(e.marker instanceof e.target.Centro) {
          // Solo si pasa de pedido a no pedido
          // o viceversa debe cambiarse el icono.
@@ -1381,11 +1389,8 @@ Cambiar icono al solicitar centro
                   Icono = e.target.solicitud[tipo];
 
             Icono.onready(() => e.marker.setIcon(new Icono()));
-            // Al cambiar el icono, se redibuja, así que sobra refresh.
-            return;
          }
       }
-      e.marker.refresh();
    });
 
 Ocultar centros filtrados

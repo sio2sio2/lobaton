@@ -66,12 +66,16 @@ window.onload = function() {
       if(e.newval === 0) {
          console.log(`Deja de pedirse '${nom}'`);
       }
-      else {
+      else if(e.oldval == 0) {
          console.log(`Se pide '${nom}' en la petición ${e.newval}`);
+      }
+      else {
+         console.log(`Se pasa '${nom}' de la petición ${e.oldval} a la ${e.newval}`);
       }
    });
 
    g.on("requestset", e => {
+      e.marker.refresh();
       if(e.marker instanceof e.target.Centro) {
          // Solo si pasa de pedido a no pedido
          // o viceversa debe cambiarse el icono.
@@ -80,10 +84,8 @@ window.onload = function() {
                   Icono = e.target.solicitud[tipo];
 
             Icono.onready(() => e.marker.setIcon(new Icono()));
-            return; // Al cambiar el icono, se redibuja.
          }
       }
-      e.marker.refresh();
    });
 
    function solicitar() {
