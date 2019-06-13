@@ -266,6 +266,11 @@ const mapAdjOfer = (function(path, opts) {
                         // Para cada centro que creemos hay que añadir a los datos
                         // la propiedad que indica si la marca está o no seleccionada.
                         e.target.changeData({sel: false, peticion: 0});
+                        Object.defineProperty(e.target.getData(), "codigo", {
+                           get: function() {
+                              return this.id.cod.toString().padStart(8, "0") + "C";
+                           }
+                        });
                      });
 
 
@@ -793,7 +798,14 @@ const mapAdjOfer = (function(path, opts) {
                icon: new Icono(),
                title: f.properties.nom
             });
-            localidad.on("dataset", e => e.target.changeData({peticion: 0}));
+            localidad.on("dataset", e => {
+               e.target.changeData({peticion: 0});
+               Object.defineProperty(e.target.getData(), "codigo", {
+                  get: function() {
+                     return this.id.cod.toString().padStart(9, "0") + "L";
+                  }
+               });
+            });
             if(this.options.light) localidad.once("dataset", e => {
                e.target.on("click", e => {
                   if(this.options.light && this.mode === "solicitud") {
@@ -811,19 +823,20 @@ const mapAdjOfer = (function(path, opts) {
        * @type {Marker}
        */
       this.Localidad = L.MutableMarker.extend({
+         statics: {
+            get: function(cod) {
+               if(typeof cod === "string" && cod.endsWith("L")) cod = cod.slice(0, -1);
+               for(const loc of this.store) {
+                  if(loc.getData().cod == cod) return loc;
+               }
+               return null;
+            }
+         },
          options: {
             mutable: "feature.properties",
             filter: this.cluster,
          }
       });
-
-      this.Localidad.get = cod => {
-         if(typeof cod === "string" && cod.endsWith("L")) cod = cod.slice(0, -1);
-         for(const loc of this.Localidad.store) {
-            if(loc.getData().cod == cod) return loc;
-         }
-         return null;
-      }
 
       // Filtro indiscriminado: sirve para ocultar de inicio las localidades.
       this.Localidad.registerF("invisible", {
@@ -893,25 +906,26 @@ const mapAdjOfer = (function(path, opts) {
       * @type {Marker}
       */
       this.Centro = L.MutableMarker.extend({
-       options: {
-          mutable: "feature.properties",
-          filter: this.cluster,
-          //filter: "filtered",
-          //filter: L.utils.grayFilter
-       }
-      });
-
-      /**
-       * Obtiene la marca de un centro a partir de su código.
-       * @param {String|Number} codigo  El código del centro.
-       * @returns {L.Marker} La marca del centro cuyo código es el suministrado.
-       */
-      this.Centro.get = function(codigo) {
-         if(typeof codigo === "string" && codigo.endsWith("C")) codigo = codigo.slice(0, -1);
-         for(const c of this.store) {
-            if(c.getData().id.cod == codigo) return c;
+         statics: {
+            /**
+             * Obtiene la marca de un centro a partir de su código.
+             * @param {String|Number} codigo  El código del centro.
+             * @returns {L.Marker} La marca del centro cuyo código es el suministrado.
+             */
+            get: function(codigo) {
+               if(typeof codigo === "string" && codigo.endsWith("C")) codigo = codigo.slice(0, -1);
+               for(const c of this.store) {
+                  if(c.getData().id.cod == codigo) return c;
+               }
+            }
+         },
+         options: {
+            mutable: "feature.properties",
+            filter: this.cluster,
+            //filter: "filtered",
+            //filter: L.utils.grayFilter
          }
-      }
+      });
 
       createCorrections.call(this);
       createFilters.call(this);
@@ -988,7 +1002,7 @@ const mapAdjOfer = (function(path, opts) {
          if(!status.des) this.setIsocronas();
       }
 
-      // La carga del estado de las peticiones se implementa en la clase Solicitud.
+      this.status.list = status.list;
 
    }
    // Fin issue #57
@@ -2450,10 +2464,8 @@ const mapAdjOfer = (function(path, opts) {
       });
 
       function normalizeCodigo(centro) {
-         if(centro instanceof L.Marker) {
-            const data = centro.getData();
-            return data.cod?(data.cod + "L").padStart(10, "0"):
-                            (data.id.cod + "C").padStart(9, "0");
+         if(centro instanceof L.MutableMarker) {
+            return centro.getData().codigo;
          }
 
          centro = centro.toString();
