@@ -556,6 +556,12 @@ Atributos
       centro = g.Centro.get("23001111");
       centro = g.Centro.get("23001111C");
 
+   Por otra parte a los datos se incorpora un *getter*, que permite obtener
+   el código normalizado del centro::
+
+      centro.getData().id.cod;  // código numérico de los datos: 23001111
+      centro.getData().codigo:  // Código normalizado: 23001111C
+
 .. js:attribute:: general
 
    Almacena la información general del mapa que ofrece el objeto `GeoJSON`_ de
@@ -1302,6 +1308,12 @@ representan localidades:
       jerez = g.Localidad.get(110200014);
       jerez = g.Localidad.get("110200014");
       jerez = g.Localidad.get("110200014L");
+
+   Además, también como se hace con :js:attr:`Centro`, se incorporta un *getter* a los
+   datos que facilita el código normalizado::
+
+      jerez.getData().cod;     // Devuelve 110200014
+      jerez.getData().codigo;  // Devuelve 110200014L
 
 Estas localidades se cargan en la propia capa :js:attr:`cluster` a partir de un
 archivo GeoJSON_ con el siguiente aspecto:
