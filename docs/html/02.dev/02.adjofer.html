@@ -728,6 +728,12 @@ seguida del caracter «<em>C</em>» (mayúscula):</p>
 <span class="nx">centro</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Centro</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;23001111C&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
+<p>Por otra parte a los datos se incorpora un <em>getter</em>, que permite obtener
+el código normalizado del centro:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">centro</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">id</span><span class="p">.</span><span class="nx">cod</span><span class="p">;</span>  <span class="c1">// código numérico de los datos: 23001111</span>
+<span class="nx">centro</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">codigo</span><span class="o">:</span>  <span class="c1">// Código normalizado: 23001111C</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="attribute">
@@ -1578,6 +1584,12 @@ añade el carácter «<em>L</em>» (mayúscula). En consecuencia:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">jerez</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Localidad</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">110200014</span><span class="p">);</span>
 <span class="nx">jerez</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Localidad</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;110200014&quot;</span><span class="p">);</span>
 <span class="nx">jerez</span> <span class="o">=</span> <span class="nx">g</span><span class="p">.</span><span class="nx">Localidad</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">&quot;110200014L&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Además, también como se hace con <a class="reference internal" href="#Centro" title="Centro"><code class="xref js js-attr docutils literal notranslate"><span class="pre">Centro</span></code></a>, se incorporta un <em>getter</em> a los
+datos que facilita el código normalizado:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">jerez</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">cod</span><span class="p">;</span>     <span class="c1">// Devuelve 110200014</span>
+<span class="nx">jerez</span><span class="p">.</span><span class="nx">getData</span><span class="p">().</span><span class="nx">codigo</span><span class="p">;</span>  <span class="c1">// Devuelve 110200014L</span>
 </pre></div>
 </div>
 </dd></dl>

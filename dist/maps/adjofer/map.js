@@ -802,7 +802,7 @@ const mapAdjOfer = (function(path, opts) {
                e.target.changeData({peticion: 0});
                Object.defineProperty(e.target.getData(), "codigo", {
                   get: function() {
-                     return this.id.cod.toString().padStart(9, "0") + "L";
+                     return this.cod.toString().padStart(9, "0") + "L";
                   }
                });
             });
@@ -1802,6 +1802,14 @@ const mapAdjOfer = (function(path, opts) {
                text.textContent = o.peticion;
                if(o.peticion > 0) {
                   if(textInDefs) this.querySelector("defs").parentNode.appendChild(text);
+                  if(o.peticion > 99) {
+                     text.setAttribute("y", "235");
+                     text.setAttribute("font-size", "180");
+                  }
+                  else {
+                     text.setAttribute("y", "265");
+                     text.setAttribute("font-size", "230");
+                  }
                }
                else if(!textInDefs) this.querySelector("defs").appendChild(text);
                
