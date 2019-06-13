@@ -1191,8 +1191,7 @@ const Interfaz = (function() {
       }
 
       function getCodigoCentroLocalidad(element) {
-         const data = element.getData()
-         return typeof data.cod !== 'undefined' ? data.cod : data.id.cod;
+         return element.getData().codigo;
       }
    
       function clonaSolicitudes() {
@@ -1259,9 +1258,6 @@ const Interfaz = (function() {
                            
                   </draggable>
                   <br/>
-                  <div class="form-group">
-                     <button type="button" class="btn btn-primary" @click="csvExport()">Exportar a CSV</button>
-                  </div>
                </div>
                <div v-else>
                   <span><i class="fa fa-info-circle"></i></span>
@@ -1269,12 +1265,14 @@ const Interfaz = (function() {
                </div>
                <br/>
                <div class="form-row">
-                  <div class="col">
-                     <label for="exampleFormControlFile1">Importar archivo CSV</label>
-                     <input type="file" class="form-control-file" id="solicitudesCSVFile">
+                  <div class="col" v-if="list.length > 0">
+                     <button type="button" class="btn btn-primary" @click="csvExport()">Exportar a CSV</button>
                   </div>
                   <div class="col">
-                     <button type="button" class="btn btn-primary" @click="csvImport()">Importar CSV</button>
+                     <label for="solicitudesCSVFile">
+                        <input type="file" class="form-control-file" style="display:none" id="solicitudesCSVFile" @change="csvImport()">
+                        <button type="button" class="btn btn-primary" @click="fireFile()">Importar CSV</button>
+                     </label>
                   </div>
                </div>
             </div>
@@ -1316,6 +1314,9 @@ const Interfaz = (function() {
                link.click();
                document.body.removeChild(link);
             },
+            fireFile() {
+               document.getElementById("solicitudesCSVFile").click();
+            },
             csvImport() {
                // Si hay elementos seleccionados, damos la opción a no destruirlos
                if(this.$parent.listado.length > 0) 
@@ -1325,6 +1326,7 @@ const Interfaz = (function() {
                const fichero = document.getElementById("solicitudesCSVFile")
                if(fichero.value === ""){
                   fichero.classList.add('is-invalid');
+                  return;
                }
                else {
                   fichero.classList.remove('is-invalid');
