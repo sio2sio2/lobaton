@@ -1146,23 +1146,13 @@ const Interfaz = (function() {
       });
 
       this.g.on("requestclick", e => {
-         if (e.marker instanceof this.g.Localidad) {
-            if(this.g.solicitud.getPosition(e.marker.getData().cod) === 0){
-               //Si no estaba en la lista, se añade. Recordar que para la lista de solicitud, la primera posición es 1 y no 0
-               this.g.solicitud.add(e.marker.getData().cod + "L");
-            }
-            else {
-               this.g.solicitud.remove(e.marker.getData().cod + "L");
-            }
+         
+         if(this.g.solicitud.getPosition(e.marker.getData().codigo) === 0){
+            //Si no estaba en la lista, se añade. Recordar que para la lista de solicitud, la primera posición es 1 y no 0
+            this.g.solicitud.add(e.marker.getData().codigo);
          }
-         else if (e.marker instanceof this.g.Centro) {
-            if(this.g.solicitud.getPosition(e.marker.getData().id.cod) === 0){
-               //IDEM que para localidades
-               this.g.solicitud.add(e.marker.getData().id.cod + "C");
-            }
-            else {
-               this.g.solicitud.remove(e.marker.getData().id.cod + "C");
-            }
+         else {
+            this.g.solicitud.remove(e.marker.getData().codigo);
          }
 
          //Actualizamos el listado con las posiciones del array original.
