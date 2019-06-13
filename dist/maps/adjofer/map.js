@@ -802,7 +802,7 @@ const mapAdjOfer = (function(path, opts) {
                e.target.changeData({peticion: 0});
                Object.defineProperty(e.target.getData(), "codigo", {
                   get: function() {
-                     return this.id.cod.toString().padStart(9, "0") + "L";
+                     return this.cod.toString().padStart(9, "0") + "L";
                   }
                });
             });
