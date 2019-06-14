@@ -46,10 +46,10 @@
    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap4c-custom-switch@1.1.2/dist/css/component-custom-switch.min.css">
 
-
+   <!-- Papaparse (Importar CSV) -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js"></script>
 
    <!-- Particularidades de esta página -->
-   <script src="scripts/main.js"></script>
    <link rel="stylesheet" href="../../dist/maps/adjofer/css/adjofer.css">
    <link rel="stylesheet" href="css/main.css">
 
@@ -472,7 +472,19 @@
                <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
-            <p>Esta pestaña está dedicada a la petición de destinos</p>
+            <div class="section-cardbox-content">
+               <fieldset class="form-group">
+                  <legend>Ajustes de solicitudes</legend>
+                  <ajuste v-for="a in ajustes" :key="a.opt" :a="a"></ajuste>
+               </fieldset>
+            </div>
+            
+
+            <script type="text/x-template" id="peticiones">
+               <div class="form-group row">
+                  
+               </div>
+            </script>
          </div>
 
          <div class="leaflet-sidebar-pane" id="busqueda">
@@ -498,4 +510,11 @@
 
    <!-- development version, includes helpful console warnings -->
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+   <!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+   <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+   <!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+   <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+
+   <script src="scripts/main.js"></script>
 </html>
