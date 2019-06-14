@@ -357,7 +357,8 @@ const Interfaz = (function() {
                // Búsqueda difusa (require fuse.js)
                return new Fuse(
                   this.g.cluster.getLayers(), {
-                     keys: [this.pathData + ".id.nom", this.pathData + ".nom"],
+                     keys: [this.pathData + ".id.nom", this.pathData + ".nom",
+                            this.pathData + ".id.loc", this.pathData + ".id.mun"],
                      minMatchCharLength: 3,
                }).search(this.patron);
             }
@@ -1677,4 +1678,8 @@ window.onload = function() {
    interfaz = new Interfaz();
    interfaz.initVueJS();
    datalistSupport();
+
+   window.onbeforeunload = function() {
+      if(!interfaz.options.recordar) return "¿Está seguro de querer salir?";
+   }
 }
