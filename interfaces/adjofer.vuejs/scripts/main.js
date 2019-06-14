@@ -1344,4 +1344,8 @@ window.onload = function() {
    interfaz = new Interfaz();
    interfaz.initVueJS();
    datalistSupport();
+
+   window.onbeforeunload = function() {
+      if(!interfaz.options.recordar) return "¿Está seguro de querer salir?";
+   }
 }

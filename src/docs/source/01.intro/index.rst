@@ -328,6 +328,40 @@ Puestos
 Enseñanzas
    Permite eliminar individualmente enseñanzas que no interesen.
 
+Petición de destinos
+====================
+La aplicación dispone también de un panel para confeccionar una lista de
+peticiones de destinos:
+
+.. image:: files/panel-pet.png
+
+Para ello es necesario:
+
+- Activar el modo solicitud.
+- Comenzar a pinchar sobre los centros, que se quieren seleccionar. Al hacerlo
+  en modo solicitud, éstos se van añadiendo al final de la lista.
+- Es posible, además, hacer aparecer marcas en el mapa para las localidades
+  desactivando la opción "*Ocultar localidades*", sobre las cuales se podrá
+  pinchar también a fin de añadirlas a la lista.
+
+Al ir pinchando sobre los centros, además de añadirse a la lista, sus marcas
+cambiarán de aspecto para notar que han sido seleccionados:
+
+.. image:: files/panel-pet-sol.png
+
+aunque es posible ocultar los centros ya seleccionados, si así lo preferimos,
+activando el ajuste "*Ocultar centros ya seleccionados*".
+
+El orden en la lista de las peticiones puede alterarse arrastrándolas arriba y
+abajo.
+
+Además, es posible:
+
+- Exportar la lista a un fichero.
+- Importar una lista que ya hubiéramos exportado previamente.
+
+.. image:: files/panel-pet-exp.png
+
 .. _faq:
 
 |FAQ|
