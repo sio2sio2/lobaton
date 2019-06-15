@@ -1680,6 +1680,9 @@ window.onload = function() {
    datalistSupport();
 
    window.onbeforeunload = function() {
-      if(!interfaz.options.recordar) return "¿Está seguro de querer salir?";
+      // Sólo pregunta si no se guarda el estado y hay cargada especialidad
+      if(!interfaz.options.recordar && interfaz.g.general) {
+         return "¿Está seguro de querer salir?";
+      }
    }
 }
