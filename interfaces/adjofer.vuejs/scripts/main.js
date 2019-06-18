@@ -1242,13 +1242,15 @@ const Interfaz = (function() {
                               v-for="(element, idx) in list"
                               :key="element.cod"
                            >
-                              <span class="handle">
+                              <div class="handle" style="float: left">
                                  <i class="fa fa-align-justify fa-sort"></i>
                                  {{ element.peticion }} - 
                                  <span><i v-bind:class="[element.tipo === 'C' ? 'fa-graduation-cap' : 'fa-building', 'fa']"></i></span> 
                                  {{ element.name }} ({{ element.cod }})
-                              </span>
-                              <i class="fa fa-times close" @click="removeAt(idx)"></i>
+                              </div>
+                              <div>
+                                 <i class="fa fa-times close" @click="removeAt(idx)"></i>
+                              </div>
                            </li>
                            
                   </draggable>
