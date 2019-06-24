@@ -1,0 +1,13 @@
+{
+   "manifest_version": 2,
+   "name": "Importador de Lobatón",
+   "version": "0.1",
+   "content_scripts": [{
+      "matches": [ "http://www.juntadeandalucia.es/educacion/vscripts/dgprh/Efectivos/C2019/NSolic_A1.asp", "http://www.juntadeandalucia.es/educacion/vscripts/dgprh/Efectivos/C2019/NSolic_A2.asp", "http://www.juntadeandalucia.es/educacion/vscripts/dgprh/Efectivos/C2019/NSolic_A3.asp" ],
+      "js": ["inject.js"]
+   }],
+   "browser_action": {
+      "default_icon": "icon.png"
+   },
+   "web_accessible_resources": ["content.js"]
+}
