@@ -10,13 +10,13 @@ El contenido de este repositorio ha quedado totalmente **obsoleto** y su desarro
 se ha trasladado a tres repositorios distintos:
 
 * `Leaflet.mutatismutandis
-  <http://github.com/sio2sio2/leaflet.mutatismutandis>`, que desarrolla un
+  <http://github.com/sio2sio2/leaflet.mutatismutandis>`_, que desarrolla un
   *plugin* para Leaflet_ orientado a la creación de mapas de búsqueda.
 
-* `@lobaton/core <http://github.com/sio2sio2/lobaton-core>`, que implementa la
+* `@lobaton/core <http://github.com/sio2sio2/lobaton-core>`_, que implementa la
   lógica del mapa de adjudicaciones y oferta educativa.
 
-* `@locaton/vuejs <http://github.com/sio2sio2/lobaton-vuejs>`, que implementa
+* `@locaton/vuejs <http://github.com/sio2sio2/lobaton-vuejs>`_, que implementa
   la interfaz para el mapa basada en VueJS_.
 
 .. _Leaflet: https://leafletjs.com
