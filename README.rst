@@ -17,7 +17,7 @@ se ha trasladado a varios repositorios distintos:
   lógica del mapa de adjudicaciones y oferta educativa.
 
 * `@lobaton/search <http://github.com/sio2sio2/lobaton-search>`_, que implementa
-  la el cajetín de búsqueda difusa para los centros y localidades.
+  el cajetín de búsqueda difusa para los centros y localidades.
 
 * `@locaton/vuejs <http://github.com/sio2sio2/lobaton-vuejs>`_, que implementa
   la interfaz para el mapa basada en VueJS_.
