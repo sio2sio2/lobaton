@@ -7,7 +7,7 @@ Consulte la documentación `aquí
 **ATENCIÓN**
 
 El contenido de este repositorio ha quedado totalmente **obsoleto** y su desarrollo
-se ha trasladado a tres repositorios distintos:
+se ha trasladado a varios repositorios distintos:
 
 * `Leaflet.mutatismutandis
   <http://github.com/sio2sio2/leaflet.mutatismutandis>`_, que desarrolla un
@@ -15,6 +15,9 @@ se ha trasladado a tres repositorios distintos:
 
 * `@lobaton/core <http://github.com/sio2sio2/lobaton-core>`_, que implementa la
   lógica del mapa de adjudicaciones y oferta educativa.
+
+* `@lobaton/search <http://github.com/sio2sio2/lobaton-search>`_, que implementa
+  la el cajetín de búsqueda difusa para los centros y localidades.
 
 * `@locaton/vuejs <http://github.com/sio2sio2/lobaton-vuejs>`_, que implementa
   la interfaz para el mapa basada en VueJS_.
